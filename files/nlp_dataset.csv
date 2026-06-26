@@ -1,0 +1,1023 @@
+text,intent,entities
+1 minggu lagi pak ardi ambil barang 100 buah brownis udah dibayar tunai,tambah_transaksi_tanggal_spesifik,pelanggan=pak ardi|produk=brownis|jumlah=100|satuan=buah|bayar=tunai|status=lunas|waktu=1 minggu lagi
+3 hari kedepan pak ardi ambil barang 100 buah brownis udah dibayar tunai,tambah_transaksi_tanggal_spesifik,pelanggan=pak ardi|produk=brownis|jumlah=100|satuan=buah|bayar=tunai|status=lunas|waktu=3 hari kedepan
+3 hari yang lalu pak ardi ambil barang 100 buah brownis udah dibayar tunai,tambah_transaksi_tanggal_spesifik,pelanggan=pak ardi|produk=brownis|jumlah=100|satuan=buah|bayar=tunai|status=lunas|waktu=3 hari lalu
+Berapa harga brownis,cek_harga_produk_spesifik,barang=Brownis
+Berapa harga permen,cek_harga_produk_spesifik,barang=Permen
+Berapa total transaksi hari ini,total_transaksi,
+Berapa total tunggakan hari ini,total_tunggakan,
+Berapa total uang masuk hari ini,total_uang_masuk,
+Berapa total uang tagihan hari ini,total_tagihan,
+Berapa total uang tagihan kemarin,total_tagihan,
+Berapa total uang tagihan tanggal 21,total_tagihan,tanggal=21
+Cek harga permen,cek_harga_produk_spesifik,barang=Permen
+Cek pemasukan hari ini,total_uang_masuk,
+Cek penjualan hari ini,cek_penjualan_hari_ini,
+Cek pesanan hari ini,tampilkan_transaksi_hari_ini,
+Cek pesanan pak andi,cek_pesanan_pelanggan,pelanggan=Andi
+Cek pesanan tanggal 21,tampilkan_transaksi_tanggal,tanggal=21
+Cek pesanan udin,cek_pesanan_pelanggan,pelanggan=Udin
+Cek/tampilkan harga barang,tampilkan_produk,
+Cek/tampilkan pesanan tanggal 21 04 2026,tampilkan_transaksi_tanggal,tanggal=21-04-2026
+Edit harga barang,edit_produk,
+Ganti harga brownis jadi 2000,edit_produk,barang=Brownis|harga=2000
+Ganti harga permen jadi 14.000,edit_produk,barang=Permen|harga=14000
+Hapus pesanan udin dengan status pembayaran belum lunas,hapus_transaksi,pelanggan=Udin|status=Hutang
+Hapus semua data penjualan,hapus_transaksi,
+Hapus/tampilkan semua data,tampilkan_semua_transaksi,
+Hari ini Udin ambil permen 30 dus sudah lunas,tambah_transaksi_lunas_cash,pelanggan=Udin|barang=Permen|jumlah=30|satuan=dus|status=Lunas
+Hari ini andi order permen 600 toples dicicil 200000 tunai,tambah_transaksi_cicilan_cash,pelanggan=Andi|barang=Permen|jumlah=600|satuan=toples|status=Cicil|nominal_bayar=200000|metode=Tunai
+Hari ini budi order permen 30 toples dicicil 200000 dibayar langsung,tambah_transaksi_cicilan_cash,pelanggan=Budi|barang=Permen|jumlah=30|satuan=toples|status=Cicil|nominal_bayar=200000|metode=Tunai
+Hari ini naha ambil permen 50 dus sudah lunas dibayar secara transfer,tambah_transaksi_lunas_transfer,pelanggan=Naha|barang=Permen|jumlah=50|satuan=dus|status=Lunas|metode=Transfer
+Hari ini nala ambil brownis 100 bungkus dicicil 1000000 dibayar secara transfer,tambah_transaksi_cicilan_transfer,pelanggan=Nala|barang=Brownis|jumlah=100|satuan=bungkus|status=Cicil|nominal_bayar=1000000|metode=Transfer
+Hari ini nala ambil permen 70 dus dicicil 2000000 dibayar secara transfer,tambah_transaksi_cicilan_transfer,pelanggan=Nala|barang=Permen|jumlah=70|satuan=dus|status=Cicil|nominal_bayar=2000000|metode=Transfer
+Hari ini nala ambil serbuk 100 lunas dibayar secara transfer,tambah_transaksi_lunas_transfer,pelanggan=Nala|barang=Serbuk|jumlah=100|status=Lunas|metode=Transfer
+Hari ini pak agus ambil permen coklat 2 dus,tambah_transaksi_lunas_cash,pelanggan=Agus|barang=Permen Coklat|jumlah=2|satuan=dus
+Hari ini pak andi order barang 50 pcs berupa permen,tambah_transaksi_lunas_cash,pelanggan=Andi|barang=Permen|jumlah=50|satuan=pcs
+Hari ini rara ambil permen coklat 13 dus dibayar lunas secara cash,tambah_transaksi_lunas_cash,pelanggan=Rara|barang=Permen Coklat|jumlah=13|satuan=dus|status=Lunas|metode=Tunai
+Hari ini rudi order permen 600 toples dicicil 200000 bayar langsung,tambah_transaksi_cicilan_cash,pelanggan=Rudi|barang=Permen|jumlah=600|satuan=toples|status=Cicil|nominal_bayar=200000|metode=Tunai
+Hari ini rudi order permen 600 toples dicicil 200000 cash,tambah_transaksi_cicilan_cash,pelanggan=Rudi|barang=Permen|jumlah=600|satuan=toples|status=Cicil|nominal_bayar=200000|metode=Tunai
+Hari ini rudi order permen 600 toples dicicil 200000 sudah dibayar,tambah_transaksi_cicilan_cash,pelanggan=Rudi|barang=Permen|jumlah=600|satuan=toples|status=Cicil|nominal_bayar=200000
+Hari ini rudi order permen 600 toples dicicil 200000 tf,tambah_transaksi_cicilan_transfer,pelanggan=Rudi|barang=Permen|jumlah=600|satuan=toples|status=Cicil|nominal_bayar=200000|metode=Transfer
+Hari ini rudi order permen 600 toples sudah lunas,tambah_transaksi_lunas_cash,pelanggan=Rudi|barang=Permen|jumlah=600|satuan=toples|status=Lunas
+Hari ini supri ambil permen 20 toples sudah lunas,tambah_transaksi_lunas_cash,pelanggan=Supri|barang=Permen|jumlah=20|satuan=toples|status=Lunas
+Perbaharui pesanan pak naha,update_transaksi,pelanggan=Naha
+Perbaharui transaksi zio,update_transaksi,pelanggan=Zio
+Pesanan pak ardi,cek_pesanan_pelanggan,pelanggan=Ardi
+Siapa pembeli paling banyak hari ini,total_transaksi,
+Siapa pembeli terbanyak,total_transaksi,
+Siapa pembeli terbanyak hari ini,total_transaksi,
+Siapa transaksi terbangak hari ini,total_transaksi,
+Siapa tunggakan paking banyak,total_tunggakan,
+Siapa yang bayar cash,filter_bayar_cash,
+Siapa yang bayar transfer,filter_bayar_transfer,
+Siapa yang masih hutang,total_tunggakan,
+Siapa yang masih nyicil,total_tunggakan,
+Siapa yang pesan hari ini,tampilkan_transaksi_hari_ini,
+Tambah barang brownis harga 2500 per bungkus,tambah_produk,barang=Brownis|harga=2500|satuan=bungkus
+Tambah barang brownis harga 2500 per toples,tambah_produk,barang=Brownis|harga=2500|satuan=toples
+Tambah barang permen coklat,tambah_produk,barang=Permen Coklat
+Tambah barang roti pia bulus,tambah_produk,barang=Roti Pia Bulus
+Tampilan data penjualan hari ini,cek_penjualan_hari_ini,
+Tampilkan daftar harga barang,tampilkan_produk,
+Tampilkan harga brownis,cek_harga_produk_spesifik,barang=Brownis
+Tampilkan jumlah pesanan dari pak andi,cek_pesanan_pelanggan,pelanggan=Andi
+Tampilkan semua daftar penjualan,tampilkan_semua_transaksi,
+Tampilkan total transaksi hari ini,total_transaksi,
+Tampilkan transaksi tanggal 28,tampilkan_transaksi_tanggal,tanggal=28
+Tampilkan uang masuk kemarin,total_uang_masuk,
+Total cicilan penjual hari ini,total_tagihan,
+Update harga barang,edit_produk,
+Update pesanan naha,update_transaksi,pelanggan=Naha
+Zio bayar hutang 27000000 transfer,bayar_hutang,pelanggan=Zio|nominal_bayar=27000000|metode=Transfer
+Zio bayar tagihan 27 juta,bayar_hutang,pelanggan=Zio|nominal_bayar=27000000
+ada barang apa saja,tampilkan_produk,
+ada berapa penjualan hari ini,cek_penjualan_hari_ini,
+add barang brownis,tambah_produk,produk=brownis
+add produk permen,tambah_produk,produk=permen
+apa yang belum lunas,filter_belum_lunas,
+apa yg blm lunas,filter_belum_lunas,
+apakabar,greeting,
+assalamualaikum,greeting,
+barang apa saja yang ada,tampilkan_produk,
+barang paling mahal,cek_harga_produk_spesifik,filter=tertinggi
+berapa banyak transaksi hari ini,total_transaksi,waktu=hari ini
+berapa harga brownis,cek_harga_produk_spesifik,produk=brownis
+berapa harga permen,cek_harga_produk_spesifik,produk=permen
+berapa harga permen coklat,cek_harga_produk_spesifik,produk=permen coklat
+berapa harga produk tertinggi,cek_harga_produk_spesifik,filter=tertinggi
+berapa harga roti pia,cek_harga_produk_spesifik,produk=roti pia
+berapa harga serbuk,cek_harga_produk_spesifik,produk=serbuk
+berapa pemasukan hari ini,total_uang_masuk,waktu=hari ini
+berapa pendapatan hari ini,total_uang_masuk,waktu=hari ini
+berapa pesanan pak andi,cek_pesanan_pelanggan,pelanggan=pak andi
+berapa piutang hari ini,total_tagihan,waktu=hari ini
+berapa tagihan hari ini,total_tagihan,waktu=hari ini
+berapa total cicilan,total_tunggakan,
+berapa total hutang pelanggan,total_tunggakan,
+berapa total tagihan hari ini,total_tagihan,waktu=hari ini
+berapa total tagihan kemarin,total_tagihan,waktu=kemarin
+berapa total transaksi,total_transaksi,
+berapa total transaksi bulan ini,total_transaksi,waktu=bulan ini
+berapa total transaksi hari ini,total_transaksi,waktu=hari ini
+berapa total tunggakan hari ini,total_tunggakan,waktu=hari ini
+berapa total uang masuk hari ini,total_uang_masuk,waktu=hari ini
+berapa total uang tagihan hari ini,total_tagihan,waktu=hari ini
+berapa total uang tagihan kemarin,total_tagihan,waktu=kemarin
+berapa total uang tagihan tanggal 21,total_tagihan,tanggal=21
+berapa transaksi hari ini,total_transaksi,waktu=hari ini
+berapa transaksi kemarin,total_transaksi,waktu=kemarin
+berapa transaksi pak ardi,cek_pesanan_pelanggan,pelanggan=pak ardi
+berapa tunggakan hari ini,total_tunggakan,waktu=hari ini
+berapa uang masuk hari ini,total_uang_masuk,waktu=hari ini
+berapa uang masuk kemarin,total_uang_masuk,waktu=kemarin
+berapa yang masih tagihan,total_tagihan,
+besok pak ardi ambil barang 100 buah brownis sudah dibayar,tambah_transaksi_tanggal_spesifik,pelanggan=pak ardi|produk=brownis|jumlah=100|satuan=buah|status=lunas|waktu=besok
+brp harga brownis,cek_harga_produk_spesifik,produk=brownis
+brp harga permen,cek_harga_produk_spesifik,produk=permen
+brp harga prduk tertinggi,cek_harga_produk_spesifik,filter=tertinggi
+buang semua data penjualan,hapus_transaksi,
+catat pelunasan pak zio 27 juta tf,bayar_hutang,pelanggan=pak zio|nominal=27000000|bayar=transfer
+cek barang,tampilkan_produk,
+cek data penjualan,tampilkan_semua_transaksi,
+cek harga barang,tampilkan_produk,
+cek harga brg,tampilkan_produk,
+cek harga brownis,cek_harga_produk_spesifik,produk=brownis
+cek harga permen,tampilkan_produk,produk=permen
+cek harga roti pia,cek_harga_produk_spesifik,produk=roti pia
+cek harga serbuk,cek_harga_produk_spesifik,produk=serbuk
+cek hutang pelanggan,filter_belum_lunas,
+cek hutang terbesar,hutang_terbanyak,
+cek pemasukan hari ini,total_uang_masuk,waktu=hari ini
+cek penjualan,tampilkan_semua_transaksi,
+cek penjualan hari ini,cek_penjualan_hari_ini,
+cek penjualan kemarin,tampilkan_transaksi_kemarin,waktu=kemarin
+cek penjulan hri ini,tampilkan_transaksi_hari_ini,
+cek pesanan hari ini,tampilkan_transaksi_hari_ini,
+cek pesanan pak andi,cek_pesanan_pelanggan,pelanggan=pak andi
+cek pesanan pak ardi,cek_pesanan_pelanggan,pelanggan=pak ardi
+cek pesanan pak hendra,cek_pesanan_pelanggan,pelanggan=pak hendra
+cek pesanan tanggal 21,tampilkan_transaksi_tanggal,tanggal=21
+cek pesanan tanggal 21 04 2026,tampilkan_transaksi_tanggal,tanggal=21-04-2026
+cek pesanan udin,cek_pesanan_pelanggan,pelanggan=udin
+cek pesnan pak andi,cek_pesanan_pelanggan,pelanggan=pak andi
+cek pesnan pak ardi,cek_pesanan_pelanggan,pelanggan=pak ardi
+cek pesnan tanggal 21,tampilkan_transaksi_tanggal,tanggal=21
+cek pesnan tanggal 21 04 2026,tampilkan_transaksi_tanggal,tanggal=21-04-2026
+cek pesnan udin,cek_pesanan_pelanggan,pelanggan=udin
+cek piutang,filter_belum_lunas,
+cek pnjualan hari ini,cek_penjualan_hari_ini,
+cek produk,tampilkan_produk,
+cek semua penjualan,tampilkan_semua_transaksi,
+cek semua transaksi,tampilkan_semua_transaksi,
+cek smua penjualan,tampilkan_semua_transaksi,
+cek tagihan hari ini,total_tagihan,waktu=hari ini
+cek transaksi hari ini,tampilkan_transaksi_hari_ini,
+cek transaksi ibu maya,cek_pesanan_pelanggan,pelanggan=ibu maya
+cek transaksi kemarin,tampilkan_transaksi_kemarin,waktu=kemarin
+cek transaksi tanggal 21,tampilkan_transaksi_tanggal,tanggal=21
+cek transaksi tunai,filter_bayar_cash,bayar=tunai
+cek transaksi udin,cek_pesanan_pelanggan,pelanggan=udin
+cek transaksi via transfer,filter_bayar_transfer,bayar=transfer
+cek tunggakan,total_tunggakan,
+cek yang bayar tunai,filter_bayar_cash,bayar=tunai
+cek yang bayar via tf,filter_bayar_transfer,bayar=transfer
+cek yang belum lunas,filter_belum_lunas,
+clear semua transaksi,hapus_transaksi,
+customer terbanyak,pembeli_terbanyak,
+daftar barang,tampilkan_produk,
+daftar hutang,filter_belum_lunas,
+daftar penjualan hari ini,tampilkan_transaksi_hari_ini,
+daftar penjualan kemarin,tampilkan_transaksi_kemarin,waktu=kemarin
+daftar penjualan semua,tampilkan_semua_transaksi,
+daftar prduk,tampilkan_produk,
+daftar produk,tampilkan_produk,
+daftar tunggakan,filter_belum_lunas,
+daftar yang bayar cash,filter_bayar_cash,bayar=cash
+daftar yang bayar tf,filter_bayar_transfer,bayar=transfer
+daftarkan barang brownis,tambah_produk,produk=brownis
+daftarkan produk permen,tambah_produk,produk=permen
+data pembelian pak rudi,cek_pesanan_pelanggan,pelanggan=pak rudi
+data penjualan hari ini,tampilkan_transaksi_hari_ini,
+data penjualan tanggal 5,tampilkan_transaksi_tanggal,tanggal=5
+data pesanan mba rina,cek_pesanan_pelanggan,pelanggan=mba rina
+data tanggal 21 04,tampilkan_transaksi_tanggal,tanggal=21-04
+data transaksi pak andi,cek_pesanan_pelanggan,pelanggan=pak andi
+delete barang permen,hapus_produk,produk=permen
+delete produk brownis,hapus_produk,produk=brownis
+delete semua transaksi,hapus_transaksi,
+edit barang,edit_produk,
+edit data transaksi ibu maya,update_transaksi,pelanggan=ibu maya
+edit harga brownis,edit_produk,produk=brownis
+edit harga produk,edit_produk,
+edit nama barang,edit_produk,
+edit order pak joko,update_transaksi,pelanggan=pak joko
+edit pesanan pak naha,update_transaksi,pelanggan=pak naha
+edit produk brownis,edit_produk,produk=brownis
+edit transaksi pak budi,update_transaksi,pelanggan=pak budi
+ganti data transaksi pak soni,update_transaksi,pelanggan=pak soni
+ganti harga brownis,edit_produk,produk=brownis
+ganti harga brownis jadi 2000,edit_produk,produk=brownis|harga_baru=2000
+ganti harga brownis jdi 2000,edit_produk,produk=brownis|harga_baru=2000
+ganti harga permen coklat,edit_produk,produk=permen coklat
+ganti harga permen jadi 14000,edit_produk,produk=permen|harga_baru=14000
+ganti hrga prmen jdi 14000,edit_produk,produk=permen|harga_baru=14000
+ganti nama barang,edit_produk,
+gimana penjualan hari ini,cek_penjualan_hari_ini,
+gmn penjualan hri ini,cek_penjualan_hari_ini,
+hai,greeting,
+hai bisa bantu saya,greeting,
+hai bot,greeting,
+hai kak,greeting,
+hallo,greeting,
+hallo semuanya,greeting,
+halloo,greeting,
+halo,greeting,
+halo ada yang bisa bantu,greeting,
+halo bot,greeting,
+halo bro,greeting,
+haloo,greeting,
+halooo,greeting,
+hapus barang brownis,hapus_produk,produk=brownis
+hapus barang permen coklat,hapus_produk,produk=permen coklat
+hapus barang produk,hapus_produk,
+hapus data pak hendra,hapus_transaksi,pelanggan=pak hendra
+hapus data penjualan,hapus_transaksi,
+hapus harga barang,hapus_produk,
+hapus order pak rudi,hapus_transaksi,pelanggan=pak rudi
+hapus pesanan pak budi,hapus_transaksi,pelanggan=pak budi
+hapus pesanan udin,hapus_transaksi,pelanggan=udin
+hapus pesanan udin dengan status pembayaran belum lunas,hapus_transaksi,pelanggan=udin|status=belum lunas
+hapus pesnan udin,hapus_transaksi,pelanggan=udin
+hapus pesnan udin dg status pembayaran blm lunas,hapus_transaksi,pelanggan=udin|status=belum lunas
+hapus produk permen,hapus_produk,produk=permen
+hapus produk roti pia,hapus_produk,produk=roti pia
+hapus produk serbuk,hapus_produk,produk=serbuk
+hapus rekap penjualan,hapus_transaksi,
+hapus riwayat pesanan pak ardi,hapus_transaksi,pelanggan=pak ardi
+hapus seluruh transaksi,hapus_transaksi,
+hapus semua data penjualan,hapus_transaksi,
+hapus semua data transaksi,hapus_transaksi,
+hapus semua order,hapus_transaksi,
+hapus semua transaksi,hapus_transaksi,
+hapus smua data penjualan,hapus_transaksi,
+hapus smua transaksi,hapus_transaksi,
+hapus transaksi pak andi,hapus_transaksi,pelanggan=pak andi
+hapus transaksi pak joko,hapus_transaksi,pelanggan=pak joko
+hapus transaksi udin,hapus_transaksi,pelanggan=udin
+harga brownis,cek_harga_produk_spesifik,produk=brownis
+harga brownis diganti 2000,edit_produk,produk=brownis|harga_baru=2000
+harga permen,cek_harga_produk_spesifik,produk=permen
+harga permen coklat,cek_harga_produk_spesifik,produk=permen coklat
+harga permen diubah 14000,edit_produk,produk=permen|harga_baru=14000
+harga roti pia,cek_harga_produk_spesifik,produk=roti pia
+harga serbuk,cek_harga_produk_spesifik,produk=serbuk
+harga terendah,cek_harga_produk_spesifik,filter=terendah
+harga tertinggi,cek_harga_produk_spesifik,filter=tertinggi
+hari ini ada order apa aja,tampilkan_transaksi_hari_ini,
+hari ini ada transaksi apa,tampilkan_transaksi_hari_ini,
+hari ini andi order permen 600 toples dicicil 200000 tunai,tambah_transaksi_cicilan_cash,pelanggan=andi|produk=permen|jumlah=600|satuan=toples|dp=200000|bayar=tunai
+hari ini budi order permen 30 toples dicicil 200000 dibayar langsung,tambah_transaksi_cicilan_cash,pelanggan=budi|produk=permen|jumlah=30|satuan=toples|dp=200000|bayar=cash
+hari ini naha ambil permen 50 dus sudah lunas dibayar secara transfer,tambah_transaksi_lunas_transfer,pelanggan=naha|produk=permen|jumlah=50|satuan=dus|bayar=transfer|status=lunas
+hari ini nala ambil brownis 100 bungkus dicicil 1000000 dibayar secara transfer,tambah_transaksi_cicilan_transfer,pelanggan=nala|produk=brownis|jumlah=100|satuan=bungkus|dp=1000000|bayar=transfer
+hari ini nala ambil permen 70 dus dicicil 2000000 dibayar secara transfer,tambah_transaksi_cicilan_transfer,pelanggan=nala|produk=permen|jumlah=70|satuan=dus|dp=2000000|bayar=transfer
+hari ini nala ambil serbuk 100 lunas dibayar secara transfer,tambah_transaksi_lunas_transfer,pelanggan=nala|produk=serbuk|jumlah=100|bayar=transfer|status=lunas
+hari ini pak agus ambil permen coklat 2 dus,tambah_transaksi_lunas_cash,pelanggan=pak agus|produk=permen coklat|jumlah=2|satuan=dus
+hari ini pak andi order barang 50 pcs berupa permen,tambah_transaksi_lunas_cash,pelanggan=pak andi|produk=permen|jumlah=50|satuan=pcs
+hari ini penjualan gimana,cek_penjualan_hari_ini,
+hari ini rara ambil permen coklat 13 dus dibayar lunas secara cash,tambah_transaksi_lunas_cash,pelanggan=rara|produk=permen coklat|jumlah=13|satuan=dus|bayar=cash|status=lunas
+hari ini rudi order permen 600 toples dicicil 200000 bayar langsung,tambah_transaksi_cicilan_cash,pelanggan=rudi|produk=permen|jumlah=600|satuan=toples|dp=200000|bayar=langsung
+hari ini rudi order permen 600 toples dicicil 200000 cash,tambah_transaksi_cicilan_cash,pelanggan=rudi|produk=permen|jumlah=600|satuan=toples|dp=200000|bayar=cash
+hari ini rudi order permen 600 toples dicicil 200000 sudah dibayar,tambah_transaksi_cicilan_transfer,pelanggan=rudi|produk=permen|jumlah=600|satuan=toples|dp=200000|bayar=transfer
+hari ini rudi order permen 600 toples dicicil 200000 tf,tambah_transaksi_cicilan_transfer,pelanggan=rudi|produk=permen|jumlah=600|satuan=toples|dp=200000|bayar=transfer
+hari ini rudi order permen 600 toples sudah lunas,tambah_transaksi_lunas_cash,pelanggan=rudi|produk=permen|jumlah=600|satuan=toples|status=lunas
+hari ini siapa yang beli,tampilkan_transaksi_hari_ini,
+hari ini supri ambil permen 20 toples sudah lunas,tambah_transaksi_lunas_cash,pelanggan=supri|produk=permen|jumlah=20|satuan=toples|status=lunas
+hari ini udin ambil permen 30 dus sudah lunas,tambah_transaksi_lunas_transfer,pelanggan=udin|produk=permen|jumlah=30|satuan=dus|status=lunas
+hari minggu pak ardi ambil barang 100 buah brownis udah dibayar tunai,tambah_transaksi_tanggal_spesifik,pelanggan=pak ardi|produk=brownis|jumlah=100|satuan=buah|bayar=tunai|status=lunas|waktu=hari minggu
+hari senin pak ardi ambil barang 100 buah brownis udah dibayar tunai,tambah_transaksi_tanggal_spesifik,pelanggan=pak ardi|produk=brownis|jumlah=100|satuan=buah|bayar=tunai|status=lunas|waktu=hari senin
+hei,greeting,
+hei gan,greeting,
+hello,greeting,
+helo,greeting,
+helo bos,greeting,
+hey,greeting,
+hi,greeting,
+hitung total transaksi,total_transaksi,
+hlo,greeting,
+hlw,greeting,
+hrga brownis,cek_harga_produk_spesifik,produk=brownis
+hrga permen,cek_harga_produk_spesifik,produk=permen
+hutang pelanggan berapa,total_tunggakan,
+hutang terbesar siapa,hutang_terbanyak,
+ibu sari lunasi hutang 1000000 tf,bayar_hutang,pelanggan=ibu sari|nominal=1000000|bayar=transfer
+info penjualan hari ini,cek_penjualan_hari_ini,
+input barang brownis 2500,tambah_produk,produk=brownis|harga=2500
+input produk permen coklat 13000,tambah_produk,produk=permen coklat|harga=13000
+jumlah transaksi,total_transaksi,
+jumlah transaksi hari ini,total_transaksi,waktu=hari ini
+keluarkan data penjualan semua,tampilkan_semua_transaksi,
+kemarin ada order apa,tampilkan_transaksi_kemarin,waktu=kemarin
+kemarin pak ardi ambil barang 100 buah brownis sudah dibayar tunai,tambah_transaksi_tanggal_spesifik,pelanggan=pak ardi|produk=brownis|jumlah=100|satuan=buah|bayar=tunai|status=lunas|waktu=kemarin
+kemarin siapa yang beli,tampilkan_transaksi_kemarin,waktu=kemarin
+kemren ada order apa,tampilkan_transaksi_kemarin,waktu=kemarin
+laporan hari ini,tampilkan_transaksi_hari_ini,
+laporan kemarin,tampilkan_transaksi_kemarin,waktu=kemarin
+laporan penjualan hari ini,cek_penjualan_hari_ini,
+laporan pnjualan hri ini,cek_penjualan_hari_ini,
+lhat semua transaksi,tampilkan_semua_transaksi,
+liatin semua transaksi,tampilkan_semua_transaksi,
+lihat barang,tampilkan_produk,
+lihat data penjualan,tampilkan_semua_transaksi,
+lihat order pak doni,cek_pesanan_pelanggan,pelanggan=pak doni
+lihat penjualan tanggal 15,tampilkan_transaksi_tanggal,tanggal=15
+lihat pesanan pak andi,cek_pesanan_pelanggan,pelanggan=pak andi
+lihat produk,tampilkan_produk,
+lihat semua transaksi,tampilkan_semua_transaksi,
+lihat transaksi hari ini,tampilkan_transaksi_hari_ini,
+lihat transaksi kemarin,tampilkan_transaksi_kemarin,waktu=kemarin
+lihat yang belum bayar,filter_belum_lunas,
+list barang,tampilkan_produk,
+list produk,tampilkan_produk,
+list semua penjualan,tampilkan_semua_transaksi,
+lusa pak ardi ambil barang 100 buah brownis sudah dibayar tunai,tambah_transaksi_tanggal_spesifik,pelanggan=pak ardi|produk=brownis|jumlah=100|satuan=buah|bayar=tunai|status=lunas|waktu=lusa
+masukkan barang baru brownis,tambah_produk,produk=brownis
+masukkan produk baru permen coklat,tambah_produk,produk=permen coklat
+mba rina bayar hutang 2000000 transfer,bayar_hutang,pelanggan=mba rina|nominal=2000000|bayar=transfer
+met pagi,greeting,
+met siang,greeting,
+minggu depan pak ardi ambil barang 100 buah brownis udah dibayar tunai,tambah_transaksi_tanggal_spesifik,pelanggan=pak ardi|produk=brownis|jumlah=100|satuan=buah|bayar=tunai|status=lunas|waktu=minggu depan
+minggu depang pak ardi ambil barang 100 buah brownis udah dibayar tunai,tambah_transaksi_tanggal_spesifik,pelanggan=pak ardi|produk=brownis|jumlah=100|satuan=buah|bayar=tunai|status=lunas|waktu=minggu depan
+munculkan semua transaksi,tampilkan_semua_transaksi,
+order hari ini,tampilkan_transaksi_hari_ini,
+order kemarin ada apa aja,tampilkan_transaksi_kemarin,waktu=kemarin
+order pak andi,cek_pesanan_pelanggan,pelanggan=pak andi
+order tanggal 14,tampilkan_transaksi_tanggal,tanggal=14
+p kabar,greeting,
+pak andi bayar hutang 500000 cash,bayar_hutang,pelanggan=pak andi|nominal=500000|bayar=cash
+pak andi bayar hutng 500000 csh,bayar_hutang,pelanggan=pak andi|nominal=500000|bayar=cash
+pak andi beli apa saja,cek_pesanan_pelanggan,pelanggan=pak andi
+pak budi bayar cicilan 200000 tunai,bayar_hutang,pelanggan=pak budi|nominal=200000|bayar=tunai
+pak budi bayar ciciln 200000 tuni,bayar_hutang,pelanggan=pak budi|nominal=200000|bayar=tunai
+pak doni bayar 100000 cash,bayar_hutang,pelanggan=pak doni|nominal=100000|bayar=cash
+pak hendra bayar tagihan 750000 cash,bayar_hutang,pelanggan=pak hendra|nominal=750000|bayar=cash
+pak joko bayar cicilan 150000 langsung,bayar_hutang,pelanggan=pak joko|nominal=150000|bayar=langsung
+pak rudi bayar sisa 300000 transfer,bayar_hutang,pelanggan=pak rudi|nominal=300000|bayar=transfer
+pak soni bayar hutang 3000000 tf,bayar_hutang,pelanggan=pak soni|nominal=3000000|bayar=transfer
+pak wahyu lunasi tagihan 500000 tunai,bayar_hutang,pelanggan=pak wahyu|nominal=500000|bayar=tunai
+pak zio udah bayar 27 juta transfer,bayar_hutang,pelanggan=pak zio|nominal=27000000|bayar=transfer
+pelanggan paling banyak beli,pembeli_terbanyak,
+pelanggan terbanyak,pembeli_terbanyak,
+pemasukan kemarin,total_uang_masuk,waktu=kemarin
+pembeli paling banyak hari ini,pembeli_terbanyak,waktu=hari ini
+pembeli yang bayar transfer,filter_bayar_transfer,bayar=transfer
+pembeli yang bayar tunai,filter_bayar_cash,bayar=tunai
+pembelian hari ini,tampilkan_transaksi_hari_ini,
+pembelian kemarin,tampilkan_transaksi_kemarin,waktu=kemarin
+pendapatan hari ini,total_uang_masuk,waktu=hari ini
+penjualan 21 april 2026,tampilkan_transaksi_tanggal,tanggal=21-04-2026
+penjualan hari ini,tampilkan_transaksi_hari_ini,
+penjualan hari ini ada berapa,cek_penjualan_hari_ini,
+penjualan hari ini bagaimana,cek_penjualan_hari_ini,
+penjualan hari ini gimana,cek_penjualan_hari_ini,
+penjualan kemarin,tampilkan_transaksi_kemarin,waktu=kemarin
+penjualan tanggal 25,tampilkan_transaksi_tanggal,tanggal=25
+perbaharui harga barang,edit_produk,
+perbaharui order pak hendra,update_transaksi,pelanggan=pak hendra
+perbaharui pesanan pak naha,update_transaksi,pelanggan=pak naha
+perbaharui transaksi zio,update_transaksi,pelanggan=zio
+perbahrui pesnan pak naha,update_transaksi,pelanggan=pak naha
+perbahrui transaksi zio,update_transaksi,pelanggan=zio
+perbarui pesanan ibu sari,update_transaksi,pelanggan=ibu sari
+permisi,greeting,
+pesanan ibu sari,cek_pesanan_pelanggan,pelanggan=ibu sari
+pesanan pak ardi,cek_pesanan_pelanggan,pelanggan=pak ardi
+pesanan pak budi,cek_pesanan_pelanggan,pelanggan=pak budi
+pesnan pak ardi,cek_pesanan_pelanggan,pelanggan=pak ardi
+piutang pelanggan,filter_belum_lunas,
+produk apa saja,tampilkan_produk,
+produk paling mahal,cek_harga_produk_spesifik,filter=tertinggi
+produk termahal,cek_harga_produk_spesifik,filter=tertinggi
+produk termurah,cek_harga_produk_spesifik,filter=terendah
+ranking pembeli,pembeli_terbanyak,
+rekap hari ini,tampilkan_transaksi_hari_ini,
+rekap kemarin,tampilkan_transaksi_kemarin,waktu=kemarin
+rekap penjualan hari ini,cek_penjualan_hari_ini,
+rekap pnjualan hri ini,cek_penjualan_hari_ini,
+rekap semua transaksi,tampilkan_semua_transaksi,
+rekap tanggal 10,tampilkan_transaksi_tanggal,tanggal=10
+rekap uang masuk,total_uang_masuk,
+remove produk roti pia,hapus_produk,produk=roti pia
+ringkasan penjualan hari ini,cek_penjualan_hari_ini,
+riwayat penjualan semua,tampilkan_semua_transaksi,
+riwayat pesanan pak andi,cek_pesanan_pelanggan,pelanggan=pak andi
+salam,greeting,
+salam kenal,greeting,
+selamat malam,greeting,
+selamat pagi,greeting,
+selamat siang,greeting,
+selamat sore,greeting,
+semua transaksi ada apa aja,tampilkan_semua_transaksi,
+show semua transaksi,tampilkan_semua_transaksi,
+siapa bayar di tempat,filter_bayar_cash,bayar=langsung
+siapa beli hari ini,tampilkan_transaksi_hari_ini,
+siapa cicilan terbesar,hutang_terbanyak,
+siapa hutang terbanyak,hutang_terbanyak,
+siapa hutng trbanyak,hutang_terbanyak,
+siapa masih ada cicilan,filter_belum_lunas,
+siapa pembeli paling banyak hari ini,pembeli_terbanyak,waktu=hari ini
+siapa pembeli terbanyak,pembeli_terbanyak,
+siapa pembeli terbanyak hari ini,pembeli_terbanyak,waktu=hari ini
+siapa pembeli terbanyak kemarin,pembeli_terbanyak,waktu=kemarin
+siapa pembeli terbesar,pembeli_terbanyak,
+siapa pesan barang hari ini,tampilkan_transaksi_hari_ini,
+siapa punya hutang paling besar,hutang_terbanyak,
+siapa tggakn paling banyak,hutang_terbanyak,
+siapa transaksi terbanyak hari ini,pembeli_terbanyak,waktu=hari ini
+siapa tunggakan paling banyak,hutang_terbanyak,
+siapa yang ambil barang hari ini,tampilkan_transaksi_hari_ini,
+siapa yang bayar cash,filter_bayar_cash,bayar=cash
+siapa yang bayar langsung,filter_bayar_cash,bayar=langsung
+siapa yang bayar transfer,filter_bayar_transfer,bayar=transfer
+siapa yang bayar tunai,filter_bayar_cash,bayar=tunai
+siapa yang beli hari ini,tampilkan_transaksi_hari_ini,
+siapa yang beli kemarin,tampilkan_transaksi_kemarin,waktu=kemarin
+siapa yang belum bayar,filter_belum_lunas,
+siapa yang belum lunas,filter_belum_lunas,
+siapa yang cicilan,filter_belum_lunas,
+siapa yang kontan,filter_bayar_cash,bayar=kontan
+siapa yang masih hutang,filter_belum_lunas,
+siapa yang masih nyicil,filter_belum_lunas,
+siapa yang masih punya hutang,filter_belum_lunas,
+siapa yang order hari ini,tampilkan_transaksi_hari_ini,
+siapa yang order kemarin,tampilkan_transaksi_kemarin,waktu=kemarin
+siapa yang paling banyak cicilan,hutang_terbanyak,
+siapa yang paling banyak hutang,hutang_terbanyak,
+siapa yang paling banyak order,pembeli_terbanyak,
+siapa yang paling banyak pesan,pembeli_terbanyak,
+siapa yang paling banyak tunggakan,hutang_terbanyak,
+siapa yang pesan hari ini,tampilkan_transaksi_hari_ini,
+siapa yang tf,filter_bayar_transfer,bayar=transfer
+siapa yg bayar cash,filter_bayar_cash,bayar=cash
+siapa yg bayar lgsung,filter_bayar_cash,bayar=langsung
+siapa yg bayar transfr,filter_bayar_transfer,bayar=transfer
+siapa yg bayar tuni,filter_bayar_cash,bayar=tunai
+siapa yg blm bayar,filter_belum_lunas,
+siapa yg msh hutang,filter_belum_lunas,
+siapa yg msh nyicil,filter_belum_lunas,
+siapa yg order hri ini,tampilkan_transaksi_hari_ini,
+siapa yg paling banyak order hri ini,pembeli_terbanyak,waktu=hari ini
+siapa yg pesan hri ini,tampilkan_transaksi_hari_ini,
+summary penjualan hari ini,cek_penjualan_hari_ini,
+tagihan hari ini berapa,total_tagihan,waktu=hari ini
+tagihan pelanggan,total_tagihan,
+tambah barang,tambah_produk,
+tambah barang baru,tambah_produk,
+tambah barang brownis harga 2500 per bungkus,tambah_produk,produk=brownis|harga=2500|satuan=bungkus
+tambah barang brownis harga 2500 per toples,tambah_produk,produk=brownis|harga=2500|satuan=toples
+tambah barang permen cokalat,tambah_produk,barang=Permen Coklat
+tambah barang permen coklat,tambah_produk,produk=permen coklat
+tambah barang prmen cklat harga 13.000,tambah_produk,produk=permen coklat|harga=13000
+tambah barang produk permen coklat,tambah_produk,produk=permen coklat
+tambah barang roti pia bulus,tambah_produk,produk=roti pia bulus
+tambah produk baru,tambah_produk,
+tambah produk brownis harga 2.500,tambah_produk,produk=brownis|harga=2500
+tambah produk permen cokalat,tambah_produk,produk=permen coklat
+tambah produk permen coklat harga 13.000,tambah_produk,barang=Permen Coklat|harga=13000
+tambah produk permen coklat harga 13000,tambah_produk,produk=permen coklat|harga=13000
+tambahkan barang brownis harga 2500,tambah_produk,produk=brownis|harga=2500
+tambahkan produk permen coklat harga 13000,tambah_produk,produk=permen coklat|harga=13000
+tampil semua transaksi,tampilkan_semua_transaksi,
+tampilan data penjualan kemarin,tampilkan_transaksi_kemarin,waktu=kemarin
+tampilan semua transaksi,tampilkan_semua_transaksi,
+tampilan semua transaksi pak andi,cek_pesanan_pelanggan,pelanggan=pak andi
+tampilan smua transaksi,tampilkan_semua_transaksi,
+tampilin data penjualan,tampilkan_semua_transaksi,
+tampilin semua transaksi,tampilkan_semua_transaksi,
+tampilin transaksi hri ini,tampilkan_transaksi_hari_ini,
+tampilin transaksi kmarin,tampilkan_transaksi_kemarin,waktu=kemarin
+tampilkan barang,tampilkan_produk,
+tampilkan daftar harga barang,tampilkan_produk,
+tampilkan daftar hutang,filter_belum_lunas,
+tampilkan daftar transaksi,tampilkan_semua_transaksi,
+tampilkan data penjualan,tampilkan_semua_transaksi,
+tampilkan data penjualan kemarin,tampilkan_transaksi_kemarin,waktu=kemarin
+tampilkan harga barang,tampilkan_produk,
+tampilkan harga brownis,cek_harga_produk_spesifik,produk=brownis
+tampilkan harga produk,tampilkan_produk,
+tampilkan hutang terbesar,hutang_terbanyak,
+tampilkan jumlah pesanan dari pak andi,cek_pesanan_pelanggan,pelanggan=pak andi
+tampilkan katalog produk,tampilkan_produk,
+tampilkan pemasukan hari ini,total_uang_masuk,waktu=hari ini
+tampilkan penjualan tanggal 21 april,tampilkan_transaksi_tanggal,tanggal=21 april
+tampilkan pesanan pak andi,cek_pesanan_pelanggan,pelanggan=pak andi
+tampilkan piutang,filter_belum_lunas,
+tampilkan produk,tampilkan_produk,
+tampilkan rekap penjualan,tampilkan_semua_transaksi,
+tampilkan riwayat transaksi,tampilkan_semua_transaksi,
+tampilkan seluruh transaksi,tampilkan_semua_transaksi,
+tampilkan semua barang,tampilkan_produk,
+tampilkan semua daftar penjualan,tampilkan_semua_transaksi,
+tampilkan semua data,tampilkan_semua_transaksi,
+tampilkan semua penjualan,tampilkan_semua_transaksi,
+tampilkan semua produk,tampilkan_produk,
+tampilkan semua transaksi,tampilkan_semua_transaksi,
+tampilkan semua transaksi pak andi,cek_pesanan_pelanggan,pelanggan=pak andi
+tampilkan smua brg,tampilkan_produk,
+tampilkan smua prduk,tampilkan_produk,
+tampilkan tagihan,total_tagihan,
+tampilkan total transaksi hari ini,total_transaksi,waktu=hari ini
+tampilkan transaksi cash,filter_bayar_cash,bayar=cash
+tampilkan transaksi hari ini,tampilkan_transaksi_hari_ini,
+tampilkan transaksi pak joko,cek_pesanan_pelanggan,pelanggan=pak joko
+tampilkan transaksi tanggal 28,tampilkan_transaksi_tanggal,tanggal=28
+tampilkan transaksi tgl 28,tampilkan_transaksi_tanggal,tanggal=28
+tampilkan transaksi transfer,filter_bayar_transfer,bayar=transfer
+tampilkan tunggakan,total_tunggakan,
+tampilkan uang masuk kemarin,total_uang_masuk,waktu=kemarin
+tampilkan yang bayar cash,filter_bayar_cash,bayar=cash
+tampilkan yang bayar transfer,filter_bayar_transfer,bayar=transfer
+tampilkan yang belum lunas,filter_belum_lunas,
+tamplkan semua transaksi,tampilkan_semua_transaksi,
+tanggal 21 ada transaksi apa,tampilkan_transaksi_tanggal,tanggal=21
+tanggal 28 ada order apa,tampilkan_transaksi_tanggal,tanggal=28
+tgl 21 siapa yang beli,tampilkan_transaksi_tanggal,tanggal=21
+top pembeli,pembeli_terbanyak,
+total cash masuk hari ini,total_uang_masuk,waktu=hari ini|bayar=cash
+total cicilan,total_tunggakan,
+total cicilan penjualan hari ini,total_tunggakan,waktu=hari ini
+total hutang,total_tunggakan,
+total order hari ini,total_transaksi,waktu=hari ini
+total pemasukan,total_uang_masuk,
+total pembelian hari ini,total_transaksi,waktu=hari ini
+total pendapatan hari ini,total_uang_masuk,waktu=hari ini
+total pesanan pak budi,cek_pesanan_pelanggan,pelanggan=pak budi
+total piutang,total_tagihan,
+total tagihan,total_tagihan,
+total tagihan hari ini,total_tagihan,waktu=hari ini
+total transaksi,total_transaksi,
+total transaksi hari ini,total_transaksi,waktu=hari ini
+total transaksi kemarin,total_transaksi,waktu=kemarin
+total transaksi minggu ini,total_transaksi,waktu=minggu ini
+total transfer masuk hari ini,total_uang_masuk,waktu=hari ini|bayar=transfer
+total tunggakan,total_tunggakan,
+total tunggakan hari ini,total_tunggakan,waktu=hari ini
+total uang masuk,total_uang_masuk,
+transaksi hari ini apa saja,tampilkan_transaksi_hari_ini,
+transaksi hri ini,tampilkan_transaksi_hari_ini,
+transaksi kemarin,tampilkan_transaksi_kemarin,waktu=kemarin
+transaksi tanggal 20,tampilkan_transaksi_tanggal,tanggal=20
+transaksi tanggal 21 bulan 4,tampilkan_transaksi_tanggal,tanggal=21 bulan 4
+transaksi tgl 20,tampilkan_transaksi_tanggal,tanggal=20
+tunggakan hari ini,total_tunggakan,waktu=hari ini
+tunggakan terbesar siapa,hutang_terbanyak,
+uang masuk hari ini berapa,total_uang_masuk,waktu=hari ini
+uang masuk kemarin,total_uang_masuk,waktu=kemarin
+ubah data pesanan pak wahyu,update_transaksi,pelanggan=pak wahyu
+ubah harga barang,edit_produk,
+ubah harga permen,edit_produk,produk=permen
+ubah harga produk,edit_produk,
+ubah nama produk,edit_produk,
+ubah order pak doni,update_transaksi,pelanggan=pak doni
+ubah pesanan pak naha,update_transaksi,pelanggan=pak naha
+ubah pesnan pak naha,update_transaksi,pelanggan=pak naha
+ubah produk permen,edit_produk,produk=permen
+ubah transaksi pak andi,update_transaksi,pelanggan=pak andi
+update data pesnan naha,update_transaksi,pelanggan=naha
+update harga barang,edit_produk,
+update harga permen,edit_produk,produk=permen
+update harga produk,edit_produk,
+update nama produk,edit_produk,
+update penjualan hari ini,cek_penjualan_hari_ini,
+update pesanan naha,update_transaksi,pelanggan=naha
+update produk roti pia,edit_produk,produk=roti pia
+update transaksi pak rudi,update_transaksi,pelanggan=pak rudi
+yang bayar cash siapa,filter_bayar_cash,bayar=cash
+yang bayar transfer siapa,filter_bayar_transfer,bayar=transfer
+yang belum bayar siapa,filter_belum_lunas,
+yang paling sering beli siapa,pembeli_terbanyak,
+yg bayar transfr siapa,filter_bayar_transfer,bayar=transfer
+zio bayar hutang 27000000 transfer,bayar_hutang,pelanggan=zio|nominal=27000000|bayar=transfer
+zio bayar hutng 27000000 transfr,bayar_hutang,pelanggan=zio|nominal=27000000|bayar=transfer
+zio bayar taghn 27 juta,bayar_hutang,pelanggan=zio|nominal=27000000
+zio bayar tagihan 27 juta,bayar_hutang,pelanggan=zio|nominal=27000000
+zio transfer 27 jt buat lunasin hutang,bayar_hutang,pelanggan=zio|nominal=27000000|bayar=transfer
+hari ini andi pesan l0lipop 10 dus, tambah_transaksi_lunas_cash,pelanggan=andi|produk=lolipop|jumlah=10|satuan=dus
+hari ini budi pesan loli pop 5 toples, tambah_transaksi_lunas_cash,pelanggan=budi|produk=lolipop|jumlah=5|satuan=toples
+hari ini nala pesan lolly pop 8 pack, tambah_transaksi_lunas_cash,pelanggan=nala|produk=lolipop|jumlah=8|satuan=pack
+hari ini rara pesan l0llip0p 12 pcs, tambah_transaksi_lunas_cash,pelanggan=rara|produk=lolipop|jumlah=12|satuan=pcs
+hari ini zio pesan lolypop 6 bungkus, tambah_transaksi_lunas_cash,pelanggan=zio|produk=lolipop|jumlah=6|satuan=bungkus
+berapa harga l0lipop, cek_harga_produk_spesifik,produk=lolipop
+berapa harga loli pop, cek_harga_produk_spesifik,produk=lolipop
+berapa harga lolly pop, cek_harga_produk_spesifik,produk=lolipop
+tambah barang l0lipop harga 15000 per pack, tambah_produk,produk=lolipop|harga=15000|satuan=pack
+edit harga l0lipop jadi 16000, edit_produk,produk=lolipop|harga_baru=16000
+hapus barang l0lipop, hapus_produk,produk=lolipop
+pak budi ambil willo 2 toples,tambah_transaksi_lunas_cash,pelanggan=pak budi|produk=willo|jumlah=2|satuan=toples
+naha beli beem-beeng 1 karton,tambah_transaksi_lunas_cash,pelanggan=naha|produk=beem-beeng|jumlah=1|satuan=karton
+adangrow 5 pouch,tambah_transaksi_lunas_cash,produk=adangrow|jumlah=5|satuan=pouch
+siperquuen 10 pack,tambah_transaksi_lunas_cash,produk=siperquuen|jumlah=10|satuan=pack
+chocholetus 3 toples lunas,tambah_transaksi_lunas_cash,produk=chocholetus|jumlah=3|satuan=toples|status=lunas
+miksu 1 paket,tambah_transaksi_lunas_cash,produk=miksu|jumlah=1|satuan=paket
+lolipop 50 pcs,tambah_transaksi_lunas_cash,produk=lolipop|jumlah=50|satuan=pcs
+coklat kubus 5 toples,tambah_transaksi_lunas_cash,produk=coklat kubus|jumlah=5|satuan=toples
+piramide 2 dus,tambah_transaksi_lunas_cash,produk=piramide|jumlah=2|satuan=dus
+mesis 10 bungkus,tambah_transaksi_lunas_cash,produk=mesis|jumlah=10|satuan=bungkus
+salju 1 toples,tambah_transaksi_lunas_cash,produk=salju|jumlah=1|satuan=toples
+serbuk jelli 5 pouch,tambah_transaksi_lunas_cash,produk=serbuk jelli|jumlah=5|satuan=pouch
+pia bulus 2 toples,tambah_transaksi_lunas_cash,produk=pia bulus|jumlah=2|satuan=toples
+pia roda 1 ctn,tambah_transaksi_lunas_cash,produk=pia roda|jumlah=1|satuan=karton
+hari ini andi ambil permen 3 dus lunas transfer,tambah_transaksi_lunas_transfer,pelanggan=Andi|barang=Permen|jumlah=3|satuan=dus|status=Lunas|metode=Transfer
+hari ini budi beli brownis 10 bungkus lunas tf,tambah_transaksi_lunas_transfer,pelanggan=Budi|barang=Brownis|jumlah=10|satuan=bungkus|status=Lunas|metode=Transfer
+pak ardi pesan serbuk 2 karton sudah dibayar transfer,tambah_transaksi_lunas_transfer,pelanggan=Ardi|barang=Serbuk|jumlah=2|satuan=karton|status=Lunas|metode=Transfer
+rara order permen coklat 5 dus dibayar qris,tambah_transaksi_lunas_transfer,pelanggan=Rara|barang=Permen Coklat|jumlah=5|satuan=dus|status=Lunas|metode=QRIS
+udin ambil permen 1 dus lunas via qris,tambah_transaksi_lunas_transfer,pelanggan=Udin|barang=Permen|jumlah=1|satuan=dus|status=Lunas|metode=QRIS
+nala ambil roti pia 2 toples sudah lunas transfer bca,tambah_transaksi_lunas_transfer,pelanggan=Nala|barang=Roti Pia|jumlah=2|satuan=toples|status=Lunas|metode=Transfer
+mas dodi beli mesis 4 bungkus bayar trf,tambah_transaksi_lunas_transfer,pelanggan=Dodi|barang=Mesis|jumlah=4|satuan=bungkus|status=Lunas|metode=Transfer
+kak rina order salju 1 toples lunas transfer,tambah_transaksi_lunas_transfer,pelanggan=Rina|barang=Salju|jumlah=1|satuan=toples|status=Lunas|metode=Transfer
+zio ambil pia bulus 1 toples lunas qris,tambah_transaksi_lunas_transfer,pelanggan=Zio|barang=Pia Bulus|jumlah=1|satuan=toples|status=Lunas|metode=QRIS
+hari ini sinta beli lolipop 20 pcs dibayar transfer,tambah_transaksi_lunas_transfer,pelanggan=Sinta|barang=Lolipop|jumlah=20|satuan=pcs|status=Lunas|metode=Transfer
+hari ini akbar pesan coklat kubus 2 toples lunas tf,tambah_transaksi_lunas_transfer,pelanggan=Akbar|barang=Coklat Kubus|jumlah=2|satuan=toples|status=Lunas|metode=Transfer
+hari ini iwan ambil serbuk jelli 6 pouch lunas transfer bri,tambah_transaksi_lunas_transfer,pelanggan=Iwan|barang=Serbuk Jelli|jumlah=6|satuan=pouch|status=Lunas|metode=Transfer
+pak agus ambil permen 2 dus dibayar transfer mandiri,tambah_transaksi_lunas_transfer,pelanggan=Agus|barang=Permen|jumlah=2|satuan=dus|status=Lunas|metode=Transfer
+hari ini dini beli permen 10 pcs lunas trf,tambah_transaksi_lunas_transfer,pelanggan=Dini|barang=Permen|jumlah=10|satuan=pcs|status=Lunas|metode=Transfer
+hari ini rudi pesan piramide 1 dus sudah dibayar qris,tambah_transaksi_lunas_transfer,pelanggan=Rudi|barang=Piramide|jumlah=1|satuan=dus|status=Lunas|metode=QRIS
+hari ini andi order permen 30 toples dicicil 200000 transfer,tambah_transaksi_cicilan_transfer,pelanggan=Andi|barang=Permen|jumlah=30|satuan=toples|status=Cicil|nominal_bayar=200000|metode=Transfer
+hari ini budi ambil brownis 20 bungkus dp 150000 transfer,tambah_transaksi_cicilan_transfer,pelanggan=Budi|barang=Brownis|jumlah=20|satuan=bungkus|status=Cicil|nominal_bayar=150000|metode=Transfer
+nala pesan permen 10 dus dicicil 500000 dibayar transfer,tambah_transaksi_cicilan_transfer,pelanggan=Nala|barang=Permen|jumlah=10|satuan=dus|status=Cicil|nominal_bayar=500000|metode=Transfer
+rara ambil permen coklat 4 dus uang muka 100000 transfer,tambah_transaksi_cicilan_transfer,pelanggan=Rara|barang=Permen Coklat|jumlah=4|satuan=dus|status=Cicil|nominal_bayar=100000|metode=Transfer
+udin order serbuk 2 karton nyicil 250000 trf,tambah_transaksi_cicilan_transfer,pelanggan=Udin|barang=Serbuk|jumlah=2|satuan=karton|status=Cicil|nominal_bayar=250000|metode=Transfer
+hari ini zio ambil roti pia 3 toples dicicil 120000 transfer,tambah_transaksi_cicilan_transfer,pelanggan=Zio|barang=Roti Pia|jumlah=3|satuan=toples|status=Cicil|nominal_bayar=120000|metode=Transfer
+pak ardi pesan mesis 8 bungkus bayar dp 50000 transfer,tambah_transaksi_cicilan_transfer,pelanggan=Ardi|barang=Mesis|jumlah=8|satuan=bungkus|status=Cicil|nominal_bayar=50000|metode=Transfer
+hari ini sinta ambil salju 2 toples bayar sebagian 70000 transfer,tambah_transaksi_cicilan_transfer,pelanggan=Sinta|barang=Salju|jumlah=2|satuan=toples|status=Cicil|nominal_bayar=70000|metode=Transfer
+hari ini iwan order permen 100 pcs dicicil 100000 transfer,tambah_transaksi_cicilan_transfer,pelanggan=Iwan|barang=Permen|jumlah=100|satuan=pcs|status=Cicil|nominal_bayar=100000|metode=Transfer
+akbar pesan pia bulus 5 toples dp 200000 transfer,tambah_transaksi_cicilan_transfer,pelanggan=Akbar|barang=Pia Bulus|jumlah=5|satuan=toples|status=Cicil|nominal_bayar=200000|metode=Transfer
+dini ambil coklat kubus 2 toples dicicil 80000 transfer,tambah_transaksi_cicilan_transfer,pelanggan=Dini|barang=Coklat Kubus|jumlah=2|satuan=toples|status=Cicil|nominal_bayar=80000|metode=Transfer
+hari ini rudi order piramide 3 dus dicicil 300000 transfer,tambah_transaksi_cicilan_transfer,pelanggan=Rudi|barang=Piramide|jumlah=3|satuan=dus|status=Cicil|nominal_bayar=300000|metode=Transfer
+hari ini agus order permen 40 pcs dicicil setengah 200000 transfer,tambah_transaksi_cicilan_transfer,pelanggan=Agus|barang=Permen|jumlah=40|satuan=pcs|status=Cicil|nominal_bayar=200000|metode=Transfer
+hari ini andi order permen 30 toples dicicil 200000 tunai,tambah_transaksi_cicilan_cash,pelanggan=Andi|barang=Permen|jumlah=30|satuan=toples|status=Cicil|nominal_bayar=200000|metode=Tunai
+hari ini budi ambil brownis 20 bungkus dp 150000 cash,tambah_transaksi_cicilan_cash,pelanggan=Budi|barang=Brownis|jumlah=20|satuan=bungkus|status=Cicil|nominal_bayar=150000|metode=Tunai
+nala pesan permen 10 dus dicicil 500000 dibayar tunai,tambah_transaksi_cicilan_cash,pelanggan=Nala|barang=Permen|jumlah=10|satuan=dus|status=Cicil|nominal_bayar=500000|metode=Tunai
+rara ambil permen coklat 4 dus uang muka 100000 tunai,tambah_transaksi_cicilan_cash,pelanggan=Rara|barang=Permen Coklat|jumlah=4|satuan=dus|status=Cicil|nominal_bayar=100000|metode=Tunai
+udin order serbuk 2 karton nyicil 250000 tunai,tambah_transaksi_cicilan_cash,pelanggan=Udin|barang=Serbuk|jumlah=2|satuan=karton|status=Cicil|nominal_bayar=250000|metode=Tunai
+hari ini zio ambil roti pia 3 toples dicicil 120000 tunai,tambah_transaksi_cicilan_cash,pelanggan=Zio|barang=Roti Pia|jumlah=3|satuan=toples|status=Cicil|nominal_bayar=120000|metode=Tunai
+pak ardi pesan mesis 8 bungkus bayar dp 50000 tunai,tambah_transaksi_cicilan_cash,pelanggan=Ardi|barang=Mesis|jumlah=8|satuan=bungkus|status=Cicil|nominal_bayar=50000|metode=Tunai
+hari ini sinta ambil salju 2 toples bayar sebagian 70000 tunai,tambah_transaksi_cicilan_cash,pelanggan=Sinta|barang=Salju|jumlah=2|satuan=toples|status=Cicil|nominal_bayar=70000|metode=Tunai
+hari ini iwan order permen 100 pcs dicicil 100000 tunai,tambah_transaksi_cicilan_cash,pelanggan=Iwan|barang=Permen|jumlah=100|satuan=pcs|status=Cicil|nominal_bayar=100000|metode=Tunai
+akbar pesan pia bulus 5 toples dp 200000 tunai,tambah_transaksi_cicilan_cash,pelanggan=Akbar|barang=Pia Bulus|jumlah=5|satuan=toples|status=Cicil|nominal_bayar=200000|metode=Tunai
+dini ambil coklat kubus 2 toples dicicil 80000 tunai,tambah_transaksi_cicilan_cash,pelanggan=Dini|barang=Coklat Kubus|jumlah=2|satuan=toples|status=Cicil|nominal_bayar=80000|metode=Tunai
+jual 2 aqua bayar qris,tambah_transaksi_lunas_transfer,barang=Aqua|jumlah=2|satuan=botol|status=Lunas|metode=QRIS
+jual 3 permen bayar transfer,tambah_transaksi_lunas_transfer,barang=Permen|jumlah=3|status=Lunas|metode=Transfer
+jual 1 brownis bayar tunai,tambah_transaksi_lunas_cash,barang=Brownis|jumlah=1|status=Lunas|metode=Tunai
+jual 5 permen dicicil 20000 tunai,tambah_transaksi_cicilan_cash,barang=Permen|jumlah=5|status=Cicil|nominal_bayar=20000|metode=Tunai
+jual 5 permen dicicil 20000 transfer,tambah_transaksi_cicilan_transfer,barang=Permen|jumlah=5|status=Cicil|nominal_bayar=20000|metode=Transfer
+jual 10 roti pia bayar cash,tambah_transaksi_lunas_cash,barang=Roti Pia|jumlah=10|status=Lunas|metode=Tunai
+jual 1 serbuk bayar trf,tambah_transaksi_lunas_transfer,barang=Serbuk|jumlah=1|status=Lunas|metode=Transfer
+jual permen 2 dus bayar tunai,tambah_transaksi_lunas_cash,barang=Permen|jumlah=2|satuan=dus|status=Lunas|metode=Tunai
+jual permen 2 dus bayar tf,tambah_transaksi_lunas_transfer,barang=Permen|jumlah=2|satuan=dus|status=Lunas|metode=Transfer
+jual 2 permen dp 10000 tunai,tambah_transaksi_cicilan_cash,barang=Permen|jumlah=2|status=Cicil|nominal_bayar=10000|metode=Tunai
+jual 2 aqua bayar tunai,tambah_transaksi_lunas_cash,barang=Aqua|jumlah=2|satuan=botol|status=Lunas|metode=Tunai
+jual 1 aqua lunas tunai,tambah_transaksi_lunas_cash,barang=Aqua|jumlah=1|satuan=botol|status=Lunas|metode=Tunai
+jual 3 permen kontan,tambah_transaksi_lunas_cash,barang=Permen|jumlah=3|status=Lunas|metode=Tunai
+jual 2 serbuk bayar cash,tambah_transaksi_lunas_cash,barang=Serbuk|jumlah=2|status=Lunas|metode=Tunai
+jual 5 mesis bayar tunai,tambah_transaksi_lunas_cash,barang=Mesis|jumlah=5|status=Lunas|metode=Tunai
+jual 1 piramide lunas cash,tambah_transaksi_lunas_cash,barang=Piramide|jumlah=1|satuan=dus|status=Lunas|metode=Tunai
+jual 4 pia bulus dibayar tunai,tambah_transaksi_lunas_cash,barang=Pia Bulus|jumlah=4|satuan=toples|status=Lunas|metode=Tunai
+jual 10 lolipop bayar tunai,tambah_transaksi_lunas_cash,barang=Lolipop|jumlah=10|satuan=pcs|status=Lunas|metode=Tunai
+hari ini pak andi pesan permen 50 pcs,tambah_transaksi_lunas_cash,
+hari ini pak agus ngambil permen coklat 2 dus,tambah_transaksi_lunas_cash,
+hari ini rara ambil permen coklat 13 dus lunas cash,tambah_transaksi_lunas_cash,
+hari ini udin ngambil permen 30 dus lunas,tambah_transaksi_lunas_cash,
+hari ini naha ambil permen 50 dus lunas transfer,tambah_transaksi_lunas_transfer,
+hari ini nala ambil permen 70 dus cicil 2000000 tf,tambah_transaksi_cicilan_transfer,
+hari ini nala ambil brownis 100 bungkus cicil 1000000 transfer,tambah_transaksi_cicilan_transfer,
+hari ini nala ambil serbuk 100 lunas tf,tambah_transaksi_lunas_transfer,
+hari ini rudi order permen 600 toples cicil 200000 transfer,tambah_transaksi_cicilan_transfer,
+hari ini rudi order permen 600 toples cicil 200000 lunas,tambah_transaksi_cicilan_cash,
+hari ini rudi order permen 600 toples cicil 200000 tunai,tambah_transaksi_cicilan_cash,
+hari ini budi order permen 30 toples cicil 200000 cash langsung,tambah_transaksi_cicilan_cash,
+hari ini rudi order permen 600 toples lunas,tambah_transaksi_lunas_cash,
+hari ini andi order permen 600 toples cicil 200000 cash,tambah_transaksi_cicilan_cash,
+hari ini rudi order permen 600 toples cicil 200000 langsung,tambah_transaksi_cicilan_cash,
+hari ini supri ambil permen 20 toples lunas,tambah_transaksi_lunas_cash,
+kemarin pak ardi beli brownis 100 buah lunas cash,tambah_transaksi_tanggal_spesifik,
+kemarin ardi ambil brownis 100 udah bayar tunai,tambah_transaksi_tanggal_spesifik,
+besok ardi ambil brownis 100 buah lunas,tambah_transaksi_tanggal_spesifik,
+lusa ardi ambil brownis 100 buah lunas cash,tambah_transaksi_tanggal_spesifik,
+3 hari lalu ardi ambil brownis 100 lunas tunai,tambah_transaksi_tanggal_spesifik,
+2 hari yang lalu budi ambil permen 50 dus lunas,tambah_transaksi_tanggal_spesifik,
+3 hari ke depan ardi ambil brownis 100 lunas,tambah_transaksi_tanggal_spesifik,
+minggu dpan ardi ambil brownis 100 lunas,tambah_transaksi_lunas_cash,
+1 minggu ke depan ardi ambil brownis 100 lunas,tambah_transaksi_tanggal_spesifik,
+hari selasa pak ardi ambil brownis 100 lunas,tambah_transaksi_tanggal_spesifik,
+hari rabu naha ambil permen 50 dus lunas transfer,tambah_transaksi_tanggal_spesifik,
+hari ini pak andi oredre permen 50 pcs,tambah_transaksi_lunas_cash,
+hri ini pak andi order prmen 50 pcs,tambah_transaksi_lunas_cash,
+hari ini paka andi order permen 50 pcs,tambah_transaksi_lunas_cash,
+hari ni pak andi order permen 50 pcs lunas,tambah_transaksi_lunas_cash,
+hri ini rudi ordr permen 600 toples cicil 200000 tf,tambah_transaksi_cicilan_transfer,
+hari ini budi ambl brownis 30 bungkus luans,tambah_transaksi_lunas_cash,
+kemrin ardi ambil brownis 100 udah bayar tnai,tambah_transaksi_lunas_cash,
+minggu dpan ardi ambl brownis 100 lunas tunai,tambah_transaksi_lunas_cash,
+hari ini supri ambil permen 20 topls sudah lunas,tambah_transaksi_lunas_cash,
+hari ini nala ambl srbuk 100 lunas transfer,tambah_transaksi_lunas_transfer,
+tadi andi beli permen 50 pcs lunas cash,tambah_transaksi_lunas_cash,
+pak andi beli permen 50 pcs hari ini lunas,tambah_transaksi_lunas_cash,
+pak agus pesan permen coklat 2 dus hari ini,tambah_transaksi_lunas_cash,
+pak agus beli permen coklat 2 dus hari ini,tambah_transaksi_lunas_cash,
+pak agus transaksi permen coklat 2 dus hari ini lunas,tambah_transaksi_lunas_cash,
+catat pesanan pak andi permen 50 pcs hari ini lunas cash,tambah_transaksi_lunas_cash,
+input transaksi pak andi permen 50 pcs hari ini lunas,tambah_transaksi_lunas_cash,
+tambah transaksi pak andi permen 50 pcs hari ini,tambah_transaksi_lunas_cash,
+simpan transaksi pak andi permen 50 pcs hari ini lunas,tambah_transaksi_lunas_cash,
+rekap pak andi beli permen 50 pcs hari ini lunas,tambah_transaksi_lunas_cash,
+tampil semua daftar penjualan,tampilkan_semua_transaksi,
+lihat semua daftar penjualan,tampilkan_semua_transaksi,
+tampilkan semua data penjualan,tampilkan_semua_transaksi,
+tampilkan data penjualan hari ini,cek_penjualan_hari_ini,
+tampilkan data penjualan lusa,tampilkan_semua_transaksi,
+lihat data penjualan hari ini,cek_penjualan_hari_ini,
+lihat pesanan hari ini,tampilkan_transaksi_hari_ini,
+tampilkan pesanan hari ini,tampilkan_transaksi_hari_ini,
+cek pesanan tanggal 21 april 2026,tampilkan_transaksi_tanggal,
+tampilkan pesanan tanggal 21 april,tampilkan_transaksi_tanggal,
+lihat transaksi tanggal 28,tampilkan_transaksi_tanggal,
+data tanggal 28,tampilkan_transaksi_tanggal,
+pesanan tanggal 28,tampilkan_transaksi_tanggal,
+tampilkan semua transaksi/data/pembelian pak andi,tampilkan_semua_transaksi,
+tampilkan semua data pak andi,tampilkan_semua_transaksi,
+tampilkan semua pembelian pak andi,tampilkan_semua_transaksi,
+tampilkan jumlah pesanan pak andi,cek_pesanan_pelanggan,
+riwayat pesanan pak ardi,cek_pesanan_pelanggan,
+Cek pesanan/transaksi udin,cek_pesanan_pelanggan,
+lihat transaksi udin,cek_pesanan_pelanggan,
+riwayat udin,cek_pesanan_pelanggan,
+tampilkaan semua data penjualan,tampilkan_semua_transaksi,
+liht semua daftar penjualan,tampilkan_semua_transaksi,
+tampilkan semua tranksi,tampilkan_semua_transaksi,
+tampilkan dat penjualan,tampilkan_semua_transaksi,
+pesanan pak ardi hari ini,cek_pesanan_pelanggan,
+tampiln transaksi tanggal 28,tampilkan_transaksi_tanggal,
+liat semua transaksi,tampilkan_semua_transaksi,
+liat transaksi hari ini,tampilkan_transaksi_hari_ini,
+liat pesanan udin,cek_pesanan_pelanggan,
+lht riwayat pak andi,cek_pesanan_pelanggan,
+print semua data penjualan,tampilkan_semua_transaksi,
+tampung semua transaksi,tampilkan_semua_transaksi,
+daftar semua penjualan,tampilkan_semua_transaksi,
+list semua transaksi,tampilkan_semua_transaksi,
+Hapus semua data penjualan/transaksi,hapus_transaksi,
+hapus semua data/daftar penjualan,hapus_transaksi,
+hapus semua data,hapus_transaksi,
+hapus seluruh data penjualan,hapus_transaksi,
+hapus semua rekap penjualan,hapus_transaksi,
+hapus pesanan udin belum lunas,hapus_transaksi,
+hapus transaksi udin belum lunas,hapus_transaksi,
+hapus pesanan/transaksi udin,hapus_transaksi,
+hapus data udin,hapus_transaksi,
+hapus pesanan pak ardi,hapus_transaksi,
+hapus data pak andi,hapus_transaksi,
+hapus pembelian pak andi,hapus_transaksi,
+hapus semwa data penjualan,hapus_transaksi,
+hapus semu transaksi,hapus_transaksi,
+hapus penjualan udin,hapus_transaksi,
+hapus pesenan udin,hapus_transaksi,
+hpus semua data penjualan,hapus_transaksi,
+hapus pesanaan pak ardi,hapus_transaksi,
+hps semua transaksi,hapus_transaksi,
+hapus semua dat penjualan,hapus_transaksi,
+hapus transaks udin,hapus_transaksi,
+remove pesanan udin,hapus_transaksi,
+clear semua data penjualan,hapus_transaksi,
+bersihkan semua data penjualan,hapus_transaksi,
+hilangkan semua transaksi,hapus_transaksi,
+hapusin semua data penjualan,hapus_transaksi,
+hapusin pesanan udin,hapus_transaksi,
+Update pesanan/transaksi naha,update_transaksi,
+update transaksi naha,update_transaksi,
+Perbaharui/ubah/edit pesanan pak naha,update_transaksi,
+edit transaksi zio,update_transaksi,
+ubah transaksi zio,update_transaksi,
+update data pak ardi,update_transaksi,
+ubah data pesanan pak ardi,update_transaksi,
+edit data pesanan pak andi,update_transaksi,
+perbarui pesanan pak andi,update_transaksi,
+ganti status pesanan pak andi,update_transaksi,
+ganti status bayar pak andi jadi lunas,update_transaksi,
+ubah status bayar naha jadi lunas,update_transaksi,
+edit status pembayaran udin,update_transaksi,
+zio bayar hutang 27 juta transfer,Pelunasan_Hutang,
+zio bayar tagihan 27000000,Pelunasan_Hutang,
+zio lunasin tagihan 27 juta,Pelunasan_Hutang,
+zio bayar cicilan 27 juta transfer,Pelunasan_Hutang,
+zio bayar 27000000 tf,update_transaksi,
+updaet pesanan naha,update_transaksi,
+update pesanaan naha,update_transaksi,
+perbaharui pesenan pak naha,update_transaksi,
+edti transaksi zio,update_transaksi,
+edit transaks zio,update_transaksi,
+ubah transksi pak ardi,update_transaksi,
+update dat pak ardi,update_transaksi,
+zio byr hutang 27 juta tf,update_transaksi,
+modify pesanan naha,update_transaksi,
+revisi pesanan pak naha,update_transaksi,
+koreksi transaksi zio,update_transaksi,
+change data pesanan pak ardi,update_transaksi,
+ganti data transaksi pak andi,update_transaksi,
+Cek/tampilkan harga barang/produk,tampilkan_produk,
+cek harga produk,tampilkan_produk,
+tampil semua barang/produk,tampilkan_produk,
+lihat daftar harga barang,tampilkan_produk,
+lihat semua produk,tampilkan_produk,
+harga brownis berapa,cek_harga_produk_spesifik,
+lihat harga brownis,cek_harga_produk_spesifik,
+harga produk tertinggi,cek_harga_produk_spesifik,
+harga termahal,cek_harga_produk_spesifik,
+produk apa yang paling mahal,tampilkan_produk,
+cek hraga permen,tampilkan_produk,
+tampilkan hrga barang,tampilkan_produk,
+cek hrga produk,tampilkan_produk,
+berapa hraga permen,tampilkan_produk,
+berapa hrga brownis,tampilkan_produk,
+tampilkan semua barng,tampilkan_produk,
+liat harga permen,cek_harga_produk_spesifik,
+liat semua produk,tampilkan_produk,
+tampilkn daftar harga,tampilkan_produk,
+cek harga prmen,tampilkan_produk,
+show harga barang,tampilkan_produk,
+print daftar produk,tampilkan_produk,
+info harga barang,tampilkan_produk,
+info produk,tampilkan_produk,
+Tambah barang/produk permen coklat,tambah_produk,
+tambah produk permen coklat,tambah_produk,
+tambah barang/produk,tambah_produk,
+tambah produk,tambah_produk,
+tambah barang permen coklat harga 13000,tambah_produk,
+tambah barang brownis harga 2500 toples,tambah_produk,
+tambah produk brownis 2500 per toples,tambah_produk,
+tambah barang brownis harga 2500 bungkus,tambah_produk,
+tambah produk roti pia bulus,tambah_produk,
+input produk baru permen coklat harga 13000,tambah_produk,
+input barang baru brownis 2500,tambah_produk,
+tambah item permen coklat harga 13000,tambah_produk,
+daftarkan produk permen coklat harga 13000,tambah_produk,
+masukkan barang brownis harga 2500,tambah_produk,
+tambh barang permen coklat,tambah_produk,
+tambah barang premen coklat,tambah_produk,
+tamabah produk permen coklat,tambah_produk,
+tamabah barang brownis harga 2500,tambah_produk,
+tambah brg brownis harga 2500,tambah_produk,
+tambah barang bornwis harga 2500,tambah_produk,
+tambah produk rmeni coklat harga 13000,tambah_produk,
+tamabh barang roti pia,tambah_produk,
+tambah barang/produk permen cokalat,tambah_produk,
+add barang permen coklat harga 13000,tambah_produk,
+buat produk baru permen coklat,tambah_produk,
+create produk permen coklat 13000,tambah_produk,
+register barang brownis 2500 toples,tambah_produk,
+edit barang/produk,edit_produk,
+edit produk,edit_produk,
+Edit/update/ubah/hapus harga barang,edit_produk,
+Update/ubah/edti harga barang/produk,edit_produk,
+edti harga barang,edit_produk,
+ubah harga brownis jadi 2000,edit_produk,
+update harga brownis 2000,edit_produk,
+edit harga brownis 2000,edit_produk,
+ubah harga permen jadi 14000,edit_produk,
+update harga permen 14000,edit_produk,
+edit harga permen 14000,edit_produk,
+hapus/edit/ubah/ganti/update/perbaharui/tampilkan/tambah harga barang/produk,edit_produk,
+edit/ubah/ganti/update/perbaharui nama barang,edit_produk,
+ganti nama brownis jadi brownies premium,edit_produk,
+ubah nama permen jadi permen original,edit_produk,
+edti barang permen,edit_produk,
+ganti hraga brownis jadi 2000,edit_produk,
+ubah hrga permen jadi 14000,edit_produk,
+updaet harga barang,edit_produk,
+edti harga prmen,edit_produk,
+ubah harga brownis jd 2000,edit_produk,
+update hrga barang,edit_produk,
+edit produk brwnis,edit_produk,
+modify harga brownis 2000,edit_produk,
+change harga permen 14000,edit_produk,
+revisi harga brownis 2000,edit_produk,
+koreksi harga barang,edit_produk,
+hapus barang,hapus_produk,
+hapus produk,hapus_produk,
+hapus barang permen,hapus_produk,
+hapus produk brownis,hapus_produk,
+hapus/edit/ubah/ganti/update/perbaharui/tampilkan/tambah nama barang/produk,hapus_produk,
+buang produk permen,hapus_produk,
+delete produk permen,hapus_produk,
+remove barang brownis,hapus_produk,
+hilangkan barang roti,hapus_produk,
+hapus brang permen,hapus_produk,
+hpus produk permen,hapus_produk,
+hapus prdk permen,hapus_produk,
+hapus barang brwnis,hapus_produk,
+hapus produk browni,hapus_produk,
+remove produk brownis,hapus_produk,
+buang produk brownis,hapus_produk,
+clear barang permen,hapus_produk,
+total uang masuk hari ini,total_uang_masuk,
+total uang tagihan hari ini,total_tagihan,
+total uang tagihan kemarin,total_tagihan,
+total uang tagihan tanggal 21,total_tagihan,
+Cek/tampilkan/berapa pemasukan hari ini,total_uang_masuk,
+pemasukan hari ini,total_uang_masuk,
+total cicilan hari ini,total_tagihan,
+berapa cicilan hari ini,total_tagihan,
+berapa total transaks hari ini,total_transaksi,
+total transakis hari ini,total_transaksi,
+brp total transaksi hari ini,total_transaksi,
+total uang masuk hari ni,total_uang_masuk,
+brp uang masuk hari ini,total_uang_masuk,
+total uang taagihan hari ini,total_transaksi,
+total tunggakaan hari ini,total_transaksi,
+berapa pemassukan hari ini,total_transaksi,
+rekap transaksi hari ini,total_transaksi,
+summary transaksi hari ini,total_transaksi,
+omzet hari ini,total_uang_masuk,
+siapa yang masih cicil,filter_belum_lunas,
+siapa yang punya hutang,filter_belum_lunas,
+siapa yang bayar dengan transfer,filter_belum_lunas,
+siapa yang bayar cash/tunai/langsung,filter_bayar_cash,
+siapa bayar cash,filter_bayar_cash,
+siapa bayar transfer,filter_bayar_transfer,
+siapa yang msh nyicil,filter_belum_lunas,
+siapa yang masih nyicill,filter_belum_lunas,
+siapa yang masih ntang,filter_belum_lunas,
+siapa yg masih hutang,filter_belum_lunas,
+siapa paling banyak hutng,filter_belum_lunas,
+siapa yg byr cash,filter_bayar_cash,
+siapa yang byr transfer,filter_bayar_transfer,
+siapa yang blm lunas,filter_belum_lunas,
+siapa yang outstanding,filter_belum_lunas,
+siapa yang kredit,filter_belum_lunas,
+siapa yang debt,filter_belum_lunas,
+siapa yang nunggak,filter_belum_lunas,
+siapa yang punya tagihan,filter_belum_lunas,
+siapa saja yang pesan hari ini,pembeli_terbanyak,
+siapa yang paling banyak beli hari ini,pembeli_terbanyak,
+siapa yang paling banyak transaksi hari ini,pembeli_terbanyak,
+siapa yang paling banyak beli,pembeli_terbanyak,
+Siapa pembeli terbanyak hari ini/kemarin/tanggal sekian,pembeli_terbanyak,
+siapa pembeli terbanyak tanggal 21,pembeli_terbanyak,
+siapa yang pesn hari ini,pembeli_terbanyak,
+siapa saja yg order hari ini,pembeli_terbanyak,
+siapa pemeli paling banyak hari ini,pembeli_terbanyak,
+siapa pembeli trbanyak,pembeli_terbanyak,
+siapa yang paling bnyak beli,pembeli_terbanyak,
+siapa pmbeli terbanyak hari ini,pembeli_terbanyak,
+pelanggan terbanyak hari ini,pembeli_terbanyak,
+customer terbanyak hari ini,pembeli_terbanyak,
+pembeli top hari ini,pembeli_terbanyak,
+siapa yang belanja terbanyak,pembeli_terbanyak,
+pagi,greeting,
+siang,greeting,
+sore,greeting,
+malam,greeting,
+assalamu'alaikum,greeting,
+wassalamu'alaikum,greeting,
+ada orang,greeting,
+helloo,greeting,
+haii,greeting,
+hie,greeting,
+slmat pagi,greeting,
+selamat apgi,greeting,
+helo bot,greeting,
+hai bott,greeting,
+bantuan,bantuan,
+help,bantuan,
+tolong,bantuan,
+cara pakai,bantuan,
+cara menggunakan,bantuan,
+perintah apa saja,bantuan,
+apa saja yang bisa dilakukan,bantuan,
+fitur apa saja,bantuan,
+menu,bantuan,
+panduan,bantuan,
+tutorial,bantuan,
+info,bantuan,
+informasi,bantuan,
+bantuaan,bantuan,
+hlp,bantuan,
+helpp,bantuan,
+bantu dong,bantuan,
+cara pake,bantuan,
+cara nggunain,bantuan,
+perintah apa aj,bantuan,
+menu apa aj,bantuan,
+Hari ini udin ambil permen 30 dus sudah lunas,tambah_transaksi_lunas_cash,pelanggan=Udin|barang=Permen|jumlah=30|satuan=dus|status=Lunas
+Hari ini andi order permen 600 toples dicicil 200000 tunai,tambah_transaksi_cicilan_cash,pelanggan=Andi|barang=Permen|jumlah=600|satuan=toples|status=Cicil|nominal_bayar=200000|metode=Tunai
+Hari ini budi order permen 30 toples dicicil 200000 dibayar langsung,tambah_transaksi_cicilan_cash,pelanggan=Budi|barang=Permen|jumlah=30|satuan=toples|status=Cicil|nominal_bayar=200000|metode=Tunai
+Hari ini naha ambil permen 50 dus sudah lunas dibayar secara transfer,tambah_transaksi_lunas_transfer,pelanggan=Naha|barang=Permen|jumlah=50|satuan=dus|status=Lunas|metode=Transfer
+Hari ini nala ambil brownis 100 bungkus dicicil 1000000 dibayar secara transfer,tambah_transaksi_cicilan_transfer,pelanggan=Nala|barang=Brownis|jumlah=100|satuan=bungkus|status=Cicil|nominal_bayar=1000000|metode=Transfer
+Hari ini nala ambil permen 70 dus dicicil 2000000 dibayar secara transfer,tambah_transaksi_cicilan_transfer,pelanggan=Nala|barang=Permen|jumlah=70|satuan=dus|status=Cicil|nominal_bayar=2000000|metode=Transfer
+Hari ini nala ambil serbuk 100 lunas dibayar secara transfer,tambah_transaksi_lunas_transfer,pelanggan=Nala|barang=Serbuk|jumlah=100|status=Lunas|metode=Transfer
+Hari ini pak agus ambil permen coklat 2 dus,tambah_transaksi_lunas_cash,pelanggan=Agus|barang=Permen Coklat|jumlah=2|satuan=dus
+Hari ini pak andi order barang 50 pcs berupa permen,tambah_transaksi_lunas_cash,pelanggan=Andi|barang=Permen|jumlah=50|satuan=pcs
+Hari ini rara ambil permen coklat 13 dus dibayar lunas secara cash,tambah_transaksi_lunas_cash,pelanggan=Rara|barang=Permen Coklat|jumlah=13|satuan=dus|status=Lunas|metode=Tunai
+Hari ini rudi order permen 600 toples dicicil 200000 bayar langsung,tambah_transaksi_cicilan_cash,pelanggan=Rudi|barang=Permen|jumlah=600|satuan=toples|status=Cicil|nominal_bayar=200000|metode=Tunai
+Hari ini rudi order permen 600 toples dicicil 200000 cash,tambah_transaksi_cicilan_cash,pelanggan=Rudi|barang=Permen|jumlah=600|satuan=toples|status=Cicil|nominal_bayar=200000|metode=Tunai
+Hari ini rudi order permen 600 toples dicicil 200000 sudah dibayar,tambah_transaksi_cicilan_cash,pelanggan=Rudi|barang=Permen|jumlah=600|satuan=toples|status=Cicil|nominal_bayar=200000
+Hari ini rudi order permen 600 toples dicicil 200000 tf,tambah_transaksi_cicilan_transfer,pelanggan=Rudi|barang=Permen|jumlah=600|satuan=toples|status=Cicil|nominal_bayar=200000|metode=Transfer
+Hari ini rudi order permen 600 toples sudah lunas,tambah_transaksi_lunas_cash,pelanggan=Rudi|barang=Permen|jumlah=600|satuan=toples|status=Lunas
+Hari ini supri ambil permen 20 toples sudah lunas,tambah_transaksi_lunas_cash,pelanggan=Supri|barang=Permen|jumlah=20|satuan=toples|status=Lunas
+
+cek hutang,cek_hutang,
+cek hutang pelanggan,cek_hutang,
+cek piutang,cek_hutang,
+cek tagihan,cek_tagihan,
+cek tagihan pelanggan,cek_tagihan,
+cek semua penjualan,cek_semua_penjualan,
+cek semua transaksi,cek_semua_penjualan,
+lihat semua transaksi,lihat_semua_transaksi,
+lihat semua penjualan,lihat_semua_transaksi,
+
+tanggal 19-06-2026 budi ambil bembeng 40 ctn dicicil 200000 tunai,tambah_transaksi_cicilan_tanggal_spesifik,pelanggan=Budi|barang=Bembeng|jumlah=40|satuan=ctn|status=Cicil|nominal_bayar=200000|metode=Tunai|waktu=tanggal 19-06-2026
+tgl 21/04/2026 pak andi ambil permen 10 dus dicicil 50000 transfer,tambah_transaksi_cicilan_tanggal_spesifik,pelanggan=Andi|barang=Permen|jumlah=10|satuan=dus|status=Cicil|nominal_bayar=50000|metode=Transfer|waktu=21/04/2026
+21 april 2026 udin ambil meses 20 ctn dicicil 150000 cash,tambah_transaksi_cicilan_tanggal_spesifik,pelanggan=Udin|barang=Meses|jumlah=20|satuan=ctn|status=Cicil|nominal_bayar=150000|metode=Tunai|waktu=21 april 2026
+
+hari ini budi pesan bembeng 40 ctn; meses 20 ctn; willo 100 ctn lunas tunai,tambah_transaksi_multi_item,pelanggan=Budi|status=Lunas|metode=Tunai
+hari ini pak andi order bembeng 10 ctn; meses 5 ctn; willo 12 ctn sudah lunas cash,tambah_transaksi_multi_item,pelanggan=Andi|status=Lunas|metode=Tunai

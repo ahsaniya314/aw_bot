@@ -1,0 +1,20 @@
+{
+  "typeCheckingMode": "basic",
+  "reportMissingImports": false,
+  "reportUnknownMemberType": false,
+  "reportUnknownVariableType": false,
+  "reportUnknownArgumentType": false,
+  "reportUnknownParameterType": false,
+  "reportUnknownLambdaType": false,
+  "reportUnusedImport": false,
+  "reportUnusedVariable": false,
+  "exclude": [
+    "**/.*",
+    "**/__pycache__",
+    "**/.venv",
+    "**/venv",
+    "env_ocr",
+    "**/node_modules",
+    "web-dashboard/node_modules"
+  ]
+}
