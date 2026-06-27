@@ -422,7 +422,7 @@ def handle_text_message(message):
     elif teks_clean in tombol_bantuan or teks_upper in [t.upper() for t in tombol_bantuan]:
         send_welcome(message)
         return
-    elif teks_upper in ["TAMBAH BARANG", "INPUT BARANG", "TAMBAH PRODUK", "INPUT PRODUK", "TAMBAH ITEM", "BARANG BARU"]:
+    elif teks_clean == "📦 Kelola Barang" or teks_upper in ["KELOLA BARANG", "TAMBAH BARANG", "INPUT BARANG", "TAMBAH PRODUK", "INPUT PRODUK", "TAMBAH ITEM", "BARANG BARU"]:
         from handlers.command_handler import cmd_master_barang
         cmd_master_barang(message)
         return
