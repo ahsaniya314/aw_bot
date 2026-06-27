@@ -349,29 +349,20 @@ def cmd_panduan(message):
 
 
 def cmd_dashboard(message):
-    """Command untuk menampilkan dashboard harian"""
+    """Command untuk menampilkan link dashboard"""
     bot = ctx.bot
-    user_id = message.from_user.id
     chat_id = message.chat.id
-
-    if not ctx.rate_limiter.is_allowed(user_id):
-        logger.warning(f"Rate limit exceeded untuk user {user_id} pada /dashboard")
-        bot.reply_to(message, "⏱️ Terlalu banyak request. Tunggu sebentar...")
-        return
-
-    logger.info(f"User {user_id} gunakan /dashboard")
-
-    if not ctx.IS_DB_CONNECTED:
-        logger.error(f"Database tidak terhubung, user {user_id} tidak bisa akses dashboard")
-        bot.reply_to(message, "❌ Mode Offline: Tidak dapat mengakses data.")
-        return
-
-    try:
-        msg_loading = bot.reply_to(message, "⏳ Memuat dashboard...")
-        tangani_dashboard_harian(bot, chat_id, msg_loading.message_id, ctx.db_transaksi)
-    except Exception as e:
-        logger.error(f"Error pada /dashboard user {user_id}: {e}")
-        bot.reply_to(message, f"❌ Error membuka dashboard: {str(e)[:100]}")
+    url = get_dashboard_web_url() or "https://aw-bot-backend.onrender.com/dashboard/"
+    
+    markup = InlineKeyboardMarkup(row_width=1)
+    markup.add(InlineKeyboardButton("🌐 Buka Dasbor Web", url=url))
+    
+    teks = (
+        "🌐 <b>DASBOR WEB AW PRODUCTION</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━\n"
+        "Klik tombol di bawah ini untuk membuka dasbor dan melihat laporan transaksi secara real-time di browser Anda."
+    )
+    bot.send_message(chat_id, teks, parse_mode="HTML", reply_markup=markup)
 
 
 def cmd_master_barang(message):

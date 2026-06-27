@@ -351,7 +351,7 @@ def handle_text_message(message):
     tombol_menu = ["🏠 Menu Utama", "MENU", "MENU UTAMA"]
     tombol_catat = ["📝 Catat Penjualan", "CATAT", "CATAT PENJUALAN", "📝 Catat"]
     tombol_foto = ["📷 Input Foto Nota", "INPUT FOTO", "FOTO", "📷 Input Foto"]
-    tombol_dashboard = ["📊 Dashboard", "DASHBOARD", "DASHBOARD WEBSITE", "🌐 DASHBOARD WEBSITE"]
+    tombol_dashboard = ["🌐 Dasbor Web", "DASBOR WEB", "DASHBOARD WEBSITE", "📊 Dashboard", "DASHBOARD", "🌐 Dashboard Website"]
     tombol_cari = ["🔎 Cari Pesanan", "CARI PESANAN", "CARI"]
     tombol_riwayat = ["📑 Riwayat Transaksi", "RIWAYAT", "RIWAYAT PESANAN", "📑 Riwayat"]
     tombol_hutang = ["💰 Cek Hutang", "CEK HUTANG", "HUTANG"]
@@ -370,13 +370,7 @@ def handle_text_message(message):
         cmd_foto(message)
         return
     elif teks_clean in tombol_dashboard or teks_upper in [t.upper() for t in tombol_dashboard]:
-        url = get_dashboard_web_url()
-        if url:
-            markup = InlineKeyboardMarkup(row_width=1)
-            markup.add(InlineKeyboardButton("Dashboard Website", url=url))
-            bot.send_message(chat_id, "Buka dashboard web:", reply_markup=markup)
-        else:
-            cmd_dashboard(message)
+        cmd_dashboard(message)
         return
     elif ("HARI INI" in teks_upper) and any(k in teks_upper for k in ["TRANSAKSI", "TRANSAKI", "PESANAN"]) and any(k in teks_upper for k in ["TAMPIL", "TAMPILKAN", "LIHAT", "CEK", "SHOW"]):
         if not ctx.IS_DB_CONNECTED:
