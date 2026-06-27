@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  output: "standalone", // Optimal untuk Docker
+  output: "export", // Hasilkan folder 'out' statis untuk disajikan oleh Flask
   images: {
     unoptimized: true,
   },
