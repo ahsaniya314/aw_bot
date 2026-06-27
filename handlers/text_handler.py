@@ -372,7 +372,7 @@ def handle_text_message(message):
     elif teks_clean in tombol_dashboard or teks_upper in [t.upper() for t in tombol_dashboard]:
         cmd_dashboard(message)
         return
-    elif ("HARI INI" in teks_upper) and any(k in teks_upper for k in ["TRANSAKSI", "TRANSAKI", "PESANAN"]) and any(k in teks_upper for k in ["TAMPIL", "TAMPILKAN", "LIHAT", "CEK", "SHOW"]):
+    elif (any(k in teks_upper for k in ["HARI INI", "HARI IINI", "HARIINI"])) and any(k in teks_upper for k in ["TRANSAKSI", "TRANSAKI", "TRANAKSI", "TERANSAKSI", "PESANAN"]) and any(k in teks_upper for k in ["TAMPIL", "TAMPILKAN", "TAMPILKN", "LIHAT", "CEK", "SHOW"]):
         if not ctx.IS_DB_CONNECTED:
             bot.reply_to(message, "❌ Mode Offline: Tidak dapat mengakses data.")
             return
