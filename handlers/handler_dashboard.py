@@ -63,7 +63,7 @@ def get_dashboard_web_url():
         url = f"{public_base.rstrip('/')}/dashboard"
         return url if _is_public_http_url(url) else None
 
-    return None
+    return "https://aw-bot-backend.onrender.com/dashboard/"
 
 
 def build_dashboard_web_button():
