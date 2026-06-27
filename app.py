@@ -569,6 +569,30 @@ def api_diagnostic():
     return jsonify(results)
 
 
+@app.route('/api/debug-dir')
+def api_debug_dir():
+    import os
+    results = {}
+    results["current_dir"] = os.getcwd()
+    results["files_in_root"] = os.listdir('.')
+    
+    dashboard_path = './dashboard-web'
+    if os.path.exists(dashboard_path):
+        results["dashboard_exists"] = True
+        results["files_in_dashboard"] = os.listdir(dashboard_path)
+        
+        out_path = os.path.join(dashboard_path, 'out')
+        if os.path.exists(out_path):
+            results["out_exists"] = True
+            results["files_in_out"] = os.listdir(out_path)
+        else:
+            results["out_exists"] = False
+    else:
+        results["dashboard_exists"] = False
+        
+    return jsonify(results)
+
+
 @app.route("/telegram/webhook/<path_secret>", methods=["POST"])
 def telegram_webhook(path_secret):
     expected_path = _get_webhook_path_secret()
