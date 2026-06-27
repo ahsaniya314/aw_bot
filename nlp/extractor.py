@@ -425,7 +425,7 @@ def ekstrak_entitas(teks_koreksi, teks_asli="", db_metode=None, daftar_barang=No
         entitas["AKSI"] = "Hapus Barang"
     elif any(k in teks_lower for k in ["cek harga", "lihat harga", "daftar harga", "cek hrg", "cek brg", "list barang", "daftar produk", "prc list", "brapaan"]):
         entitas["AKSI"] = "Cek Harga Barang"
-    elif any(k in teks_lower for k in ["bayar hutang", "bayar utang", "bayar tagihan", "bayar sisa", "pelunasan", "lunasi", "bayar lunas tagihan", "sudah bayar lunas", "nutup utang", "lunasin"]):
+    elif any(k in teks_koreksi.lower() for k in ["bayar hutang", "bayar utang", "bayar tagihan", "bayar sisa", "pelunasan", "lunasi", "bayar lunas tagihan", "sudah bayar lunas", "nutup utang", "lunasin"]):
         entitas["AKSI"] = "Catat Pelunasan"
     elif any(k in teks_lower for k in ["update", "edit", "perbaharui", "perbarui", "ubah", "revisi", "ganti", "ralat"]):
         # Jika ada kata 'barang' atau 'produk', arahkan ke CRUD Master
@@ -881,8 +881,8 @@ def ekstrak_entitas(teks_koreksi, teks_asli="", db_metode=None, daftar_barang=No
         else:
             entitas["AKSI"] = "Update Status"
             
-    elif any(k in teks_lower for k in ["bayar hutang", "bayar tagihan", "bayar cicilan", "bayar angsuran", "pelunasan", "nutup utang", "lunasin", "lunasi", "cicilan", "angsuran", "cicil", "dicicil", "mencicil", "nyicil"]):
-        if not (entitas.get("BARANG") and entitas.get("JUMLAH") and "bayar" not in teks_lower and "pelunasan" not in teks_lower):
+    elif any(k in teks_koreksi.lower() for k in ["bayar hutang", "bayar tagihan", "bayar cicilan", "bayar angsuran", "pelunasan", "nutup utang", "lunasin", "lunasi", "cicilan", "angsuran", "cicil", "dicicil", "mencicil", "nyicil"]):
+        if not (entitas.get("BARANG") and entitas.get("JUMLAH") and "bayar" not in teks_koreksi.lower() and "pelunasan" not in teks_koreksi.lower()):
             entitas["AKSI"] = "Catat Pelunasan"
 
     if entitas.get("AKSI") == "Read Data":
@@ -957,7 +957,7 @@ def ekstrak_entitas(teks_koreksi, teks_asli="", db_metode=None, daftar_barang=No
     # Safeguard pelunasan: jika nama + nominal bayar sudah terbaca dan
     # kalimat jelas berbunyi bayar hutang/tagihan, jangan biarkan AKSI kosong.
     has_pelunasan_phrase = any(
-        k in teks_lower
+        k in teks_koreksi.lower()
         for k in [
             "bayar hutang", "bayar utang", "bayar tagihan", "bayar sisa",
             "pelunasan", "lunasi", "lunasin", "tambahan bayar", "bayar lagi",

@@ -23,3 +23,46 @@ logs/
 .idea/
 *.swp
 *.swo
+
+# Python Caches & Build Files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/
+.ipynb_checkpoints/
+
+# Environments & Secrets
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+credentials.json
+
+# Logs & Temporary Files
+logs/
+*.log
+*.tmp
+debug_*.py
+demo_*.py
+test_*.py
+
+# Research & Development Files
+*.ipynb
+sample_images/
+contoh.jpeg
+BUKTI_OCR_GUIDE.md
+CALLBACK_AUDIT_REPORT.md
+DOKUMENTASI_ALUR_PROSES.md
+RESTRUCTURING_SUMMARY.md
+debug-*.md
+scratch/
+ekstrak tabel/

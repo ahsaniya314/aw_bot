@@ -1,8 +1,0 @@
-bot
-config
-core
-database
-handlers
-nlp
-services
-utils
