@@ -3,7 +3,6 @@ import threading
 import time
 import schedule
 import json
-from collections import deque
 from datetime import datetime, date, timedelta
 from flask import Flask, request, jsonify, send_from_directory
 from bot.core import bot, AUTHORIZED_ADMINS, ctx, logger
@@ -39,69 +38,6 @@ except ImportError:
 
 _trx_cache = {"ts": 0.0, "data": None}
 _keepalive_cache = {"ts": 0.0, "ok": None, "error": None}
-
-_webhook_queue = deque()
-_webhook_cv = threading.Condition()
-_webhook_worker_started = False
-
-
-def _env_bool(name: str, default: bool = False) -> bool:
-    val = os.getenv(name)
-    if val is None:
-        return default
-    return str(val).strip().lower() in {"1", "true", "yes", "y", "on"}
-
-
-def _get_webhook_path_secret() -> str:
-    return (os.getenv("TELEGRAM_WEBHOOK_PATH_SECRET") or os.getenv("WEBHOOK_PATH_SECRET") or "").strip()
-
-
-def _get_webhook_header_secret() -> str:
-    return (os.getenv("TELEGRAM_WEBHOOK_SECRET_TOKEN") or os.getenv("WEBHOOK_SECRET_TOKEN") or "").strip()
-
-
-def _build_webhook_url() -> str | None:
-    explicit = (os.getenv("TELEGRAM_WEBHOOK_URL") or os.getenv("WEBHOOK_URL") or "").strip()
-    if explicit:
-        return explicit
-    host = (os.getenv("SPACE_HOST") or "").strip()
-    path_secret = _get_webhook_path_secret()
-    if host and path_secret:
-        return f"https://{host}/telegram/webhook/{path_secret}"
-    base = (os.getenv("PUBLIC_BASE_URL") or os.getenv("APP_BASE_URL") or os.getenv("BASE_URL") or "").strip().rstrip("/")
-    if base and path_secret:
-        return f"{base}/telegram/webhook/{path_secret}"
-    return None
-
-
-def _enqueue_update(update_dict: dict) -> None:
-    with _webhook_cv:
-        _webhook_queue.append(update_dict)
-        _webhook_cv.notify()
-
-
-def _start_webhook_worker_if_needed() -> None:
-    global _webhook_worker_started
-    if _webhook_worker_started:
-        return
-
-    def _worker():
-        from telebot import types as tb_types
-        while True:
-            with _webhook_cv:
-                while not _webhook_queue:
-                    _webhook_cv.wait()
-                payload = _webhook_queue.popleft()
-            try:
-                upd = tb_types.Update.de_json(payload)
-                if upd:
-                    bot.process_new_updates([upd])
-            except Exception as e:
-                logger.error(f"[WEBHOOK] Failed processing update: {e}")
-
-    threading.Thread(target=_worker, daemon=True).start()
-    _webhook_worker_started = True
-    logger.info("[WEBHOOK] Background worker started")
 
 
 def _to_float(v):
@@ -593,25 +529,6 @@ def api_debug_dir():
     return jsonify(results)
 
 
-@app.route("/telegram/webhook/<path_secret>", methods=["POST"])
-def telegram_webhook(path_secret):
-    expected_path = _get_webhook_path_secret()
-    if not expected_path or path_secret != expected_path:
-        return jsonify({"ok": False, "error": "Invalid webhook path"}), 403
-
-    expected_header = _get_webhook_header_secret()
-    if expected_header:
-        got = (request.headers.get("X-Telegram-Bot-Api-Secret-Token") or "").strip()
-        if got != expected_header:
-            return jsonify({"ok": False, "error": "Invalid webhook token"}), 403
-    data = request.get_json(silent=True)
-    if not isinstance(data, dict):
-        return jsonify({"ok": False, "error": "Invalid JSON"}), 400
-
-    _start_webhook_worker_if_needed()
-    _enqueue_update(data)
-    return jsonify({"ok": True})
-
 def run_scheduler():
     logger.info("[INIT] Scheduler thread started")
     # Setup schedules
@@ -626,53 +543,39 @@ def run_scheduler():
         schedule.run_pending()
         time.sleep(1)
 
+
 def run_bot():
     logger.info("[INIT] Starting Telegram Bot in background thread...")
     try:
-        use_webhook = _env_bool("USE_WEBHOOK", False) or _env_bool("TELEGRAM_USE_WEBHOOK", False)
-        preload = _env_bool("OCR_PRELOAD_ON_START", False)
+        # Check if running on Hugging Face
         is_hf = bool(
             os.getenv("SPACE_ID")
             or os.getenv("HF_SPACE_ID")
             or os.getenv("SPACE_HOST")
             or os.getenv("HF_HOME")
         )
-        if preload and ctx.ocr_service:
+
+        # Preload OCR model if enabled
+        preload_ocr = os.getenv("OCR_PRELOAD_ON_START", "false").strip().lower() in {"1", "true", "yes", "y"}
+        if preload_ocr and ctx.ocr_service:
             logger.info("[INIT] Pre-loading OCR model...")
             ctx.ocr_service.load_model()
         
-        # Hapus menu button
+        # Hapus menu button (opsional)
         try:
             from telebot.types import MenuButtonDefault
             bot.set_chat_menu_button(menu_button=MenuButtonDefault(type="default"))
             logger.info("[INIT] Menu Button berhasil dihapus!")
         except Exception as e:
             logger.warning(f"[INIT] Gagal hapus Menu Button: {e}")
+
+        # Remove any existing webhook first
+        try:
+            bot.remove_webhook()
+            logger.info("[OK] Existing webhook removed")
+        except Exception as e:
+            logger.warning(f"[WARNING] Could not remove webhook: {e}")
         
-        if use_webhook:
-            path_secret = _get_webhook_path_secret()
-            if not path_secret:
-                raise RuntimeError("TELEGRAM_WEBHOOK_PATH_SECRET belum di-set (wajib untuk webhook).")
-            webhook_url = _build_webhook_url()
-            if not webhook_url:
-                raise RuntimeError("WEBHOOK_URL/TELEGRAM_WEBHOOK_URL atau SPACE_HOST belum tersedia untuk webhook.")
-
-            secret_token = _get_webhook_header_secret()
-            try:
-                bot.remove_webhook()
-            except Exception:
-                pass
-            try:
-                if secret_token:
-                    bot.set_webhook(url=webhook_url, secret_token=secret_token)
-                else:
-                    bot.set_webhook(url=webhook_url)
-            except TypeError:
-                bot.set_webhook(url=webhook_url)
-
-            _start_webhook_worker_if_needed()
-            logger.info(f"[WEBHOOK] Enabled: {webhook_url}")
-
         # Notifikasi ke Admin
         for admin_id in AUTHORIZED_ADMINS:
             try:
@@ -684,30 +587,22 @@ def run_bot():
             except:
                 pass
 
-        if use_webhook:
-            while True:
-                time.sleep(3600)
-        else:
+        # Jalankan LONG POLLING (selamanya)
+        logger.info("[OK] Starting long polling...")
+        retry_count = 0
+        max_retries = 5
+        while retry_count < max_retries:
             try:
-                bot.remove_webhook()
-            except Exception:
-                pass
-            # Skip pending messages from before restart to avoid 409 conflict
-            # Retry with backoff if 409 conflict occurs (old instance still running in Telegram API)
-            retry_count = 0
-            max_retries = 5
-            while retry_count < max_retries:
-                try:
-                    bot.infinity_polling(timeout=60, long_polling_timeout=30, skip_pending=True)
-                    break
-                except Exception as poll_error:
-                    if "409" in str(poll_error) or "Conflict" in str(poll_error):
-                        retry_count += 1
-                        wait_time = min(30, 5 * retry_count)  # Exponential backoff: 5, 10, 15, 20, 25, 30 sec
-                        logger.warning(f"[TELEGRAM 409] Bot conflict detected. Waiting {wait_time}s before retry ({retry_count}/{max_retries})...")
-                        time.sleep(wait_time)
-                    else:
-                        raise
+                bot.infinity_polling(timeout=60, long_polling_timeout=30, skip_pending=True)
+                break
+            except Exception as poll_error:
+                if "409" in str(poll_error) or "Conflict" in str(poll_error):
+                    retry_count += 1
+                    wait_time = min(30, 5 * retry_count)  # Exponential backoff: 5, 10, 15, 20, 25, 30 sec
+                    logger.warning(f"[TELEGRAM 409] Bot conflict detected. Waiting {wait_time}s before retry ({retry_count}/{max_retries})...")
+                    time.sleep(wait_time)
+                else:
+                    raise
     except Exception as e:
         import traceback
         logger.error(f"[FATAL] Bot error: {e}")
