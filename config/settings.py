@@ -69,7 +69,7 @@ class Config:
     OCR_LANGUAGE: str = os.getenv("OCR_LANGUAGE", "en")
     OCR_ANGLE_DETECTION: bool = os.getenv("OCR_ANGLE_DETECTION", "true").lower() in ("true", "yes", "1")
     OCR_CONFIDENCE_THRESHOLD: float = float(os.getenv("OCR_CONFIDENCE_THRESHOLD", "0.5"))
-    OCR_ENGINE: str = os.getenv("OCR_ENGINE", "paddleocr")  # "paddleocr" or "mistralocr"
+    OCR_ENGINE: str = os.getenv("OCR_ENGINE", "mistralocr")  # "paddleocr" or "mistralocr"
     MISTRAL_API_KEY: str = os.getenv("MISTRAL_API_KEY", "")
     OCR_RUNTIME_MAX_DIM: int = int(os.getenv("OCR_RUNTIME_MAX_DIM", "2200"))
     OCR_RUNTIME_JPEG_QUALITY: int = int(os.getenv("OCR_RUNTIME_JPEG_QUALITY", "88"))
