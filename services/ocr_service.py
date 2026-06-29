@@ -256,6 +256,7 @@ class OCRService:
                 return final_path, None
 
             h, w = image.shape[:2]
+            max_dim = max(h, w)
             engine = self.settings.OCR_ENGINE.lower()
             src_ext = (os.path.splitext(final_path)[1] or ".jpg").lower()
             file_size = os.path.getsize(final_path) if os.path.exists(final_path) else 0
