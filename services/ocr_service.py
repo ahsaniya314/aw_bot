@@ -179,9 +179,10 @@ class OCRService:
             return ""
 
     def _call_mistral_ocr_api(self, image_path):
-        connect_timeout = max(3, self._env_int("MISTRAL_OCR_CONNECT_TIMEOUT_SECONDS", 10))
-        read_timeout = max(30, self._env_int("MISTRAL_OCR_READ_TIMEOUT_SECONDS", 120))
-        max_attempts = max(1, self._env_int("MISTRAL_OCR_MAX_ATTEMPTS", 2))
+        # Meningkatkan default timeout untuk stabilitas di deployment
+        connect_timeout = max(3, self._env_int("MISTRAL_OCR_CONNECT_TIMEOUT_SECONDS", 30))
+        read_timeout = max(30, self._env_int("MISTRAL_OCR_READ_TIMEOUT_SECONDS", 180))
+        max_attempts = max(1, self._env_int("MISTRAL_OCR_MAX_ATTEMPTS", 3))
         import time
         base64_image = self._encode_image_to_base64(image_path)
         if not base64_image:

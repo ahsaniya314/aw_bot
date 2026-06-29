@@ -1200,10 +1200,11 @@ def handle_docs_photo(message):
             return
 
         if str(hasil_akhir).strip().startswith("Error OCR:"):
-            logger.warning("OCR service returned error text instead of extracted text: %s", hasil_akhir[:200])
+            error_message = str(hasil_akhir).strip()
+            logger.warning("OCR service returned error text instead of extracted text: %s", error_message)
             safe_edit_message(
                 bot,
-                "❌ OCR sedang lambat atau timeout saat membaca foto.\nCoba kirim ulang foto yang sama 1x. Jika masih gagal, kirim foto yang lebih ringan atau lebih jelas.",
+                f"❌ Gagal memproses foto dengan OCR:\n{error_message}\n\nCoba kirim ulang foto yang sama 1x. Jika masih gagal, coba foto yang lebih jelas.",
                 chat_id,
                 msg_proses.message_id,
             )
