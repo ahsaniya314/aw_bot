@@ -688,9 +688,9 @@ class OCRService:
                     self._set_cached_ocr_result(cache_key, extracted_text)
                     return extracted_text
                 except Exception as mistral_error:
-                    allow_fallback = self._env_bool("MISTRAL_OCR_ENABLE_PADDLE_FALLBACK", True)
+                    allow_fallback = self._env_bool("MISTRAL_OCR_ENABLE_PADDLE_FALLBACK", False) # Defaultnya MATIKAN fallback
                     if not allow_fallback:
-                        raise
+                        raise RuntimeError(f"Mistral OCR gagal: {mistral_error}") from mistral_error
                     logger.warning(f"[OCR] Mistral timeout/error, trying Paddle fallback: {mistral_error}")
                     extracted_text = self._extract_text_with_paddle_fallback(final_path)
                     if extracted_text:
