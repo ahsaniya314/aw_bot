@@ -2,10 +2,12 @@ import re
 import logging
 
 from nlp.embedded_data import NORMALIZATION_DICT
+from core.master_data import get_all_barang, MASTER_BARANG_CATALOG
 
 logger = logging.getLogger(__name__)
 
-KAMUS_ALIAS = {
+# Data statis KAMUS_ALIAS (fallback jika database kosong)
+KAMUS_ALIAS_STATIS = {
     # === PERMEN COKLAT ===
     "permen coklat": "Permen Coklat",
     "coklat": "Permen Coklat",
@@ -175,14 +177,48 @@ KAMUS_ALIAS = {
     "tepung": "Tepung",
 }
 
-# Enrich KAMUS_ALIAS with known products from normalization dict
-try:
-    _known_products = NORMALIZATION_DICT.get("entity_patterns", {}).get("produk", {}).get("known_products", [])
-    for prod in _known_products:
-        if prod.lower() not in KAMUS_ALIAS:
-            KAMUS_ALIAS[prod.lower()] = prod.title()
-except Exception as e:
-    logger.error(f"Error enriching KAMUS_ALIAS: {e}")
+def muat_kamus_alias():
+    """
+    Build KAMUS_ALIAS secara dinamis:
+    1. Load nama barang dari database
+    2. Tambahkan variasi nama (lowercase, tanpa spasi, dll.)
+    3. Gabung dengan KAMUS_ALIAS_STATIS (fallback)
+    """
+    # Mulai dengan data statis
+    kamus = KAMUS_ALIAS_STATIS.copy()
+    
+    try:
+        # Load semua barang dari database
+        semua_barang = get_all_barang()
+        
+        for barang in semua_barang:
+            nama_barang = barang["nama"].strip()
+            nama_lower = nama_barang.lower()
+            
+            # Tambahkan mapping dasar (nama_lower → nama_barang)
+            if nama_lower not in kamus:
+                kamus[nama_lower] = nama_barang
+            
+            # Tambahkan variasi nama (contoh: tanpa spasi, singkatan umum)
+            nama_tanpa_spasi = nama_lower.replace(" ", "")
+            if nama_tanpa_spasi not in kamus and nama_tanpa_spasi != nama_lower:
+                kamus[nama_tanpa_spasi] = nama_barang
+        
+        # Tambahkan juga dari MASTER_BARANG_CATALOG
+        for group in MASTER_BARANG_CATALOG:
+            for item in group.get("items", []):
+                nama_item = item["nama"].strip()
+                nama_item_lower = nama_item.lower()
+                if nama_item_lower not in kamus:
+                    kamus[nama_item_lower] = nama_item
+        
+    except Exception as e:
+        logger.error(f"Error loading KAMUS_ALIAS from database: {e}")
+    
+    return kamus
+
+# Load KAMUS_ALIAS secara dinamis saat modul diimpor
+KAMUS_ALIAS = muat_kamus_alias()
 
 DAFTAR_KATA_KUNCI = list(KAMUS_ALIAS.keys())
 

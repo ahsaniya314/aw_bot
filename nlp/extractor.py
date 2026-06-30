@@ -571,6 +571,25 @@ def ekstrak_entitas(teks_koreksi, teks_asli="", db_metode=None, daftar_barang=No
             pos = teks_lower.find(b_l)
             if pos != -1:
                 kandidat_master.append((_is_generic_barang(b_name), pos, -len(b_l), b_name))
+        
+        # Jika tidak ada exact match, coba fuzzy match!
+        if not kandidat_master:
+            # Ambil semua kata dari teks yang mungkin nama barang
+            kata_teks = [w for w in teks_lower.split() if len(w) >= 3 and w not in _MASTER_BARANG_UNITS and w not in _TRANSAKSI_HINT_WORDS]
+            if kata_teks:
+                # Fuzzy match dengan daftar barang
+                daftar_nama_barang = [b.lower() for b in set(daftar_barang)]
+                for kata in kata_teks:
+                    match = process.extractOne(kata, daftar_nama_barang, scorer=fuzz.token_sort_ratio)
+                    if match and match[1] >= 80:  # Skor minimal 80
+                        # Cari nama barang asli dari daftar_barang
+                        nama_barang_asli = next((b for b in set(daftar_barang) if b.lower() == match[0]), None)
+                        if nama_barang_asli:
+                            # Cari posisi kata di teks
+                            pos = teks_lower.find(kata)
+                            if pos != -1:
+                                kandidat_master.append((_is_generic_barang(nama_barang_asli), pos, -len(nama_barang_asli), nama_barang_asli))
+        
         if kandidat_master:
             kandidat_master.sort(key=lambda x: (x[0], x[1], x[2]))
             entitas["BARANG"] = kandidat_master[0][3]
@@ -601,6 +620,22 @@ def ekstrak_entitas(teks_koreksi, teks_asli="", db_metode=None, daftar_barang=No
         if kata_kunci in teks_lower:
             mapped = KAMUS_ALIAS.get(kata_kunci)
             kandidat.append((kata_kunci, mapped))
+    
+    # Jika tidak ada exact match di KAMUS_ALIAS, coba fuzzy match dengan KAMUS_ALIAS!
+    if not kandidat:
+        # Ambil semua kata dari teks yang mungkin nama barang
+        kata_teks = [w for w in teks_lower.split() if len(w) >= 3 and w not in _MASTER_BARANG_UNITS and w not in _TRANSAKSI_HINT_WORDS]
+        if kata_teks:
+            daftar_kata_kunci = list(KAMUS_ALIAS.keys())
+            for kata in kata_teks:
+                match = process.extractOne(kata, daftar_kata_kunci, scorer=fuzz.token_sort_ratio)
+                if match and match[1] >= 80:  # Skor minimal 80
+                    kata_kunci = match[0]
+                    mapped = KAMUS_ALIAS.get(kata_kunci)
+                    if mapped:
+                        pos = teks_lower.find(kata)
+                        if pos != -1:
+                            kandidat.append((kata_kunci, mapped))
 
     if kandidat:
         kandidat.sort(
