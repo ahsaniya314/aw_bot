@@ -27,6 +27,9 @@ class TestConfigSettings:
         """Test environment variable override."""
         os.environ["LOG_LEVEL"] = "DEBUG"
         config = reload_config()
+        # Reset to avoid affecting other tests
+        if "LOG_LEVEL" in os.environ:
+            del os.environ["LOG_LEVEL"]
         assert config.LOG_LEVEL == "DEBUG"
 
     def test_config_to_dict(self):

@@ -6,7 +6,6 @@ import logging
 import tempfile
 import hashlib
 from collections import OrderedDict
-from .ocr_preprocessor import OCRPreprocessor
 from config.settings import get_settings
 
 logger = logging.getLogger("bot_logger")
@@ -18,7 +17,7 @@ class OCRService:
         self.mistral_client = None
         self._disabled_reason = None
         self._last_debug = None
-        self.preprocessor = OCRPreprocessor(output_dir=preprocessor_output_dir)
+        # OCRPreprocessor tidak digunakan (preprocessing disabled untuk Mistral OCR)
         self.http = requests.Session()
         self._ocr_result_cache = OrderedDict()
         logger.info("[OCR] Initializing OCR Service...")
