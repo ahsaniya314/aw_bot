@@ -61,7 +61,10 @@ _OCR_QTY_CHARS = str.maketrans({
     "g": "9",
     "G": "9",
 })
-_UNIT_RE = r"(?:dus|pcs|toples|pack|bungkus|karton|bks|buah|botol|kg|bal|kantong|lusin|koli|roll|meter|lembar|box|renceng|pouch|kaleng|slop|sak|liter|biji|tablet|kapsul|gelas|cup|can|sachet|pak|ctn|cen|cth)"
+_UNIT_RE = (
+    r"(?:dus|pcs|toples|pack|bungkus|karton|bks|buah|botol|kg|bal|kantong|lusin|koli|roll|meter|lembar|"
+    r"box|renceng|pouch|kaleng|slop|sak|liter|biji|tablet|kapsul|gelas|cup|can|sachet|pak|ctn|cen|cth)"
+)
 _IGNORE_LINE_RE = re.compile(
     r"\b(?:total|subtotal|grand\s*total|jumlah\s*total|sisa|sisa\s*tagihan|tagihan|saldo|keterangan|ket\.?)\b",
     flags=re.IGNORECASE,
@@ -86,7 +89,9 @@ _BOT_UI_LABEL_LINE_RE = re.compile(
 
 def _normalize_ocr_line(text):
     line = (text or "").strip()
-    line = re.sub(r"^[\s👤📅📦🔢💳🏦💵⚠️✅🤖]+", "", line).strip()
+    line = re.sub(
+        r"^[\s👤📅📦🔢💳🏦💵⚠️✅🤖]+", "", line
+    ).strip()
     line = re.sub(r"^\[\d+\]\s*", "", line).strip()
     line = re.sub(r"^[\s~•*\-–—]+", "", line).strip()
     line = re.sub(r"\s+", " ", line).strip()
@@ -154,7 +159,9 @@ def _extract_date_and_remainder(text):
             if 1 <= dd <= 31 and 1 <= mm <= 12 and 2000 <= yy <= 2100:
                 date_iso = f"{yy:04d}-{mm:02d}-{dd:02d}"
                 date_pat = re.compile(
-                    rf"{re.escape(digit_groups[-3])}\s*[-/]\s*{re.escape(digit_groups[-2])}\s*[-/]\s*{re.escape(digit_groups[-1])}"
+                    rf"{re.escape(digit_groups[-3])}\s*[-/]\s*"
+                    rf"{re.escape(digit_groups[-2])}\s*[-/]\s*"
+                    rf"{re.escape(digit_groups[-1])}"
                 )
                 remainder = date_pat.sub("", cleaned, count=1).strip()
                 remainder = _normalize_ocr_line(remainder)
@@ -226,6 +233,7 @@ def _extract_first_date_display(text):
         if date_iso:
             return _to_display_date(date_iso)
     return None
+
 
 def _is_placeholder_name(name):
     raw = re.sub(r"\s+", " ", str(name or "")).strip(" .,:;-").lower()
@@ -724,7 +732,11 @@ def _build_sales_results_from_ocr_entries(sales_entries, daftar_b, mapping_m):
         if not item_text:
             continue
 
-        m = re.match(rf"^(?P<name>.+?)\s+(?P<qty>[0-9lIoO]{{1,6}})\s+(?P<unit>{_UNIT_RE})$", item_text, flags=re.IGNORECASE)
+        m = re.match(
+            rf"^(?P<name>.+?)\s+(?P<qty>[0-9lIoO]{{1,6}})\s+(?P<unit>{_UNIT_RE})$",
+            item_text,
+            flags=re.IGNORECASE
+        )
         if m:
             normalized_name = _normalize_product_name(m.group("name"), daftar_b)
             qty = _normalize_qty_token(m.group("qty"))
@@ -892,7 +904,9 @@ def _proses_hasil_ocr_ke_nlp(chat_id, message_id_target, ocr_text):
 
     nlp_stage_start = perf_counter()
     clean_ocr_text = _remove_bot_ui_noise(ocr_text)
-    nlp_input_text, payment_entries, sales_contexts, sales_entries = _build_structured_nlp_input(clean_ocr_text, daftar_b=daftar_b)
+    nlp_input_text, payment_entries, sales_contexts, sales_entries = (
+        _build_structured_nlp_input(clean_ocr_text, daftar_b=daftar_b)
+    )
     fallback_name = _extract_first_name_fallback(clean_ocr_text, daftar_b=daftar_b)
 
     if (not sales_entries) and payment_entries:
@@ -1006,7 +1020,9 @@ def _proses_hasil_ocr_ke_nlp(chat_id, message_id_target, ocr_text):
 
             if not gabungan.get("SATUAN") and gabungan.get("JUMLAH"):
                 m_sat = re.search(
-                    r"\d+\s*(dus|pcs|toples|pack|bungkus|karton|bks|buah|botol|kg|bal|kantong|lusin|koli|roll|meter|lembar|box|renceng|pouch|kaleng|slop|sak|liter|biji|tablet|kapsul|gelas|cup|can|sachet|pak)\b",
+                    r"\d+\s*(dus|pcs|toples|pack|bungkus|karton|bks|buah|botol|kg|bal|kantong|lusin|"
+                    r"koli|roll|meter|lembar|box|renceng|pouch|kaleng|slop|sak|liter|biji|tablet|kapsul|"
+                    r"gelas|cup|can|sachet|pak)\b",
                     str(gabungan["JUMLAH"]),
                     re.IGNORECASE,
                 )
@@ -1148,6 +1164,7 @@ def _proses_hasil_ocr_ke_nlp(chat_id, message_id_target, ocr_text):
             parse_mode="HTML",
         )
 
+
 def handle_docs_photo(message):
     """Handle unggahan foto - tampilkan hasil OCR lalu teruskan ke NLP transaksi"""
     bot = ctx.bot
@@ -1194,9 +1211,13 @@ def handle_docs_photo(message):
         )
 
         if not hasil_akhir or hasil_akhir.strip() == "":
-            logger.warning(f"Tidak ada teks terdeteksi di foto.")
-            safe_edit_message(bot, "❌ Tidak ada teks terdeteksi di foto. Coba foto lagi dengan kualitas lebih baik.",
-                                 chat_id, msg_proses.message_id)
+            logger.warning("Tidak ada teks terdeteksi di foto.")
+            safe_edit_message(
+                bot,
+                "❌ Tidak ada teks terdeteksi di foto. Coba foto lagi dengan kualitas lebih baik.",
+                chat_id,
+                msg_proses.message_id
+            )
             return
 
         if str(hasil_akhir).strip().startswith("Error OCR:"):
@@ -1204,7 +1225,8 @@ def handle_docs_photo(message):
             logger.warning("OCR service returned error text instead of extracted text: %s", error_message)
             safe_edit_message(
                 bot,
-                f"❌ Gagal memproses foto dengan OCR:\n{error_message}\n\nCoba kirim ulang foto yang sama 1x. Jika masih gagal, coba foto yang lebih jelas.",
+                f"❌ Gagal memproses foto dengan OCR:\n{error_message}\n\n"
+                f"Coba kirim ulang foto yang sama 1x. Jika masih gagal, coba foto yang lebih jelas.",
                 chat_id,
                 msg_proses.message_id,
             )
@@ -1223,7 +1245,9 @@ def handle_docs_photo(message):
                 header = f"{header} <i>({idx}/{total})</i>"
             payload = f"{header}\n<pre>{html.escape(chunk)}</pre>"
             if idx == 1:
-                safe_edit_message(bot, payload, chat_id, msg_proses.message_id, parse_mode="HTML")
+                safe_edit_message(
+                    bot, payload, chat_id, msg_proses.message_id, parse_mode="HTML"
+                )
             else:
                 bot.send_message(chat_id, payload, parse_mode="HTML")
 
@@ -1238,8 +1262,15 @@ def handle_docs_photo(message):
         return
     except Exception as e:
         log_exception(f"Error processing photo user {user_id}", e)
-        notify_admins(f"❌ <b>Error OCR</b>\nUser: <code>{user_id}</code>\nChat: <code>{chat_id}</code>\nPesan: <code>{str(e)[:200]}</code>")
-        bot.reply_to(message, "❌ Terjadi kesalahan pemrosesan gambar. Coba ulangi 1x, jika masih gagal kirim foto yang lebih jelas.")
+        notify_admins(
+            f"❌ <b>Error OCR</b>\nUser: <code>{user_id}</code>\nChat: <code>{chat_id}</code>\n"
+            f"Pesan: <code>{str(e)[:200]}</code>"
+        )
+        bot.reply_to(
+            message,
+            "❌ Terjadi kesalahan pemrosesan gambar. Coba ulangi 1x, jika masih gagal "
+            "kirim foto yang lebih jelas."
+        )
     finally:
         if os.path.exists(temp_image_path):
             os.remove(temp_image_path)
