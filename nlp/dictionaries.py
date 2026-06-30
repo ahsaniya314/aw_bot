@@ -2,7 +2,7 @@ import re
 import logging
 
 from nlp.embedded_data import NORMALIZATION_DICT
-from core.master_data import get_all_barang, MASTER_BARANG_CATALOG
+from core.master_data import get_all_barang, MASTER_BARANG_CATALOG, get_all_satuan
 
 logger = logging.getLogger(__name__)
 
@@ -177,6 +177,11 @@ KAMUS_ALIAS_STATIS = {
     "tepung": "Tepung",
 }
 
+VALID_UNITS_STATIS = frozenset([
+    "dus", "karton", "pcs", "bungkus", "bal", "renceng", "box",
+    "kg", "toples", "pack", "buah", "botol", "sachet", "lusin", "paket"
+])
+
 def muat_kamus_alias():
     """
     Build KAMUS_ALIAS secara dinamis:
@@ -217,8 +222,32 @@ def muat_kamus_alias():
     
     return kamus
 
-# Load KAMUS_ALIAS secara dinamis saat modul diimpor
+def muat_valid_units():
+    """
+    Build VALID_UNITS secara dinamis:
+    1. Load satuan dari database
+    2. Gabung dengan VALID_UNITS_STATIS (fallback)
+    """
+    # Mulai dengan data statis
+    units = set(VALID_UNITS_STATIS)
+    
+    try:
+        # Load semua satuan dari database
+        semua_satuan = get_all_satuan()
+        
+        for satuan in semua_satuan:
+            nama_satuan = satuan["nama_satuan"].strip().lower()
+            if nama_satuan:
+                units.add(nama_satuan)
+        
+    except Exception as e:
+        logger.error(f"Error loading VALID_UNITS from database: {e}")
+    
+    return frozenset(units)
+
+# Load KAMUS_ALIAS dan VALID_UNITS secara dinamis saat modul diimpor
 KAMUS_ALIAS = muat_kamus_alias()
+VALID_UNITS = muat_valid_units()
 
 DAFTAR_KATA_KUNCI = list(KAMUS_ALIAS.keys())
 

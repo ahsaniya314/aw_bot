@@ -3,7 +3,7 @@ import logging
 from datetime import datetime, timedelta
 from rapidfuzz import process, fuzz
 from core.master_data import format_rupiah, MASTER_BARANG_CATALOG
-from nlp.dictionaries import KAMUS_ALIAS, DAFTAR_KATA_KUNCI, parse_price_shorthand, NORMALIZATION_DICT
+from nlp.dictionaries import KAMUS_ALIAS, DAFTAR_KATA_KUNCI, parse_price_shorthand, NORMALIZATION_DICT, VALID_UNITS
 from nlp.intent_matcher import fuzzy_intent_fallback, match_intent_from_dataset, DATASET_TO_SYSTEM_INTENT, tentukan_intent_manual
 
 logger = logging.getLogger(__name__)
@@ -104,6 +104,28 @@ def _detect_short_set_harga(teks_lower, daftar_barang):
         "harga": str(harga_val),
         "exists_in_master": exists_in_master,
     }
+
+def fuzzy_match_satuan(satuan_input):
+    """
+    Mencari satuan yang cocok secara fuzzy dari VALID_UNITS.
+    Return satuan yang cocok atau None jika tidak ada yang cocok.
+    """
+    if not satuan_input:
+        return None
+    
+    satuan_input_lower = satuan_input.lower()
+    
+    # Cari fuzzy match dengan skor minimal 80
+    best_match = process.extractOne(
+        satuan_input_lower, 
+        list(VALID_UNITS), 
+        scorer=fuzz.token_sort_ratio
+    )
+    
+    if best_match and best_match[1] >= 80:
+        return best_match[0]
+    
+    return None
 
 # TODO: Ganti dengan HuggingFace Pipeline IndoBERT nanti di bagian ini.
 def ekstrak_entitas(teks_koreksi, teks_asli="", db_metode=None, daftar_barang=None, mapping_metode=None):
@@ -657,25 +679,47 @@ def ekstrak_entitas(teks_koreksi, teks_asli="", db_metode=None, daftar_barang=No
     teks_qty = teks_lower
     teks_qty = re.sub(r"\b(19\d{2}|20\d{2})\s+(pak|bu|mas|mbak|kak|ibu|bapak)\b", r"\2", teks_qty)
 
-    match_satuan = re.search(
-        r"(\d+)\s*(dus|pcs|toples|pack|bks|buah|botol|karton|ctn|etn|crn|krtn|katon|katron|krton|kerton|kartom|kg|butir|bal|kantong|lusin|koli|roll|meter|lembar|box|dusan|balan|pak|ikat|renceng|pouch|kaleng|slop|sak|liter|biji|tablet|kapsul|bungkus|gelas|cup|can|sachet)\b",
+    # Cari angka + kata apapun (kemudian kita cek fuzzy match satuan)
+    match_jumlah_satuan = re.search(
+        r"(\d+)\s*([a-zA-Z]+)\b",
         teks_qty,
     )
-    if match_satuan:
-        satuan_detected = match_satuan.group(2)
+    if match_jumlah_satuan:
+        jumlah = match_jumlah_satuan.group(1)
+        satuan_candidate = match_jumlah_satuan.group(2)
+        
+        # Coba fuzzy match satuan candidate dengan VALID_UNITS
+        satuan_fuzzy = fuzzy_match_satuan(satuan_candidate)
+        
+        if satuan_fuzzy:
+            satuan_detected = satuan_fuzzy
+        else:
+            satuan_detected = satuan_candidate
+        
         # Standardize units for consistency
         if satuan_detected == "bks":
             satuan_detected = "bungkus"
-        entitas["JUMLAH"] = f"{match_satuan.group(1)} {satuan_detected}"
+        
+        entitas["JUMLAH"] = f"{jumlah} {satuan_detected}"
         entitas["SATUAN"] = satuan_detected
     else:
         # Deteksi satuan tanpa angka di depannya (hanya untuk CRUD barang/aksi set harga/tambah barang)
         if entitas["AKSI"] in ["Tambah Barang", "Set Harga Barang"]:
             match_satuan_murni = re.search(r"\bsatuan\s*([a-zA-Z]+)\b", teks_lower)
             if match_satuan_murni:
-                satuan_detected = match_satuan_murni.group(1)
+                satuan_candidate = match_satuan_murni.group(1)
+                
+                # Coba fuzzy match satuan candidate dengan VALID_UNITS
+                satuan_fuzzy = fuzzy_match_satuan(satuan_candidate)
+                
+                if satuan_fuzzy:
+                    satuan_detected = satuan_fuzzy
+                else:
+                    satuan_detected = satuan_candidate
+                
                 if satuan_detected == "bks":
                     satuan_detected = "bungkus"
+                
                 entitas["SATUAN"] = satuan_detected
             
         # 2. Deteksi Jumlah dengan Awalan (misal: jumlah 10)
