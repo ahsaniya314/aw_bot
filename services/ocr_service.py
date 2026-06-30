@@ -242,57 +242,13 @@ class OCRService:
                 logger.info("[OCR] Mistral OCR configured successfully!")
             return True
         else:
-            self._disabled_reason = f"Hanya mendukung Mistral OCR! Anda setting OCR_ENGINE='mistralocr'!"
-            logger.error(f"[OCR] {self._disabled_reason}")
             return False
 
     def _prepare_image_for_runtime_ocr(self, image_path):
-        try:
-            import cv2
-
-            final_path = self._find_image_path(image_path)
-            image = cv2.imread(final_path)
-            if image is None:
-                return final_path, None
-
-            h, w = image.shape[:2]
-            max_dim = max(h, w)
-            engine = self.settings.OCR_ENGINE.lower()
-            src_ext = (os.path.splitext(final_path)[1] or ".jpg").lower()
-            file_size = os.path.getsize(final_path) if os.path.exists(final_path) else 0
-
-            if engine == "mistralocr":
-                target_max_dim = self._env_int("OCR_MISTRAL_MAX_DIM", 1800)
-                jpeg_quality = self._env_int("OCR_MISTRAL_JPEG_QUALITY", 82)
-                max_source_bytes = self._env_int("OCR_MISTRAL_MAX_SOURCE_BYTES", 1500000)
-
-                needs_resize = max_dim > target_max_dim
-                needs_reencode = src_ext not in (".jpg", ".jpeg") or file_size > max_source_bytes
-                if not needs_resize and not needs_reencode:
-                    return final_path, None
-
-                resized = image
-                if needs_resize:
-                    scale = target_max_dim / float(max_dim)
-                    resized, _ = self.preprocessor.resize_image(image, scale_factor=scale)
-
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as tmp:
-                    temp_path = tmp.name
-
-                cv2.imwrite(temp_path, resized, [int(cv2.IMWRITE_JPEG_QUALITY), jpeg_quality])
-                try:
-                    out_size = os.path.getsize(temp_path)
-                except Exception:
-                    out_size = 0
-                logger.info(
-                    f"[OCR] Mistral runtime optimize: {w}x{h} -> {resized.shape[1]}x{resized.shape[0]}, "
-                    f"{file_size}B -> {out_size}B"
-                )
-                return temp_path, temp_path
-            return final_path, None
-        except Exception as e:
-            logger.warning(f"[OCR] Runtime image optimization skipped: {e}")
-            return self._find_image_path(image_path), None
+        # OpenCV preprocessing disabled – directly use original image
+        final_path = self._find_image_path(image_path)
+        # No resizing or re‑encoding is performed; the image will be sent as‑is to Mistral OCR
+        return final_path, None
 
     def extract_text(self, image_path):
         temp_runtime_path = None
