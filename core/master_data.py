@@ -5,22 +5,34 @@ Menggunakan tab/worksheet terpisah dalam satu Google Database "AW PRODUCTION".
 """
 import re
 from datetime import datetime, timedelta
-from rapidfuzz import process, fuzz
+
+from rapidfuzz import fuzz, process
+
 from database import db_client
+
 
 def _invalidate_cache(key):
     """Invalidasikan cache agar update database langsung tercermin di bot."""
     try:
         from core.bot_context import ctx
+
         if ctx.gs_cache:
             ctx.gs_cache.invalidate(key)
     except Exception:
         pass
 
+
 # Header standar tidak diperlukan lagi karena menggunakan Supabase, namun tetap ada untuk referensi
-HEADERS_MASTER_BARANG   = ["ID Barang", "Nama Barang", "Harga Satuan", "Satuan"]
-HEADERS_MASTER_METODE   = ["ID Metode", "Nama Metode", "Keyword/Alias"]
-HEADERS_HISTORI_LUNAS   = ["Tanggal Bayar", "Nama Pelanggan", "Nominal Bayar", "Sisa Setelah", "Catatan"]
+HEADERS_MASTER_BARANG = ["ID Barang", "Nama Barang", "Harga Satuan", "Satuan"]
+HEADERS_MASTER_METODE = ["ID Metode", "Nama Metode", "Keyword/Alias"]
+HEADERS_HISTORI_LUNAS = [
+    "Tanggal Bayar",
+    "Nama Pelanggan",
+    "Nominal Bayar",
+    "Sisa Setelah",
+    "Catatan",
+]
+
 
 def get_or_create_sheet(database, db_name, headers):
     """
@@ -117,7 +129,9 @@ def format_daftar_master_barang_grouped(semua_barang):
             if kategori and nm:
                 nm_norm = _norm_name(nm)
                 kategori_by_norm[nm_norm] = kategori
-                units_order_by_norm[nm_norm] = [str(u).strip().lower() for u in (item.get("units") or []) if u]
+                units_order_by_norm[nm_norm] = [
+                    str(u).strip().lower() for u in (item.get("units") or []) if u
+                ]
 
     grouped = {}
     for b in rows:
@@ -166,7 +180,9 @@ def format_daftar_master_barang_grouped(semua_barang):
 
             ordered_units = units_order_by_norm.get(nm)
             if ordered_units:
-                units_sorted = [u for u in ordered_units if u in units_map] + [u for u in sorted(units_map.keys()) if u not in ordered_units]
+                units_sorted = [u for u in ordered_units if u in units_map] + [
+                    u for u in sorted(units_map.keys()) if u not in ordered_units
+                ]
             else:
                 units_sorted = sorted(units_map.keys())
 
@@ -233,37 +249,73 @@ def normalisasi_tanggal_gs(tgl_str):
 
     # Hapus nama hari (opsional) agar parsing tanggal lebih stabil
     for nama_hari in [
-        "senin", "selasa", "rabu", "kamis", "jumat", "sabtu", "minggu", "ahad",
-        "sen", "sel", "rab", "kam", "jum", "jmt", "sab", "min", "ahd",
+        "senin",
+        "selasa",
+        "rabu",
+        "kamis",
+        "jumat",
+        "sabtu",
+        "minggu",
+        "ahad",
+        "sen",
+        "sel",
+        "rab",
+        "kam",
+        "jum",
+        "jmt",
+        "sab",
+        "min",
+        "ahd",
     ]:
         tgl_norm = re.sub(rf"\b{nama_hari}\b", " ", tgl_norm)
-    
+
     # 1. Cek apakah ada nama bulan teks di dalamnya (misal "21 april 2026")
     bulan_dict = {
-        "januari": "01", "jan": "01", "februari": "02", "feb": "02",
-        "maret": "03", "mar": "03", "april": "04", "apr": "04",
-        "mei": "05", "juni": "06", "jun": "06", "juli": "07", "jul": "07",
-        "agustus": "08", "agu": "08", "agus": "08", "agt": "08",
-        "september": "09", "sep": "09", "sept": "09",
-        "oktober": "10", "okt": "10",
-        "november": "11", "nov": "11", "nop": "11", "nopember": "11",
-        "desember": "12", "des": "12"
+        "januari": "01",
+        "jan": "01",
+        "februari": "02",
+        "feb": "02",
+        "maret": "03",
+        "mar": "03",
+        "april": "04",
+        "apr": "04",
+        "mei": "05",
+        "juni": "06",
+        "jun": "06",
+        "juli": "07",
+        "jul": "07",
+        "agustus": "08",
+        "agu": "08",
+        "agus": "08",
+        "agt": "08",
+        "september": "09",
+        "sep": "09",
+        "sept": "09",
+        "oktober": "10",
+        "okt": "10",
+        "november": "11",
+        "nov": "11",
+        "nop": "11",
+        "nopember": "11",
+        "desember": "12",
+        "des": "12",
     }
-    
+
     for nama_bln, angka_bln in bulan_dict.items():
         tgl_norm = re.sub(rf"\b{re.escape(nama_bln)}\b", angka_bln, tgl_norm)
-            
+
     # Ganti sembarang spasi, titik, slash dengan strip
-    tgl_norm = re.sub(r'[-/\.\s]+', '-', tgl_norm).strip()
+    tgl_norm = re.sub(r"[-/\.\s]+", "-", tgl_norm).strip()
     # Hilangkan strip di awal atau akhir jika ada
-    tgl_norm = tgl_norm.strip('-')
-    
-    parts = tgl_norm.split('-')
-    
+    tgl_norm = tgl_norm.strip("-")
+
+    parts = tgl_norm.split("-")
+
     # Ambil blok numerik saja (membuang bagian jam seperti 00:00:00 jika ada)
     angka_parts = [p for p in parts if p.isdigit()]
-    
+
     try:
+
         def _to_year(y_raw: int):
             if y_raw < 100:
                 return 2000 + y_raw
@@ -279,17 +331,17 @@ def normalisasi_tanggal_gs(tgl_str):
         if len(angka_parts) >= 3:
             # Coba deteksi mana yang Tahun (4 digit)
             p1, p2, p3 = angka_parts[0], angka_parts[1], angka_parts[2]
-            
-            if len(p1) == 4: # YYYY-MM-DD
+
+            if len(p1) == 4:  # YYYY-MM-DD
                 y, m, d = int(p1), int(p2), int(p3)
-            elif len(p3) == 4: # DD-MM-YYYY
+            elif len(p3) == 4:  # DD-MM-YYYY
                 a, b, y_raw = int(p1), int(p2), int(p3)
                 y = _to_year(y_raw)
                 if a <= 12 and b > 12:
                     m, d = a, b
                 else:
                     d, m = a, b
-            else: # DD-MM-YY atau MM-DD-YY
+            else:  # DD-MM-YY atau MM-DD-YY
                 a, b, y_raw = int(p1), int(p2), int(p3)
                 y = _to_year(y_raw)
                 if a <= 12 and b > 12:
@@ -300,7 +352,7 @@ def normalisasi_tanggal_gs(tgl_str):
             if not (1 <= m <= 12 and 1 <= d <= 31) or not _valid_date(d, m, y):
                 return ""
             return f"{d:02d}-{m:02d}-{y}"
-                
+
         elif len(angka_parts) == 2:
             a = int(angka_parts[0])
             b = int(angka_parts[1])
@@ -319,7 +371,7 @@ def normalisasi_tanggal_gs(tgl_str):
             if not (1 <= m <= 12 and 1 <= d <= 31) or not _valid_date(d, m, y):
                 return ""
             return f"{d:02d}-{m:02d}-{y}"
-            
+
         elif len(angka_parts) == 1:
             # User HANYA memasukkan angka hari (contoh: 12)
             d = int(angka_parts[0])
@@ -330,7 +382,7 @@ def normalisasi_tanggal_gs(tgl_str):
             return f"{d:02d}-{m:02d}-{y}"
     except Exception:
         return ""
-        
+
     return ""
 
 
@@ -343,17 +395,20 @@ def get_all_barang(db_barang=None):
         rows = db_client.get_all_barang_db()
         result = []
         for r in rows:
-            result.append({
-                "id":      r["id"],
-                "nama":    r["nama_barang"],
-                "harga":   r["harga"],
-                "satuan":  r["satuan"] or "pcs",
-                "row_idx": r["id"] # Menggunakan ID DB sebagai row_idx
-            })
+            result.append(
+                {
+                    "id": r["id"],
+                    "nama": r["nama_barang"],
+                    "harga": r["harga"],
+                    "satuan": r["satuan"] or "pcs",
+                    "row_idx": r["id"],  # Menggunakan ID DB sebagai row_idx
+                }
+            )
         return result
     except Exception as e:
         print(f"Error get_all_barang: {e}")
         return []
+
 
 def tambah_barang(db_barang, nama, harga, satuan="pcs"):
     """Insert barang baru, return ID."""
@@ -387,14 +442,18 @@ def tambah_barang(db_barang, nama, harga, satuan="pcs"):
         raise e
     return None
 
+
 def update_barang(db_barang, row_idx, nama=None, harga=None, satuan=None):
     """Update field barang berdasarkan ID (row_idx mapping)."""
     try:
-        db_client.update_barang_db(row_idx, nama=nama, harga=int(harga) if harga else None, satuan=satuan)
+        db_client.update_barang_db(
+            row_idx, nama=nama, harga=int(harga) if harga else None, satuan=satuan
+        )
         _invalidate_cache("barang")
     except Exception as e:
         print(f"Error update_barang: {e}")
         raise e
+
 
 def hapus_barang(db_barang, row_idx):
     """Hapus baris barang berdasarkan ID."""
@@ -427,8 +486,8 @@ def cari_harga_default(db_barang, nama_barang, satuan_cari=None, semua_barang=No
         return []
 
     nama_cari = nama_barang.strip().lower()
-    nama_cari_clean = re.sub(r'[^\w\s]', '', nama_cari)
-    
+    nama_cari_clean = re.sub(r"[^\w\s]", "", nama_cari)
+
     if satuan_cari:
         satuan_cari = str(satuan_cari).strip().lower()
 
@@ -439,9 +498,16 @@ def cari_harga_default(db_barang, nama_barang, satuan_cari=None, semua_barang=No
         if b["harga"] <= 0:
             continue
         nama_db = b["nama"].strip().lower()
-        if nama_cari == nama_db or nama_cari_clean == re.sub(r'[^\w\s]', '', nama_db):
-            matches.append({"nama": b["nama"], "harga": b["harga"], "satuan": b["satuan"], "row_idx": b["row_idx"]})
-    
+        if nama_cari == nama_db or nama_cari_clean == re.sub(r"[^\w\s]", "", nama_db):
+            matches.append(
+                {
+                    "nama": b["nama"],
+                    "harga": b["harga"],
+                    "satuan": b["satuan"],
+                    "row_idx": b["row_idx"],
+                }
+            )
+
     # Filter berdasarkan satuan jika ada exact match nama
     if matches and satuan_cari:
         filtered = [m for m in matches if m["satuan"].strip().lower() == satuan_cari]
@@ -457,11 +523,22 @@ def cari_harga_default(db_barang, nama_barang, satuan_cari=None, semua_barang=No
         if b["harga"] <= 0:
             continue
         nama_db = b["nama"].strip().lower()
-        nama_db_clean = re.sub(r'[^\w\s]', '', nama_db)
-        if nama_cari in nama_db or nama_db in nama_cari or \
-           nama_cari_clean in nama_db_clean or nama_db_clean in nama_cari_clean:
-            matches.append({"nama": b["nama"], "harga": b["harga"], "satuan": b["satuan"], "row_idx": b["row_idx"]})
-    
+        nama_db_clean = re.sub(r"[^\w\s]", "", nama_db)
+        if (
+            nama_cari in nama_db
+            or nama_db in nama_cari
+            or nama_cari_clean in nama_db_clean
+            or nama_db_clean in nama_cari_clean
+        ):
+            matches.append(
+                {
+                    "nama": b["nama"],
+                    "harga": b["harga"],
+                    "satuan": b["satuan"],
+                    "row_idx": b["row_idx"],
+                }
+            )
+
     if matches and satuan_cari:
         filtered = [m for m in matches if m["satuan"].strip().lower() == satuan_cari]
         if filtered:
@@ -478,8 +555,15 @@ def cari_harga_default(db_barang, nama_barang, satuan_cari=None, semua_barang=No
         if res[1] >= 70:
             for b in semua:
                 if b["nama"] == res[0] and b["harga"] > 0:
-                    matches.append({"nama": b["nama"], "harga": b["harga"], "satuan": b["satuan"], "row_idx": b["row_idx"]})
-    
+                    matches.append(
+                        {
+                            "nama": b["nama"],
+                            "harga": b["harga"],
+                            "satuan": b["satuan"],
+                            "row_idx": b["row_idx"],
+                        }
+                    )
+
     if matches:
         if satuan_cari:
             filtered = [m for m in matches if m["satuan"].strip().lower() == satuan_cari]
@@ -510,7 +594,7 @@ def tambah_satuan(nama_satuan):
         for s in all_satuan:
             if s["nama_satuan"].lower() == nama_satuan.lower():
                 return s["id"]
-        
+
         # If not, insert new one
         res = db_client.insert_satuan_db(nama_satuan)
         return res[0]["id"] if res else None
@@ -544,16 +628,19 @@ def get_all_metode(db_metode=None):
         rows = db_client.get_all_metode_db()
         result = []
         for r in rows:
-            result.append({
-                "id":      r["id"],
-                "nama":    r["nama_metode"],
-                "keyword": r["kata_kunci"],
-                "row_idx": r["id"]
-            })
+            result.append(
+                {
+                    "id": r["id"],
+                    "nama": r["nama_metode"],
+                    "keyword": r["kata_kunci"],
+                    "row_idx": r["id"],
+                }
+            )
         return result
     except Exception as e:
         print(f"Error get_all_metode: {e}")
         return []
+
 
 def tambah_metode(db_metode, nama, keyword_alias=""):
     try:
@@ -565,12 +652,14 @@ def tambah_metode(db_metode, nama, keyword_alias=""):
         print(f"Error tambah_metode: {e}")
     return None
 
+
 def update_metode(db_metode, row_idx, nama=None, keyword=None):
     try:
         db_client.update_metode_db(row_idx, nama=nama, keyword=keyword)
         _invalidate_cache("metode_mapping")
     except Exception as e:
         print(f"Error update_metode: {e}")
+
 
 def hapus_metode(db_metode, row_idx):
     try:
@@ -579,6 +668,7 @@ def hapus_metode(db_metode, row_idx):
     except Exception as e:
         print(f"Error hapus_metode: {e}")
 
+
 def muat_metode_keywords(db_metode=None):
     """
     Build dict {keyword_lower: nama_metode} dari tabel Master Metode.
@@ -586,7 +676,8 @@ def muat_metode_keywords(db_metode=None):
     """
     mapping = {}
     for m in get_all_metode(db_metode):
-        if not m["keyword"]: continue
+        if not m["keyword"]:
+            continue
         for kw in m["keyword"].split(","):
             kw = kw.strip().lower()
             if kw:

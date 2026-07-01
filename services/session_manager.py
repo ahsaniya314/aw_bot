@@ -3,6 +3,7 @@ Session Manager — Persistent User Sessions via Supabase
 """
 import logging
 import threading
+
 from database import db_client
 
 logger = logging.getLogger("bot_logger")
@@ -10,6 +11,7 @@ logger = logging.getLogger("bot_logger")
 
 class UserSessions:
     """Class wrapper untuk mensimulasikan dict tetapi menyimpan data secara persisten ke database Supabase."""
+
     def __init__(self):
         self.local_cache = {}
         self.lock = threading.Lock()
@@ -43,6 +45,36 @@ class UserSessions:
 
     def __getitem__(self, chat_id):
         return self._get_session(chat_id)
+
+    def create_session(self, chat_id):
+        session = {"state": "standby", "ui_keyboard_shown": False}
+        self[chat_id] = session
+        return session
+
+    def clear_session(self, chat_id):
+        try:
+            chat_id_int = int(chat_id)
+            with self.lock:
+                self.local_cache.pop(chat_id_int, None)
+            db_client.save_session_db(chat_id_int, {})
+        except Exception as e:
+            logger.error(f"Gagal menghapus sesi untuk {chat_id}: {e}")
+
+    def get_session(self, chat_id):
+        try:
+            chat_id_int = int(chat_id)
+            with self.lock:
+                if chat_id_int in self.local_cache:
+                    return self.local_cache[chat_id_int]
+
+            session_data = db_client.load_session_db(chat_id_int)
+            if session_data:
+                with self.lock:
+                    self.local_cache[chat_id_int] = session_data
+                return session_data
+        except Exception:
+            pass
+        return None
 
     def __setitem__(self, chat_id, value):
         try:

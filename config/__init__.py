@@ -10,8 +10,10 @@ Or for direct settings access:
 
 from .settings import Config, get_settings
 
+
 def get_config() -> Config:
     """Get the global configuration instance."""
     return get_settings()
+
 
 __all__ = ["get_config", "Config", "get_settings"]

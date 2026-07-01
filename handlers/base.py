@@ -3,9 +3,10 @@ Base Handler Classes
 Provides common functionality for all handlers
 """
 
-from telebot import TeleBot
-from typing import Callable, Any
 import logging
+from typing import Any, Callable
+
+from telebot import TeleBot
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,7 @@ class CommandHandler(BaseHandler):
 
     def register_command(self, command: str, callback: Callable):
         """Register a command handler."""
+
         @self.bot.message_handler(commands=[command])
         def handler(message):
             return callback(message)
@@ -36,6 +38,7 @@ class CallbackHandler(BaseHandler):
 
     def register_callback(self, pattern: str, callback: Callable):
         """Register a callback query handler."""
+
         @self.bot.callback_query_handler(func=lambda call: pattern in call.data)
         def handler(call):
             return callback(call)
@@ -46,6 +49,7 @@ class MessageHandler(BaseHandler):
 
     def register_message(self, content_types: list, callback: Callable):
         """Register a message handler."""
+
         @self.bot.message_handler(content_types=content_types)
         def handler(message):
             return callback(message)

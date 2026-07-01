@@ -3,8 +3,9 @@ Command Handler - /help
 Shows available commands
 """
 
+
 def register(bot):
-    @bot.message_handler(commands=['help'])
+    @bot.message_handler(commands=["help"])
     def handle_help(message):
         help_text = """
 Available commands:
@@ -13,5 +14,6 @@ Available commands:
 /dashboard - Show dashboard
 """
         bot.reply_to(message, help_text)
+
 
 __all__ = ["register"]

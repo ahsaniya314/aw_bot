@@ -1,9 +1,10 @@
 import ast
 import sys
 
+
 def main():
     try:
-        with open('handlers/callback_handler.py', 'r', encoding='utf-8') as f:
+        with open("handlers/callback_handler.py", "r", encoding="utf-8") as f:
             source = f.read()
     except Exception as e:
         print(f"Error reading: {e}")
@@ -18,5 +19,6 @@ def main():
     print("Parsed successfully!")
     print(f"Has ast.unparse: {hasattr(ast, 'unparse')}")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

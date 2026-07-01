@@ -1,0 +1,87 @@
+﻿py : would reformat C:\Users\FINN\Documents\BOT\audit_system.py
+At line:1 char:294
++ ... lake8.txt ; py -3.10 -m black . --check --line-length=100 2>&1 | Out- ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (would reformat ...audit_system.py 
+   :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+would reformat C:\Users\FINN\Documents\BOT\config\__init__.py
+would reformat C:\Users\FINN\Documents\BOT\core\bot_context.py
+would reformat C:\Users\FINN\Documents\BOT\handlers\__init__.py
+would reformat C:\Users\FINN\Documents\BOT\handlers\base.py
+would reformat C:\Users\FINN\Documents\BOT\handlers\callback\__init__.py
+would reformat C:\Users\FINN\Documents\BOT\database\gspread_mock.py
+would reformat C:\Users\FINN\Documents\BOT\bot\core.py
+would reformat C:\Users\FINN\Documents\BOT\handlers\callback\pengaturan.py
+would reformat C:\Users\FINN\Documents\BOT\handlers\callback\transaksi.py
+would reformat C:\Users\FINN\Documents\BOT\handlers\callback_handler.py
+would reformat C:\Users\FINN\Documents\BOT\database\db_client.py
+would reformat C:\Users\FINN\Documents\BOT\contoh_ocr_ke_nlp.py
+would reformat C:\Users\FINN\Documents\BOT\handlers\command\__init__.py
+would reformat C:\Users\FINN\Documents\BOT\handlers\command\start.py
+would reformat C:\Users\FINN\Documents\BOT\handlers\command\help.py
+would reformat C:\Users\FINN\Documents\BOT\handlers\callback\barang.py
+would reformat C:\Users\FINN\Documents\BOT\handlers\crud_metode.py
+would reformat C:\Users\FINN\Documents\BOT\handlers\crud_satuan.py
+would reformat C:\Users\FINN\Documents\BOT\config\settings.py
+would reformat C:\Users\FINN\Documents\BOT\handlers\command_handler.py
+would reformat C:\Users\FINN\Documents\BOT\handlers\message\__init__.py
+would reformat C:\Users\FINN\Documents\BOT\handlers\message\photo.py
+would reformat C:\Users\FINN\Documents\BOT\handlers\message\text.py
+would reformat C:\Users\FINN\Documents\BOT\handlers\handler_dashboard.py
+would reformat C:\Users\FINN\Documents\BOT\app.py
+would reformat C:\Users\FINN\Documents\BOT\handlers\callback_transaksi.py
+would reformat C:\Users\FINN\Documents\BOT\nlp\dictionaries.py
+would reformat C:\Users\FINN\Documents\BOT\core\master_data.py
+would reformat C:\Users\FINN\Documents\BOT\handlers\crud_barang.py
+would reformat C:\Users\FINN\Documents\BOT\nlp\normalizer.py
+would reformat C:\Users\FINN\Documents\BOT\scripts\analysis\analyze_syntax.py
+would reformat C:\Users\FINN\Documents\BOT\scripts\analysis\check_ast.py
+would reformat C:\Users\FINN\Documents\BOT\scripts\analysis\filter_ast.py
+would reformat C:\Users\FINN\Documents\BOT\handlers\photo_handler.py
+would reformat C:\Users\FINN\Documents\BOT\scripts\analyze_dataset.py
+would reformat C:\Users\FINN\Documents\BOT\scripts\embed_nlp_data.py
+would reformat C:\Users\FINN\Documents\BOT\scripts\evaluate_nlp.py
+would reformat C:\Users\FINN\Documents\BOT\scripts\fixes\auto_fix_try.py
+would reformat C:\Users\FINN\Documents\BOT\scripts\fixes\fix_all.py
+would reformat C:\Users\FINN\Documents\BOT\scripts\fixes\fix_empty.py
+would reformat C:\Users\FINN\Documents\BOT\scripts\fixes\fix_excepts.py
+would reformat C:\Users\FINN\Documents\BOT\scripts\fixes\fix_syntax.py
+would reformat C:\Users\FINN\Documents\BOT\scripts\export_datasets.py
+would reformat C:\Users\FINN\Documents\BOT\scripts\fixes\fix_try.py
+would reformat C:\Users\FINN\Documents\BOT\scripts\fixes\unfix_try.py
+would reformat C:\Users\FINN\Documents\BOT\scripts\merge_datasets.py
+would reformat C:\Users\FINN\Documents\BOT\scripts\migrate_files.py
+would reformat C:\Users\FINN\Documents\BOT\scripts\refactor_imports.py
+would reformat C:\Users\FINN\Documents\BOT\scripts\utilities\make_copies.py
+would reformat C:\Users\FINN\Documents\BOT\scripts\utilities\ocr_runner.py
+would reformat 
+C:\Users\FINN\Documents\BOT\scripts\utilities\rewrite_dispatcher.py
+would reformat C:\Users\FINN\Documents\BOT\scripts\utilities\split_callbacks.py
+would reformat C:\Users\FINN\Documents\BOT\scripts\utilities\split_logic.py
+would reformat C:\Users\FINN\Documents\BOT\services\auto_reminder.py
+would reformat C:\Users\FINN\Documents\BOT\services\cache_manager.py
+would reformat C:\Users\FINN\Documents\BOT\services\daily_dashboard.py
+would reformat C:\Users\FINN\Documents\BOT\services\dashboard_api.py
+would reformat C:\Users\FINN\Documents\BOT\handlers\text_handler.py
+would reformat C:\Users\FINN\Documents\BOT\services\debt_tracker.py
+would reformat C:\Users\FINN\Documents\BOT\handlers\crud_transaksi.py
+would reformat C:\Users\FINN\Documents\BOT\scripts\generate_umkm_datasets.py
+would reformat C:\Users\FINN\Documents\BOT\nlp\processor.py
+would reformat C:\Users\FINN\Documents\BOT\services\ui_common.py
+would reformat C:\Users\FINN\Documents\BOT\services\ocr_preprocessor.py
+would reformat C:\Users\FINN\Documents\BOT\services\ocr_service.py
+would reformat C:\Users\FINN\Documents\BOT\tests\conftest.py
+would reformat C:\Users\FINN\Documents\BOT\services\visualizer.py
+would reformat C:\Users\FINN\Documents\BOT\utils\helpers.py
+would reformat C:\Users\FINN\Documents\BOT\services\ui_pengaturan.py
+would reformat C:\Users\FINN\Documents\BOT\services\session_manager.py
+would reformat C:\Users\FINN\Documents\BOT\utils\security.py
+would reformat C:\Users\FINN\Documents\BOT\handlers\callback_pengaturan.py
+would reformat C:\Users\FINN\Documents\BOT\services\ui_transaksi.py
+would reformat C:\Users\FINN\Documents\BOT\nlp\extractor.py
+would reformat C:\Users\FINN\Documents\BOT\nlp\embedded_data.py
+
+Oh no! \U0001f4a5 \U0001f494 \U0001f4a5
+76 files would be reformatted, 15 files would be left unchanged.

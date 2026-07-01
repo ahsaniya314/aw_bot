@@ -11,6 +11,7 @@ from typing import Any, List, Optional
 
 class BotContext:
     """Container untuk semua dependency global bot."""
+
     bot: Any = None
     user_sessions: Any = None
     db_transaksi: Any = None

@@ -1,5 +1,6 @@
-from nlp.processor import split_multi_entries, _apply_multi_overrides
 import re
+
+from nlp.processor import _apply_multi_overrides, split_multi_entries
 
 user_input = "Pak Andi pesan permen 10 dus, meses 5 bungkus, willo 3 dus, belum lunas semua."
 print("split_multi_entries:")

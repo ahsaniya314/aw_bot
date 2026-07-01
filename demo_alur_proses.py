@@ -4,8 +4,8 @@ Demonstrasi Alur Pemrosesan Data NLP
 Script ini menunjukkan bagaimana data diproses dari input mentah menjadi data terstruktur
 """
 
-import sys
 import os
+import sys
 
 # Fix encoding issue di Windows
 if sys.platform == 'win32':
@@ -15,10 +15,10 @@ if sys.platform == 'win32':
 # Tambahkan direktori proyek ke path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from nlp.processor import proses_nlp
-from nlp.normalizer import koreksi_teks
-from nlp.extractor import ekstrak_entitas
 from nlp.dictionaries import KAMUS_ALIAS
+from nlp.extractor import ekstrak_entitas
+from nlp.normalizer import koreksi_teks
+from nlp.processor import proses_nlp
 
 
 def demonstrasi_proses(input_teks):

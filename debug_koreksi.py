@@ -1,6 +1,7 @@
+from rapidfuzz import fuzz, process
+
+from nlp.dictionaries import DAFTAR_KATA_KUNCI, KAMUS_ALIAS
 from nlp.normalizer import koreksi_teks
-from nlp.dictionaries import KAMUS_ALIAS, DAFTAR_KATA_KUNCI
-from rapidfuzz import process, fuzz
 
 test_input1 = "mses 5 bks"
 test_input2 = "will0 3 dus belum lunwas semua"

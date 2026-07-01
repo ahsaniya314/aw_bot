@@ -35,5 +35,5 @@ def handle_semua_tombol(call):
         handle_transaksi_callbacks(call)
 """
 
-with open('handlers/callback_handler.py', 'w', encoding='utf-8') as f:
+with open("handlers/callback_handler.py", "w", encoding="utf-8") as f:
     f.write(dispatcher_code)

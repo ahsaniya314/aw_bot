@@ -2,9 +2,11 @@
 Unit Tests for Logger
 """
 
-import pytest
 import logging
-from utils.logger import get_logger, setup_logging, get_bot_logger
+
+import pytest
+
+from utils.logger import get_bot_logger, get_logger, setup_logging
 
 
 class TestLogger:

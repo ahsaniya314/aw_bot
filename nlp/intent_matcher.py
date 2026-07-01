@@ -1,5 +1,6 @@
 import logging
-from rapidfuzz import process, fuzz
+
+from rapidfuzz import fuzz, process
 
 from nlp.embedded_data import INTENT_PATTERNS, NLP_TRAINING_EXAMPLES
 

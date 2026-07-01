@@ -2,14 +2,14 @@
 Demonstrasi Alur Pemrosesan Data NLP - Versi Sederhana
 """
 
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from nlp.processor import proses_nlp, split_multi_entries
-from nlp.normalizer import koreksi_teks
 from nlp.extractor import ekstrak_entitas
+from nlp.normalizer import koreksi_teks
+from nlp.processor import proses_nlp, split_multi_entries
 
 
 def print_separator(title):

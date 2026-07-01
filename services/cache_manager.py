@@ -15,25 +15,35 @@ logger = logging.getLogger("bot_logger")
 class GSpreadCache:
     def __init__(self, expiry_minutes=5):
         self.expiry_minutes = expiry_minutes
-        self.cache = {} # {key: {"data": value, "time": timestamp}}
+        self.cache = {}  # {key: {"data": value, "time": timestamp}}
         self.lock = threading.Lock()
 
     def get(self, key):
         with self.lock:
-            if key in self.cache:
-                entry = self.cache[key]
-                if (datetime.now() - entry["time"]).total_seconds() < self.expiry_minutes * 60:
-                    return entry["data"]
+            entry = self.cache.get(key)
+            if entry is None:
+                return None
+
+            ttl_seconds = entry.get("ttl")
+            if ttl_seconds is None:
+                ttl_seconds = self.expiry_minutes * 60
+
+            if (datetime.now() - entry["time"]).total_seconds() < ttl_seconds:
+                return entry["data"]
+
+            self.cache.pop(key, None)
         return None
 
-    def set(self, key, value):
+    def set(self, key, value, ttl=None):
         with self.lock:
-            self.cache[key] = {"data": value, "time": datetime.now()}
+            self.cache[key] = {"data": value, "time": datetime.now(), "ttl": ttl}
 
     def invalidate(self, key=None):
         with self.lock:
-            if key: self.cache.pop(key, None)
-            else: self.cache = {}
+            if key:
+                self.cache.pop(key, None)
+            else:
+                self.cache = {}
 
 
 def get_cached_barang():

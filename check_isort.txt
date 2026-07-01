@@ -1,0 +1,150 @@
+﻿py : ERROR: C:\Users\FINN\Documents\BOT\app.py Imports are incorrectly sorted 
+and/or formatted.
+At line:1 char:96
++ ...  utf8 check_black.txt ; py -3.10 -m isort . --check-only 2>&1 | Out-F ...
++                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ERROR: C:\Users...d/or formatted. 
+   :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+ERROR: C:\Users\FINN\Documents\BOT\audit_system.py Imports are incorrectly 
+sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\contoh_ocr_ke_nlp.py Imports are 
+incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\debug_koreksi.py Imports are incorrectly 
+sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\debug_koreksi_teks.py Imports are 
+incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\debug_processor.py Imports are incorrectly 
+sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\demo_alur_lengkap.py Imports are 
+incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\demo_alur_proses.py Imports are incorrectly 
+sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\demo_multi.py Imports are incorrectly 
+sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\demo_simple.py Imports are incorrectly 
+sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\demo_typo.py Imports are incorrectly sorted 
+and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\test_full_pipeline.py Imports are 
+incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\test_menu.py Imports are incorrectly sorted 
+and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\test_mistral_ocr.py Imports are incorrectly 
+sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\test_nlp.py Imports are incorrectly sorted 
+and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\test_ocr_cer_wer.py Imports are incorrectly 
+sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\test_ocr_complete.py Imports are 
+incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\test_ocr_sanitize.py Imports are 
+incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\test_ocr_service.py Imports are incorrectly 
+sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\test_ocr_user_case.py Imports are 
+incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\test_permen.py Imports are incorrectly 
+sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\test_prmen.py Imports are incorrectly 
+sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\test_reply_keyboard.py Imports are 
+incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\test_supabase.py Imports are incorrectly 
+sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\bot\core.py Imports are incorrectly sorted 
+and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\bot\core.py Imports are 
+incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\config\settings.py Imports are 
+incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\config\__init__.py Imports are 
+incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\core\master_data.py Imports are 
+incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\database\db_client.py Imports are 
+incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\database\gspread_mock.py Imports 
+are incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\handlers\base.py Imports are 
+incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\handlers\callback_handler.py 
+Imports are incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\handlers\callback_pengaturan.py 
+Imports are incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\handlers\callback_transaksi.py 
+Imports are incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\handlers\command_handler.py 
+Imports are incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\handlers\crud_barang.py Imports 
+are incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\handlers\crud_metode.py Imports 
+are incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\handlers\crud_satuan.py Imports 
+are incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\handlers\crud_transaksi.py 
+Imports are incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\handlers\handler_dashboard.py 
+Imports are incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\handlers\photo_handler.py Imports 
+are incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\handlers\text_handler.py Imports 
+are incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\handlers\callback\barang.py 
+Imports are incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\handlers\callback\pengaturan.py 
+Imports are incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\handlers\callback\__init__.py 
+Imports are incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\handlers\command\__init__.py 
+Imports are incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\handlers\message\__init__.py 
+Imports are incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\nlp\dictionaries.py Imports are 
+incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\nlp\extractor.py Imports are 
+incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\nlp\intent_matcher.py Imports are 
+incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\nlp\normalizer.py Imports are 
+incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\nlp\processor.py Imports are 
+incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\services\auto_reminder.py Imports 
+are incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\services\daily_dashboard.py 
+Imports are incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\services\dashboard_api.py Imports 
+are incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\services\debt_tracker.py Imports 
+are incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\services\ocr_preprocessor.py 
+Imports are incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\services\ocr_service.py Imports 
+are incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\services\session_manager.py 
+Imports are incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\services\ui_common.py Imports are 
+incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\services\ui_pengaturan.py Imports 
+are incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\services\ui_transaksi.py Imports 
+are incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\services\visualizer.py Imports 
+are incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\utils\helpers.py Imports are 
+incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\utils\logger.py Imports are 
+incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\build\lib\utils\security.py Imports are 
+incorrectly sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\config\settings.py Imports are incorrectly 
+sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\config\__init__.py Imports are incorrectly 
+sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\core\master_data.py Imports are incorrectly 
+sorted and/or formatted.
+ERROR: C:\Users\FINN\Documents\BOT\dashboard-web\node_modules\flatted\python\fl
+atted.py Imports are incorrectly sorted and/or formatted.
+Skipped 4 files

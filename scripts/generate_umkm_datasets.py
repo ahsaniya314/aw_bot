@@ -4,18 +4,19 @@ penjualan UMKM A&W Production ke dalam format CSV dan Excel (multi-sheet).
 Setiap kategori dataset berisi minimal 100 data.
 """
 
+import json
 import os
 import sys
+
 import pandas as pd
-import json
 
 # Tambahkan root directory ke sys.path agar bisa mengimpor modul nlp
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if ROOT_DIR not in sys.path:
     sys.path.append(ROOT_DIR)
 
-from nlp.normalizer import koreksi_teks
 from nlp.embedded_data import NORMALIZATION_DICT
+from nlp.normalizer import koreksi_teks
 
 # ---------------------------------------------------------
 # 1. DATASET INTENT (4.2.2)
@@ -23,17 +24,35 @@ from nlp.embedded_data import NORMALIZATION_DICT
 data_intent = [
     # tambah_data (25 data)
     {"intent": "tambah_data", "contoh_kalimat": "tambah transaksi 5 dus permen coklat lunas cash"},
-    {"intent": "tambah_data", "contoh_kalimat": "input pesanan pak ardi 10 box roti pia roda belum lunas"},
+    {
+        "intent": "tambah_data",
+        "contoh_kalimat": "input pesanan pak ardi 10 box roti pia roda belum lunas",
+    },
     {"intent": "tambah_data", "contoh_kalimat": "tambahkan 3 ctn coklat millo transfer bank"},
     {"intent": "tambah_data", "contoh_kalimat": "bikin data penjualan 12 bungkus brownis cash"},
-    {"intent": "tambah_data", "contoh_kalimat": "catat orderan baru permen lolipop 50 toples sudah bayar"},
-    {"intent": "tambah_data", "contoh_kalimat": "tambah order 20 bungkus roti pia potong belum dibayar"},
+    {
+        "intent": "tambah_data",
+        "contoh_kalimat": "catat orderan baru permen lolipop 50 toples sudah bayar",
+    },
+    {
+        "intent": "tambah_data",
+        "contoh_kalimat": "tambah order 20 bungkus roti pia potong belum dibayar",
+    },
     {"intent": "tambah_data", "contoh_kalimat": "masukkan penjualan 5 pcs keripik singkong lunas"},
-    {"intent": "tambah_data", "contoh_kalimat": "rekam transaksi 100 bungkus serbuk jeli bayar lunas"},
+    {
+        "intent": "tambah_data",
+        "contoh_kalimat": "rekam transaksi 100 bungkus serbuk jeli bayar lunas",
+    },
     {"intent": "tambah_data", "contoh_kalimat": "tulis pesanan baru kopi sachet 2 renceng cash"},
-    {"intent": "tambah_data", "contoh_kalimat": "tambah penjualan 2 botol minyak goreng belum lunas"},
+    {
+        "intent": "tambah_data",
+        "contoh_kalimat": "tambah penjualan 2 botol minyak goreng belum lunas",
+    },
     {"intent": "tambah_data", "contoh_kalimat": "simpan orderan 5 kg gula pasir lunas"},
-    {"intent": "tambah_data", "contoh_kalimat": "input transaksi baru 1 ctn wilo coklat lunas transfer"},
+    {
+        "intent": "tambah_data",
+        "contoh_kalimat": "input transaksi baru 1 ctn wilo coklat lunas transfer",
+    },
     {"intent": "tambah_data", "contoh_kalimat": "tambah transaksi 3 bungkus meses coklat cash"},
     {"intent": "tambah_data", "contoh_kalimat": "masukin pesanan baru 10 dus pia bulus lunas"},
     {"intent": "tambah_data", "contoh_kalimat": "tambah order 15 pcs jaket hitam transfer"},
@@ -46,8 +65,10 @@ data_intent = [
     {"intent": "tambah_data", "contoh_kalimat": "tambah transaksi 3 pack roti pia bulus cash"},
     {"intent": "tambah_data", "contoh_kalimat": "rekam orderan baru 500 pcs permen lolipop lunas"},
     {"intent": "tambah_data", "contoh_kalimat": "simpan transaksi 10 pak snack ring belum lunas"},
-    {"intent": "tambah_data", "contoh_kalimat": "tambah data penjualan 100 botol air mineral lunas"},
-
+    {
+        "intent": "tambah_data",
+        "contoh_kalimat": "tambah data penjualan 100 botol air mineral lunas",
+    },
     # tampilkan_data (25 data)
     {"intent": "tampilkan_data", "contoh_kalimat": "tampilkan semua data penjualan"},
     {"intent": "tampilkan_data", "contoh_kalimat": "lihat pesanan minggu ini"},
@@ -74,34 +95,47 @@ data_intent = [
     {"intent": "tampilkan_data", "contoh_kalimat": "tampilkan semua pesanan cicilan"},
     {"intent": "tampilkan_data", "contoh_kalimat": "tampilkan rekap uang masuk hari ini"},
     {"intent": "tampilkan_data", "contoh_kalimat": "lihat daftar hutang pelanggan"},
-
     # update_data (25 data)
     {"intent": "update_data", "contoh_kalimat": "update status transaksi pak andi jadi lunas"},
     {"intent": "update_data", "contoh_kalimat": "ubah harga permen lolipop jadi 12000"},
     {"intent": "update_data", "contoh_kalimat": "ganti jumlah pesanan brownis budi jadi 15"},
     {"intent": "update_data", "contoh_kalimat": "edit nominal bayar orderan pak ardi"},
     {"intent": "update_data", "contoh_kalimat": "update harga roti pia roda menjadi 15000"},
-    {"intent": "update_data", "contoh_kalimat": "ubah data pesanan udin ganti barang ke permen coklat"},
-    {"intent": "update_data", "contoh_kalimat": "ganti metode pembayaran transaksi 102 jadi transfer"},
+    {
+        "intent": "update_data",
+        "contoh_kalimat": "ubah data pesanan udin ganti barang ke permen coklat",
+    },
+    {
+        "intent": "update_data",
+        "contoh_kalimat": "ganti metode pembayaran transaksi 102 jadi transfer",
+    },
     {"intent": "update_data", "contoh_kalimat": "edit jumlah barang orderan siti jadi 20 bungkus"},
     {"intent": "update_data", "contoh_kalimat": "update tanggal ambil pesanan pak ardi jadi besok"},
-    {"intent": "update_data", "contoh_kalimat": "ubah status pembayaran orderan 45 menjadi belum lunas"},
+    {
+        "intent": "update_data",
+        "contoh_kalimat": "ubah status pembayaran orderan 45 menjadi belum lunas",
+    },
     {"intent": "update_data", "contoh_kalimat": "ganti harga brownis coklat jadi 25000"},
     {"intent": "update_data", "contoh_kalimat": "update status cicilan budi lunas"},
-    {"intent": "update_data", "contoh_kalimat": "edit data penjualan permen willo ganti kuantitas 50"},
+    {
+        "intent": "update_data",
+        "contoh_kalimat": "edit data penjualan permen willo ganti kuantitas 50",
+    },
     {"intent": "update_data", "contoh_kalimat": "ubah nama pelanggan transaksi 105 jadi pak rudi"},
     {"intent": "update_data", "contoh_kalimat": "ganti total harga pesanan joni jadi 500000"},
     {"intent": "update_data", "contoh_kalimat": "update harga satuan coklat millo jadi 2000"},
     {"intent": "update_data", "contoh_kalimat": "edit status bayar orderan kaos hitam jadi lunas"},
     {"intent": "update_data", "contoh_kalimat": "ubah nominal dp transaksi 222 jadi 100000"},
     {"intent": "update_data", "contoh_kalimat": "ganti kategori produk keripik jadi snack kering"},
-    {"intent": "update_data", "contoh_kalimat": "update jumlah orderan roti pia bulus menjadi 5 dus"},
+    {
+        "intent": "update_data",
+        "contoh_kalimat": "update jumlah orderan roti pia bulus menjadi 5 dus",
+    },
     {"intent": "update_data", "contoh_kalimat": "edit tanggal transaksi orderan 88 jadi kemarin"},
     {"intent": "update_data", "contoh_kalimat": "ubah harga satuan permen lolipop toples"},
     {"intent": "update_data", "contoh_kalimat": "ganti detail transaksi pak ardi terbaru"},
     {"intent": "update_data", "contoh_kalimat": "update nominal pembayaran cash lunas"},
     {"intent": "update_data", "contoh_kalimat": "edit catatan pesanan coklat kubus"},
-
     # hapus_data (25 data)
     {"intent": "hapus_data", "contoh_kalimat": "hapus pesanan udin"},
     {"intent": "hapus_data", "contoh_kalimat": "batalin transaksi terakhir"},
@@ -128,7 +162,6 @@ data_intent = [
     {"intent": "hapus_data", "contoh_kalimat": "delete data orderan gagal ocr"},
     {"intent": "hapus_data", "contoh_kalimat": "hapus transaksi lunas tunai"},
     {"intent": "hapus_data", "contoh_kalimat": "batalkan pesanan keripik singkong"},
-
     # cari_data (25 data)
     {"intent": "cari_data", "contoh_kalimat": "cari pesanan atas nama pak ardi"},
     {"intent": "cari_data", "contoh_kalimat": "cek pesanan roti pia bulus"},
@@ -154,7 +187,7 @@ data_intent = [
     {"intent": "cari_data", "contoh_kalimat": "cari orderan dengan status cicilan"},
     {"intent": "cari_data", "contoh_kalimat": "cek penjualan tanggal 10 april"},
     {"intent": "cari_data", "contoh_kalimat": "cari pesanan permen willo"},
-    {"intent": "cari_data", "contoh_kalimat": "temukan data transaksi lunas cash"}
+    {"intent": "cari_data", "contoh_kalimat": "temukan data transaksi lunas cash"},
 ]
 
 # ---------------------------------------------------------
@@ -162,158 +195,712 @@ data_intent = [
 # ---------------------------------------------------------
 data_entitas = [
     # nama_barang (20)
-    {"jenis_entitas": "nama_barang", "nilai_entitas": "Permen Coklat", "contoh_penggunaan": "tambah transaksi 5 dus permen coklat"},
-    {"jenis_entitas": "nama_barang", "nilai_entitas": "Roti Pia Roda", "contoh_penggunaan": "input pesanan 10 box roti pia roda"},
-    {"jenis_entitas": "nama_barang", "nilai_entitas": "Roti Pia Bulus", "contoh_penggunaan": "tambah orderan 3 dus roti pia bulus"},
-    {"jenis_entitas": "nama_barang", "nilai_entitas": "Brownis", "contoh_penggunaan": "bikin data penjualan 12 bungkus brownis"},
-    {"jenis_entitas": "nama_barang", "nilai_entitas": "Permen Lolipop", "contoh_penggunaan": "beli 50 toples permen lolipop"},
-    {"jenis_entitas": "nama_barang", "nilai_entitas": "Willo", "contoh_penggunaan": "tambah order 1 ctn wilo coklat"},
-    {"jenis_entitas": "nama_barang", "nilai_entitas": "Bemmbeng", "contoh_penggunaan": "tambahkan transaksi 2 toples bemmbeng"},
-    {"jenis_entitas": "nama_barang", "nilai_entitas": "Adangrow", "contoh_penggunaan": "beli 10 sachet adangrow rasa coklat"},
-    {"jenis_entitas": "nama_barang", "nilai_entitas": "Cholatos", "contoh_penggunaan": "tambah transaksi 5 box cholatos wafer"},
-    {"jenis_entitas": "nama_barang", "nilai_entitas": "Miksu", "contoh_penggunaan": "input orderan 30 cup es miksu vanilla"},
-    {"jenis_entitas": "nama_barang", "nilai_entitas": "Getbory", "contoh_penggunaan": "tambah penjualan 12 bar getbory coklat"},
-    {"jenis_entitas": "nama_barang", "nilai_entitas": "Salju", "contoh_penggunaan": "catat pesanan 5 bungkus serbuk salju"},
-    {"jenis_entitas": "nama_barang", "nilai_entitas": "Serbuk Jelly", "contoh_penggunaan": "input 20 pack serbuk jelly stroberi"},
-    {"jenis_entitas": "nama_barang", "nilai_entitas": "Coklat Kubus", "contoh_penggunaan": "tambah orderan 5 pcs coklat kubus"},
-    {"jenis_entitas": "nama_barang", "nilai_entitas": "Coklat Piramide", "contoh_penggunaan": "masukkan pesanan 2 ctn piramide"},
-    {"jenis_entitas": "nama_barang", "nilai_entitas": "Meses Coklat", "contoh_penggunaan": "tambah transaksi 3 bungkus meses coklat"},
-    {"jenis_entitas": "nama_barang", "nilai_entitas": "Keripik Singkong", "contoh_penggunaan": "masukkan penjualan 5 pcs keripik singkong"},
-    {"jenis_entitas": "nama_barang", "nilai_entitas": "Mie Instan", "contoh_penggunaan": "catat penjualan 4 pak mie instan goreng"},
-    {"jenis_entitas": "nama_barang", "nilai_entitas": "Kaos", "contoh_penggunaan": "tambah transaksi 2 pcs kaos putih polos"},
-    {"jenis_entitas": "nama_barang", "nilai_entitas": "Jaket", "contoh_penggunaan": "tambah order 15 pcs jaket hitam hoodie"},
-
+    {
+        "jenis_entitas": "nama_barang",
+        "nilai_entitas": "Permen Coklat",
+        "contoh_penggunaan": "tambah transaksi 5 dus permen coklat",
+    },
+    {
+        "jenis_entitas": "nama_barang",
+        "nilai_entitas": "Roti Pia Roda",
+        "contoh_penggunaan": "input pesanan 10 box roti pia roda",
+    },
+    {
+        "jenis_entitas": "nama_barang",
+        "nilai_entitas": "Roti Pia Bulus",
+        "contoh_penggunaan": "tambah orderan 3 dus roti pia bulus",
+    },
+    {
+        "jenis_entitas": "nama_barang",
+        "nilai_entitas": "Brownis",
+        "contoh_penggunaan": "bikin data penjualan 12 bungkus brownis",
+    },
+    {
+        "jenis_entitas": "nama_barang",
+        "nilai_entitas": "Permen Lolipop",
+        "contoh_penggunaan": "beli 50 toples permen lolipop",
+    },
+    {
+        "jenis_entitas": "nama_barang",
+        "nilai_entitas": "Willo",
+        "contoh_penggunaan": "tambah order 1 ctn wilo coklat",
+    },
+    {
+        "jenis_entitas": "nama_barang",
+        "nilai_entitas": "Bemmbeng",
+        "contoh_penggunaan": "tambahkan transaksi 2 toples bemmbeng",
+    },
+    {
+        "jenis_entitas": "nama_barang",
+        "nilai_entitas": "Adangrow",
+        "contoh_penggunaan": "beli 10 sachet adangrow rasa coklat",
+    },
+    {
+        "jenis_entitas": "nama_barang",
+        "nilai_entitas": "Cholatos",
+        "contoh_penggunaan": "tambah transaksi 5 box cholatos wafer",
+    },
+    {
+        "jenis_entitas": "nama_barang",
+        "nilai_entitas": "Miksu",
+        "contoh_penggunaan": "input orderan 30 cup es miksu vanilla",
+    },
+    {
+        "jenis_entitas": "nama_barang",
+        "nilai_entitas": "Getbory",
+        "contoh_penggunaan": "tambah penjualan 12 bar getbory coklat",
+    },
+    {
+        "jenis_entitas": "nama_barang",
+        "nilai_entitas": "Salju",
+        "contoh_penggunaan": "catat pesanan 5 bungkus serbuk salju",
+    },
+    {
+        "jenis_entitas": "nama_barang",
+        "nilai_entitas": "Serbuk Jelly",
+        "contoh_penggunaan": "input 20 pack serbuk jelly stroberi",
+    },
+    {
+        "jenis_entitas": "nama_barang",
+        "nilai_entitas": "Coklat Kubus",
+        "contoh_penggunaan": "tambah orderan 5 pcs coklat kubus",
+    },
+    {
+        "jenis_entitas": "nama_barang",
+        "nilai_entitas": "Coklat Piramide",
+        "contoh_penggunaan": "masukkan pesanan 2 ctn piramide",
+    },
+    {
+        "jenis_entitas": "nama_barang",
+        "nilai_entitas": "Meses Coklat",
+        "contoh_penggunaan": "tambah transaksi 3 bungkus meses coklat",
+    },
+    {
+        "jenis_entitas": "nama_barang",
+        "nilai_entitas": "Keripik Singkong",
+        "contoh_penggunaan": "masukkan penjualan 5 pcs keripik singkong",
+    },
+    {
+        "jenis_entitas": "nama_barang",
+        "nilai_entitas": "Mie Instan",
+        "contoh_penggunaan": "catat penjualan 4 pak mie instan goreng",
+    },
+    {
+        "jenis_entitas": "nama_barang",
+        "nilai_entitas": "Kaos",
+        "contoh_penggunaan": "tambah transaksi 2 pcs kaos putih polos",
+    },
+    {
+        "jenis_entitas": "nama_barang",
+        "nilai_entitas": "Jaket",
+        "contoh_penggunaan": "tambah order 15 pcs jaket hitam hoodie",
+    },
     # jumlah (20)
-    {"jenis_entitas": "jumlah", "nilai_entitas": "5", "contoh_penggunaan": "tambah transaksi 5 dus permen coklat"},
-    {"jenis_entitas": "jumlah", "nilai_entitas": "10", "contoh_penggunaan": "input pesanan pak ardi 10 box roti pia roda"},
-    {"jenis_entitas": "jumlah", "nilai_entitas": "3", "contoh_penggunaan": "tambahkan 3 ctn coklat millo transfer bank"},
-    {"jenis_entitas": "jumlah", "nilai_entitas": "12", "contoh_penggunaan": "bikin data penjualan 12 bungkus brownis cash"},
-    {"jenis_entitas": "jumlah", "nilai_entitas": "50", "contoh_penggunaan": "catat orderan baru permen lolipop 50 toples"},
-    {"jenis_entitas": "jumlah", "nilai_entitas": "20", "contoh_penggunaan": "tambah order 20 bungkus roti pia potong"},
-    {"jenis_entitas": "jumlah", "nilai_entitas": "100", "contoh_penggunaan": "rekam transaksi 100 bungkus serbuk jeli bayar lunas"},
-    {"jenis_entitas": "jumlah", "nilai_entitas": "2", "contoh_penggunaan": "tambah penjualan 2 botol minyak goreng belum lunas"},
-    {"jenis_entitas": "jumlah", "nilai_entitas": "15", "contoh_penggunaan": "tambah order 15 pcs jaket hitam transfer"},
-    {"jenis_entitas": "jumlah", "nilai_entitas": "30", "contoh_penggunaan": "masukin pesanan baru 30 dus pia bulus lunas"},
-    {"jenis_entitas": "jumlah", "nilai_entitas": "1", "contoh_penggunaan": "input transaksi baru 1 ctn wilo coklat"},
-    {"jenis_entitas": "jumlah", "nilai_entitas": "600", "contoh_penggunaan": "hari ini andi order permen 600 toples"},
-    {"jenis_entitas": "jumlah", "nilai_entitas": "30", "contoh_penggunaan": "tambah transaksi 30 pack roti pia bulus cash"},
-    {"jenis_entitas": "jumlah", "nilai_entitas": "500", "contoh_penggunaan": "rekam orderan baru 500 pcs permen lolipop"},
-    {"jenis_entitas": "jumlah", "nilai_entitas": "4", "contoh_penggunaan": "catat penjualan 4 pak mie instan belum bayar"},
-    {"jenis_entitas": "jumlah", "nilai_entitas": "25", "contoh_penggunaan": "tambahkan transaksi 25 toples bemmbeng lunas"},
-    {"jenis_entitas": "jumlah", "nilai_entitas": "120", "contoh_penggunaan": "input data 120 bungkus serbuk salju lunas"},
-    {"jenis_entitas": "jumlah", "nilai_entitas": "8", "contoh_penggunaan": "tambah data penjualan 8 botol air mineral"},
-    {"jenis_entitas": "jumlah", "nilai_entitas": "150", "contoh_penggunaan": "beli kaos 150 pcs sablon custom"},
-    {"jenis_entitas": "jumlah", "nilai_entitas": "7", "contoh_penggunaan": "pesan meses coklat sebanyak 7 bungkus"},
-
+    {
+        "jenis_entitas": "jumlah",
+        "nilai_entitas": "5",
+        "contoh_penggunaan": "tambah transaksi 5 dus permen coklat",
+    },
+    {
+        "jenis_entitas": "jumlah",
+        "nilai_entitas": "10",
+        "contoh_penggunaan": "input pesanan pak ardi 10 box roti pia roda",
+    },
+    {
+        "jenis_entitas": "jumlah",
+        "nilai_entitas": "3",
+        "contoh_penggunaan": "tambahkan 3 ctn coklat millo transfer bank",
+    },
+    {
+        "jenis_entitas": "jumlah",
+        "nilai_entitas": "12",
+        "contoh_penggunaan": "bikin data penjualan 12 bungkus brownis cash",
+    },
+    {
+        "jenis_entitas": "jumlah",
+        "nilai_entitas": "50",
+        "contoh_penggunaan": "catat orderan baru permen lolipop 50 toples",
+    },
+    {
+        "jenis_entitas": "jumlah",
+        "nilai_entitas": "20",
+        "contoh_penggunaan": "tambah order 20 bungkus roti pia potong",
+    },
+    {
+        "jenis_entitas": "jumlah",
+        "nilai_entitas": "100",
+        "contoh_penggunaan": "rekam transaksi 100 bungkus serbuk jeli bayar lunas",
+    },
+    {
+        "jenis_entitas": "jumlah",
+        "nilai_entitas": "2",
+        "contoh_penggunaan": "tambah penjualan 2 botol minyak goreng belum lunas",
+    },
+    {
+        "jenis_entitas": "jumlah",
+        "nilai_entitas": "15",
+        "contoh_penggunaan": "tambah order 15 pcs jaket hitam transfer",
+    },
+    {
+        "jenis_entitas": "jumlah",
+        "nilai_entitas": "30",
+        "contoh_penggunaan": "masukin pesanan baru 30 dus pia bulus lunas",
+    },
+    {
+        "jenis_entitas": "jumlah",
+        "nilai_entitas": "1",
+        "contoh_penggunaan": "input transaksi baru 1 ctn wilo coklat",
+    },
+    {
+        "jenis_entitas": "jumlah",
+        "nilai_entitas": "600",
+        "contoh_penggunaan": "hari ini andi order permen 600 toples",
+    },
+    {
+        "jenis_entitas": "jumlah",
+        "nilai_entitas": "30",
+        "contoh_penggunaan": "tambah transaksi 30 pack roti pia bulus cash",
+    },
+    {
+        "jenis_entitas": "jumlah",
+        "nilai_entitas": "500",
+        "contoh_penggunaan": "rekam orderan baru 500 pcs permen lolipop",
+    },
+    {
+        "jenis_entitas": "jumlah",
+        "nilai_entitas": "4",
+        "contoh_penggunaan": "catat penjualan 4 pak mie instan belum bayar",
+    },
+    {
+        "jenis_entitas": "jumlah",
+        "nilai_entitas": "25",
+        "contoh_penggunaan": "tambahkan transaksi 25 toples bemmbeng lunas",
+    },
+    {
+        "jenis_entitas": "jumlah",
+        "nilai_entitas": "120",
+        "contoh_penggunaan": "input data 120 bungkus serbuk salju lunas",
+    },
+    {
+        "jenis_entitas": "jumlah",
+        "nilai_entitas": "8",
+        "contoh_penggunaan": "tambah data penjualan 8 botol air mineral",
+    },
+    {
+        "jenis_entitas": "jumlah",
+        "nilai_entitas": "150",
+        "contoh_penggunaan": "beli kaos 150 pcs sablon custom",
+    },
+    {
+        "jenis_entitas": "jumlah",
+        "nilai_entitas": "7",
+        "contoh_penggunaan": "pesan meses coklat sebanyak 7 bungkus",
+    },
     # harga_satuan (20)
-    {"jenis_entitas": "harga_satuan", "nilai_entitas": "5000", "contoh_penggunaan": "harga permen lolipop 5000 per toples"},
-    {"jenis_entitas": "harga_satuan", "nilai_entitas": "15000", "contoh_penggunaan": "roti pia roda seharga 15000 satu bungkus"},
-    {"jenis_entitas": "harga_satuan", "nilai_entitas": "25000", "contoh_penggunaan": "brownis dipatok harga 25000 rupiah"},
-    {"jenis_entitas": "harga_satuan", "nilai_entitas": "2000", "contoh_penggunaan": "harga permen coklat 2000 per pcs murah"},
-    {"jenis_entitas": "harga_satuan", "nilai_entitas": "75000", "contoh_penggunaan": "kaos polos seharga 75000 per lembar"},
-    {"jenis_entitas": "harga_satuan", "nilai_entitas": "150000", "contoh_penggunaan": "harga jaket putih 150000 satu jaket"},
-    {"jenis_entitas": "harga_satuan", "nilai_entitas": "12000", "contoh_penggunaan": "mie instan 12000 per pak isi lima"},
-    {"jenis_entitas": "harga_satuan", "nilai_entitas": "35000", "contoh_penggunaan": "harga keripik singkong 35000 per kilo gram"},
-    {"jenis_entitas": "harga_satuan", "nilai_entitas": "10000", "contoh_penggunaan": "serbuk jeli seharga 10000 per pack"},
-    {"jenis_entitas": "harga_satuan", "nilai_entitas": "8000", "contoh_penggunaan": "willo seharga 8000 satu sachet besar"},
-    {"jenis_entitas": "harga_satuan", "nilai_entitas": "4500", "contoh_penggunaan": "bemmbeng seharga 4500 satu bungkus kecil"},
-    {"jenis_entitas": "harga_satuan", "nilai_entitas": "60000", "contoh_penggunaan": "coklat kubus seharga 60000 satu toples"},
-    {"jenis_entitas": "harga_satuan", "nilai_entitas": "85000", "contoh_penggunaan": "coklat piramide seharga 85000 satu kotak"},
-    {"jenis_entitas": "harga_satuan", "nilai_entitas": "14000", "contoh_penggunaan": "meses warna seharga 14000 per bungkus"},
-    {"jenis_entitas": "harga_satuan", "nilai_entitas": "18000", "contoh_penggunaan": "minyak goreng seharga 18000 satu liter"},
-    {"jenis_entitas": "harga_satuan", "nilai_entitas": "13500", "contoh_penggunaan": "gula pasir seharga 13500 per kilo gram"},
-    {"jenis_entitas": "harga_satuan", "nilai_entitas": "9500", "contoh_penggunaan": "tepung terigu seharga 9500 satu kilo"},
-    {"jenis_entitas": "harga_satuan", "nilai_entitas": "3000", "contoh_penggunaan": "air mineral seharga 3000 satu botol"},
-    {"jenis_entitas": "harga_satuan", "nilai_entitas": "50000", "contoh_penggunaan": "kopi bubuk seharga 50000 satu kemasan kaleng"},
-    {"jenis_entitas": "harga_satuan", "nilai_entitas": "20000", "contoh_penggunaan": "saus sambal seharga 20000 satu botol kaca"},
-
+    {
+        "jenis_entitas": "harga_satuan",
+        "nilai_entitas": "5000",
+        "contoh_penggunaan": "harga permen lolipop 5000 per toples",
+    },
+    {
+        "jenis_entitas": "harga_satuan",
+        "nilai_entitas": "15000",
+        "contoh_penggunaan": "roti pia roda seharga 15000 satu bungkus",
+    },
+    {
+        "jenis_entitas": "harga_satuan",
+        "nilai_entitas": "25000",
+        "contoh_penggunaan": "brownis dipatok harga 25000 rupiah",
+    },
+    {
+        "jenis_entitas": "harga_satuan",
+        "nilai_entitas": "2000",
+        "contoh_penggunaan": "harga permen coklat 2000 per pcs murah",
+    },
+    {
+        "jenis_entitas": "harga_satuan",
+        "nilai_entitas": "75000",
+        "contoh_penggunaan": "kaos polos seharga 75000 per lembar",
+    },
+    {
+        "jenis_entitas": "harga_satuan",
+        "nilai_entitas": "150000",
+        "contoh_penggunaan": "harga jaket putih 150000 satu jaket",
+    },
+    {
+        "jenis_entitas": "harga_satuan",
+        "nilai_entitas": "12000",
+        "contoh_penggunaan": "mie instan 12000 per pak isi lima",
+    },
+    {
+        "jenis_entitas": "harga_satuan",
+        "nilai_entitas": "35000",
+        "contoh_penggunaan": "harga keripik singkong 35000 per kilo gram",
+    },
+    {
+        "jenis_entitas": "harga_satuan",
+        "nilai_entitas": "10000",
+        "contoh_penggunaan": "serbuk jeli seharga 10000 per pack",
+    },
+    {
+        "jenis_entitas": "harga_satuan",
+        "nilai_entitas": "8000",
+        "contoh_penggunaan": "willo seharga 8000 satu sachet besar",
+    },
+    {
+        "jenis_entitas": "harga_satuan",
+        "nilai_entitas": "4500",
+        "contoh_penggunaan": "bemmbeng seharga 4500 satu bungkus kecil",
+    },
+    {
+        "jenis_entitas": "harga_satuan",
+        "nilai_entitas": "60000",
+        "contoh_penggunaan": "coklat kubus seharga 60000 satu toples",
+    },
+    {
+        "jenis_entitas": "harga_satuan",
+        "nilai_entitas": "85000",
+        "contoh_penggunaan": "coklat piramide seharga 85000 satu kotak",
+    },
+    {
+        "jenis_entitas": "harga_satuan",
+        "nilai_entitas": "14000",
+        "contoh_penggunaan": "meses warna seharga 14000 per bungkus",
+    },
+    {
+        "jenis_entitas": "harga_satuan",
+        "nilai_entitas": "18000",
+        "contoh_penggunaan": "minyak goreng seharga 18000 satu liter",
+    },
+    {
+        "jenis_entitas": "harga_satuan",
+        "nilai_entitas": "13500",
+        "contoh_penggunaan": "gula pasir seharga 13500 per kilo gram",
+    },
+    {
+        "jenis_entitas": "harga_satuan",
+        "nilai_entitas": "9500",
+        "contoh_penggunaan": "tepung terigu seharga 9500 satu kilo",
+    },
+    {
+        "jenis_entitas": "harga_satuan",
+        "nilai_entitas": "3000",
+        "contoh_penggunaan": "air mineral seharga 3000 satu botol",
+    },
+    {
+        "jenis_entitas": "harga_satuan",
+        "nilai_entitas": "50000",
+        "contoh_penggunaan": "kopi bubuk seharga 50000 satu kemasan kaleng",
+    },
+    {
+        "jenis_entitas": "harga_satuan",
+        "nilai_entitas": "20000",
+        "contoh_penggunaan": "saus sambal seharga 20000 satu botol kaca",
+    },
     # total_harga (20)
-    {"jenis_entitas": "total_harga", "nilai_entitas": "25000", "contoh_penggunaan": "total belanjaan semuanya jadi 25000 rupiah"},
-    {"jenis_entitas": "total_harga", "nilai_entitas": "150000", "contoh_penggunaan": "total penjualan hari ini 150000 rupiah"},
-    {"jenis_entitas": "total_harga", "nilai_entitas": "180000", "contoh_penggunaan": "pembayaran total senilai 180000 ditransfer"},
-    {"jenis_entitas": "total_harga", "nilai_entitas": "75000", "contoh_penggunaan": "total transaksi lunas 75000 cash"},
-    {"jenis_entitas": "total_harga", "nilai_entitas": "300000", "contoh_penggunaan": "nominal transaksi sebesar 300000 dicatat"},
-    {"jenis_entitas": "total_harga", "nilai_entitas": "500000", "contoh_penggunaan": "total orderan kaos 500000 sudah dp"},
-    {"jenis_entitas": "total_harga", "nilai_entitas": "120000", "contoh_penggunaan": "total harga roti pia bulus 120000"},
-    {"jenis_entitas": "total_harga", "nilai_entitas": "60000", "contoh_penggunaan": "pembayaran sebagian total 60000 sisanya hutang"},
-    {"jenis_entitas": "total_harga", "nilai_entitas": "1000000", "contoh_penggunaan": "nominal pembayaran transfer 1000000 bank mandiri"},
-    {"jenis_entitas": "total_harga", "nilai_entitas": "45000", "contoh_penggunaan": "total harga permen lolipop 45000 lunas"},
-    {"jenis_entitas": "total_harga", "nilai_entitas": "90000", "contoh_penggunaan": "total bayar wilo coklat 90000 cash"},
-    {"jenis_entitas": "total_harga", "nilai_entitas": "350000", "contoh_penggunaan": "total transaksi cicilan 350000 rupiah"},
-    {"jenis_entitas": "total_harga", "nilai_entitas": "240000", "contoh_penggunaan": "total belanja mie instan 240000 rupiah"},
-    {"jenis_entitas": "total_harga", "nilai_entitas": "70000", "contoh_penggunaan": "total harga meses coklat 70000 lunas"},
-    {"jenis_entitas": "total_harga", "nilai_entitas": "54000", "contoh_penggunaan": "total harga minyak goreng 54000 bayar cash"},
-    {"jenis_entitas": "total_harga", "nilai_entitas": "27000", "contoh_penggunaan": "total belanja gula pasir 27000 tunai"},
-    {"jenis_entitas": "total_harga", "nilai_entitas": "190000", "contoh_penggunaan": "total harga jaket hitam 190000 sudah bayar"},
-    {"jenis_entitas": "total_harga", "nilai_entitas": "800000", "contoh_penggunaan": "total transaksi lunas transfer 800000"},
-    {"jenis_entitas": "total_harga", "nilai_entitas": "15000", "contoh_penggunaan": "total harga snack ring 15000 rupiah"},
-    {"jenis_entitas": "total_harga", "nilai_entitas": "200000", "contoh_penggunaan": "total bayar tunai cash 200000 lunas"},
-
+    {
+        "jenis_entitas": "total_harga",
+        "nilai_entitas": "25000",
+        "contoh_penggunaan": "total belanjaan semuanya jadi 25000 rupiah",
+    },
+    {
+        "jenis_entitas": "total_harga",
+        "nilai_entitas": "150000",
+        "contoh_penggunaan": "total penjualan hari ini 150000 rupiah",
+    },
+    {
+        "jenis_entitas": "total_harga",
+        "nilai_entitas": "180000",
+        "contoh_penggunaan": "pembayaran total senilai 180000 ditransfer",
+    },
+    {
+        "jenis_entitas": "total_harga",
+        "nilai_entitas": "75000",
+        "contoh_penggunaan": "total transaksi lunas 75000 cash",
+    },
+    {
+        "jenis_entitas": "total_harga",
+        "nilai_entitas": "300000",
+        "contoh_penggunaan": "nominal transaksi sebesar 300000 dicatat",
+    },
+    {
+        "jenis_entitas": "total_harga",
+        "nilai_entitas": "500000",
+        "contoh_penggunaan": "total orderan kaos 500000 sudah dp",
+    },
+    {
+        "jenis_entitas": "total_harga",
+        "nilai_entitas": "120000",
+        "contoh_penggunaan": "total harga roti pia bulus 120000",
+    },
+    {
+        "jenis_entitas": "total_harga",
+        "nilai_entitas": "60000",
+        "contoh_penggunaan": "pembayaran sebagian total 60000 sisanya hutang",
+    },
+    {
+        "jenis_entitas": "total_harga",
+        "nilai_entitas": "1000000",
+        "contoh_penggunaan": "nominal pembayaran transfer 1000000 bank mandiri",
+    },
+    {
+        "jenis_entitas": "total_harga",
+        "nilai_entitas": "45000",
+        "contoh_penggunaan": "total harga permen lolipop 45000 lunas",
+    },
+    {
+        "jenis_entitas": "total_harga",
+        "nilai_entitas": "90000",
+        "contoh_penggunaan": "total bayar wilo coklat 90000 cash",
+    },
+    {
+        "jenis_entitas": "total_harga",
+        "nilai_entitas": "350000",
+        "contoh_penggunaan": "total transaksi cicilan 350000 rupiah",
+    },
+    {
+        "jenis_entitas": "total_harga",
+        "nilai_entitas": "240000",
+        "contoh_penggunaan": "total belanja mie instan 240000 rupiah",
+    },
+    {
+        "jenis_entitas": "total_harga",
+        "nilai_entitas": "70000",
+        "contoh_penggunaan": "total harga meses coklat 70000 lunas",
+    },
+    {
+        "jenis_entitas": "total_harga",
+        "nilai_entitas": "54000",
+        "contoh_penggunaan": "total harga minyak goreng 54000 bayar cash",
+    },
+    {
+        "jenis_entitas": "total_harga",
+        "nilai_entitas": "27000",
+        "contoh_penggunaan": "total belanja gula pasir 27000 tunai",
+    },
+    {
+        "jenis_entitas": "total_harga",
+        "nilai_entitas": "190000",
+        "contoh_penggunaan": "total harga jaket hitam 190000 sudah bayar",
+    },
+    {
+        "jenis_entitas": "total_harga",
+        "nilai_entitas": "800000",
+        "contoh_penggunaan": "total transaksi lunas transfer 800000",
+    },
+    {
+        "jenis_entitas": "total_harga",
+        "nilai_entitas": "15000",
+        "contoh_penggunaan": "total harga snack ring 15000 rupiah",
+    },
+    {
+        "jenis_entitas": "total_harga",
+        "nilai_entitas": "200000",
+        "contoh_penggunaan": "total bayar tunai cash 200000 lunas",
+    },
     # warna (20)
-    {"jenis_entitas": "warna", "nilai_entitas": "hitam", "contoh_penggunaan": "jaket hitam ukuran L 2 pcs"},
-    {"jenis_entitas": "warna", "nilai_entitas": "putih", "contoh_penggunaan": "pesan kaos putih polos 2 pcs"},
-    {"jenis_entitas": "warna", "nilai_entitas": "merah", "contoh_penggunaan": "roti pia bulus bungkus merah 5 pack"},
-    {"jenis_entitas": "warna", "nilai_entitas": "coklat", "contoh_penggunaan": "permen coklat manis 3 toples"},
-    {"jenis_entitas": "warna", "nilai_entitas": "kuning", "contoh_penggunaan": "keripik pisang kemasan kuning manis"},
-    {"jenis_entitas": "warna", "nilai_entitas": "biru", "contoh_penggunaan": "order jaket biru navy ukuran XL"},
-    {"jenis_entitas": "warna", "nilai_entitas": "hijau", "contoh_penggunaan": "teh hijau kemasan kotak karton"},
-    {"jenis_entitas": "warna", "nilai_entitas": "abu-abu", "contoh_penggunaan": "pesanan kaos abu-abu 5 pcs cash"},
-    {"jenis_entitas": "warna", "nilai_entitas": "warna-warni", "contoh_penggunaan": "permen lolipop warna-warni toplesan"},
-    {"jenis_entitas": "warna", "nilai_entitas": "pink", "contoh_penggunaan": "lolipop stroberi warna pink cerah"},
-    {"jenis_entitas": "warna", "nilai_entitas": "gelap", "contoh_penggunaan": "kaos warna gelap ukuran M"},
-    {"jenis_entitas": "warna", "nilai_entitas": "terang", "contoh_penggunaan": "jaket warna terang untuk berkendara"},
-    {"jenis_entitas": "warna", "nilai_entitas": "polos", "contoh_penggunaan": "kaos polos hitam 10 lembar"},
-    {"jenis_entitas": "warna", "nilai_entitas": "belang", "contoh_penggunaan": "snack kemasan belang rasa pedas"},
-    {"jenis_entitas": "warna", "nilai_entitas": "emas", "contoh_penggunaan": "coklat kubus bungkus emas mewah"},
-    {"jenis_entitas": "warna", "nilai_entitas": "perak", "contoh_penggunaan": "coklat piramide bungkus perak kemasan dus"},
-    {"jenis_entitas": "warna", "nilai_entitas": "orange", "contoh_penggunaan": "serbuk jeli rasa jeruk warna orange segar"},
-    {"jenis_entitas": "warna", "nilai_entitas": "ungu", "contoh_penggunaan": "serbuk jelly rasa anggur warna ungu tua"},
-    {"jenis_entitas": "warna", "nilai_entitas": "gelap", "contoh_penggunaan": "meses coklat gelap 2 bungkus"},
-    {"jenis_entitas": "warna", "nilai_entitas": "pelangi", "contoh_penggunaan": "meses warna pelangi toples sedang"},
-
+    {
+        "jenis_entitas": "warna",
+        "nilai_entitas": "hitam",
+        "contoh_penggunaan": "jaket hitam ukuran L 2 pcs",
+    },
+    {
+        "jenis_entitas": "warna",
+        "nilai_entitas": "putih",
+        "contoh_penggunaan": "pesan kaos putih polos 2 pcs",
+    },
+    {
+        "jenis_entitas": "warna",
+        "nilai_entitas": "merah",
+        "contoh_penggunaan": "roti pia bulus bungkus merah 5 pack",
+    },
+    {
+        "jenis_entitas": "warna",
+        "nilai_entitas": "coklat",
+        "contoh_penggunaan": "permen coklat manis 3 toples",
+    },
+    {
+        "jenis_entitas": "warna",
+        "nilai_entitas": "kuning",
+        "contoh_penggunaan": "keripik pisang kemasan kuning manis",
+    },
+    {
+        "jenis_entitas": "warna",
+        "nilai_entitas": "biru",
+        "contoh_penggunaan": "order jaket biru navy ukuran XL",
+    },
+    {
+        "jenis_entitas": "warna",
+        "nilai_entitas": "hijau",
+        "contoh_penggunaan": "teh hijau kemasan kotak karton",
+    },
+    {
+        "jenis_entitas": "warna",
+        "nilai_entitas": "abu-abu",
+        "contoh_penggunaan": "pesanan kaos abu-abu 5 pcs cash",
+    },
+    {
+        "jenis_entitas": "warna",
+        "nilai_entitas": "warna-warni",
+        "contoh_penggunaan": "permen lolipop warna-warni toplesan",
+    },
+    {
+        "jenis_entitas": "warna",
+        "nilai_entitas": "pink",
+        "contoh_penggunaan": "lolipop stroberi warna pink cerah",
+    },
+    {
+        "jenis_entitas": "warna",
+        "nilai_entitas": "gelap",
+        "contoh_penggunaan": "kaos warna gelap ukuran M",
+    },
+    {
+        "jenis_entitas": "warna",
+        "nilai_entitas": "terang",
+        "contoh_penggunaan": "jaket warna terang untuk berkendara",
+    },
+    {
+        "jenis_entitas": "warna",
+        "nilai_entitas": "polos",
+        "contoh_penggunaan": "kaos polos hitam 10 lembar",
+    },
+    {
+        "jenis_entitas": "warna",
+        "nilai_entitas": "belang",
+        "contoh_penggunaan": "snack kemasan belang rasa pedas",
+    },
+    {
+        "jenis_entitas": "warna",
+        "nilai_entitas": "emas",
+        "contoh_penggunaan": "coklat kubus bungkus emas mewah",
+    },
+    {
+        "jenis_entitas": "warna",
+        "nilai_entitas": "perak",
+        "contoh_penggunaan": "coklat piramide bungkus perak kemasan dus",
+    },
+    {
+        "jenis_entitas": "warna",
+        "nilai_entitas": "orange",
+        "contoh_penggunaan": "serbuk jeli rasa jeruk warna orange segar",
+    },
+    {
+        "jenis_entitas": "warna",
+        "nilai_entitas": "ungu",
+        "contoh_penggunaan": "serbuk jelly rasa anggur warna ungu tua",
+    },
+    {
+        "jenis_entitas": "warna",
+        "nilai_entitas": "gelap",
+        "contoh_penggunaan": "meses coklat gelap 2 bungkus",
+    },
+    {
+        "jenis_entitas": "warna",
+        "nilai_entitas": "pelangi",
+        "contoh_penggunaan": "meses warna pelangi toples sedang",
+    },
     # kategori (20)
-    {"jenis_entitas": "kategori", "nilai_entitas": "permen", "contoh_penggunaan": "tampilkan produk kategori permen manis"},
-    {"jenis_entitas": "kategori", "nilai_entitas": "roti", "contoh_penggunaan": "semua transaksi kategori roti pia roda"},
-    {"jenis_entitas": "kategori", "nilai_entitas": "snack", "contoh_penggunaan": "daftar barang kategori snack keripik"},
-    {"jenis_entitas": "kategori", "nilai_entitas": "minuman", "contoh_penggunaan": "minuman segar dingin botolan aqua"},
-    {"jenis_entitas": "kategori", "nilai_entitas": "sembako", "contoh_penggunaan": "kategori sembako minyak goreng dan gula"},
-    {"jenis_entitas": "kategori", "nilai_entitas": "pakaian", "contoh_penggunaan": "daftar penjualan kategori pakaian kaos dan jaket"},
-    {"jenis_entitas": "kategori", "nilai_entitas": "coklat", "contoh_penggunaan": "kategori coklat batangan premium getbory"},
-    {"jenis_entitas": "kategori", "nilai_entitas": "serbuk", "contoh_penggunaan": "kategori serbuk minuman salju manis"},
-    {"jenis_entitas": "kategori", "nilai_entitas": "bumbu", "contoh_penggunaan": "kategori bumbu dapur kecap manis pedas"},
-    {"jenis_entitas": "kategori", "nilai_entitas": "jeli", "contoh_penggunaan": "makanan ringan kategori jeli rasa buah"},
-    {"jenis_entitas": "kategori", "nilai_entitas": "mie", "contoh_penggunaan": "mie instan kuah masuk kategori mie"},
-    {"jenis_entitas": "kategori", "nilai_entitas": "kopi", "contoh_penggunaan": "kategori kopi sachet luwak black"},
-    {"jenis_entitas": "kategori", "nilai_entitas": "susu", "contoh_penggunaan": "kategori susu bubuk dancow coklat"},
-    {"jenis_entitas": "kategori", "nilai_entitas": "kue", "contoh_penggunaan": "kategori kue basah brownies lumer"},
-    {"jenis_entitas": "kategori", "nilai_entitas": "minyak", "contoh_penggunaan": "kategori minyak goreng kelapa sawit bimoli"},
-    {"jenis_entitas": "kategori", "nilai_entitas": "tepung", "contoh_penggunaan": "kategori tepung terigu segitiga biru"},
-    {"jenis_entitas": "kategori", "nilai_entitas": "kaos", "contoh_penggunaan": "pakaian kategori kaos oblong sablon"},
-    {"jenis_entitas": "kategori", "nilai_entitas": "jaket", "contoh_penggunaan": "pakaian kategori jaket hoodie wol"},
-    {"jenis_entitas": "kategori", "nilai_entitas": "permen coklat", "contoh_penggunaan": "kategori permen coklat millo toples"},
-    {"jenis_entitas": "kategori", "nilai_entitas": "roti pia", "contoh_penggunaan": "kategori roti pia bulus isi kacang hijau"},
-
+    {
+        "jenis_entitas": "kategori",
+        "nilai_entitas": "permen",
+        "contoh_penggunaan": "tampilkan produk kategori permen manis",
+    },
+    {
+        "jenis_entitas": "kategori",
+        "nilai_entitas": "roti",
+        "contoh_penggunaan": "semua transaksi kategori roti pia roda",
+    },
+    {
+        "jenis_entitas": "kategori",
+        "nilai_entitas": "snack",
+        "contoh_penggunaan": "daftar barang kategori snack keripik",
+    },
+    {
+        "jenis_entitas": "kategori",
+        "nilai_entitas": "minuman",
+        "contoh_penggunaan": "minuman segar dingin botolan aqua",
+    },
+    {
+        "jenis_entitas": "kategori",
+        "nilai_entitas": "sembako",
+        "contoh_penggunaan": "kategori sembako minyak goreng dan gula",
+    },
+    {
+        "jenis_entitas": "kategori",
+        "nilai_entitas": "pakaian",
+        "contoh_penggunaan": "daftar penjualan kategori pakaian kaos dan jaket",
+    },
+    {
+        "jenis_entitas": "kategori",
+        "nilai_entitas": "coklat",
+        "contoh_penggunaan": "kategori coklat batangan premium getbory",
+    },
+    {
+        "jenis_entitas": "kategori",
+        "nilai_entitas": "serbuk",
+        "contoh_penggunaan": "kategori serbuk minuman salju manis",
+    },
+    {
+        "jenis_entitas": "kategori",
+        "nilai_entitas": "bumbu",
+        "contoh_penggunaan": "kategori bumbu dapur kecap manis pedas",
+    },
+    {
+        "jenis_entitas": "kategori",
+        "nilai_entitas": "jeli",
+        "contoh_penggunaan": "makanan ringan kategori jeli rasa buah",
+    },
+    {
+        "jenis_entitas": "kategori",
+        "nilai_entitas": "mie",
+        "contoh_penggunaan": "mie instan kuah masuk kategori mie",
+    },
+    {
+        "jenis_entitas": "kategori",
+        "nilai_entitas": "kopi",
+        "contoh_penggunaan": "kategori kopi sachet luwak black",
+    },
+    {
+        "jenis_entitas": "kategori",
+        "nilai_entitas": "susu",
+        "contoh_penggunaan": "kategori susu bubuk dancow coklat",
+    },
+    {
+        "jenis_entitas": "kategori",
+        "nilai_entitas": "kue",
+        "contoh_penggunaan": "kategori kue basah brownies lumer",
+    },
+    {
+        "jenis_entitas": "kategori",
+        "nilai_entitas": "minyak",
+        "contoh_penggunaan": "kategori minyak goreng kelapa sawit bimoli",
+    },
+    {
+        "jenis_entitas": "kategori",
+        "nilai_entitas": "tepung",
+        "contoh_penggunaan": "kategori tepung terigu segitiga biru",
+    },
+    {
+        "jenis_entitas": "kategori",
+        "nilai_entitas": "kaos",
+        "contoh_penggunaan": "pakaian kategori kaos oblong sablon",
+    },
+    {
+        "jenis_entitas": "kategori",
+        "nilai_entitas": "jaket",
+        "contoh_penggunaan": "pakaian kategori jaket hoodie wol",
+    },
+    {
+        "jenis_entitas": "kategori",
+        "nilai_entitas": "permen coklat",
+        "contoh_penggunaan": "kategori permen coklat millo toples",
+    },
+    {
+        "jenis_entitas": "kategori",
+        "nilai_entitas": "roti pia",
+        "contoh_penggunaan": "kategori roti pia bulus isi kacang hijau",
+    },
     # tanggal (20)
-    {"jenis_entitas": "tanggal", "nilai_entitas": "16 juni 2026", "contoh_penggunaan": "tampilkan transaksi tanggal 16 juni 2026"},
-    {"jenis_entitas": "tanggal", "nilai_entitas": "kemarin", "contoh_penggunaan": "rekap penjualan kemarin hari senin"},
-    {"jenis_entitas": "tanggal", "nilai_entitas": "hari ini", "contoh_penggunaan": "tampilkan transaksi hari ini lunas"},
-    {"jenis_entitas": "tanggal", "nilai_entitas": "besok", "contoh_penggunaan": "diambil besok pagi jam 9 oleh budi"},
-    {"jenis_entitas": "tanggal", "nilai_entitas": "lusa", "contoh_penggunaan": "pesanan dikirim lusa hari rabu"},
-    {"jenis_entitas": "tanggal", "nilai_entitas": "minggu ini", "contoh_penggunaan": "laporan penjualan minggu ini lengkap"},
-    {"jenis_entitas": "tanggal", "nilai_entitas": "12-05-2026", "contoh_penggunaan": "transaksi tanggal 12-05-2026 lunas"},
-    {"jenis_entitas": "tanggal", "nilai_entitas": "01/06/2026", "contoh_penggunaan": "penjualan tanggal 01/06/2026 kontan"},
-    {"jenis_entitas": "tanggal", "nilai_entitas": "15 Juni", "contoh_penggunaan": "transaksi hari senin 15 Juni dicatat"},
-    {"jenis_entitas": "tanggal", "nilai_entitas": "akhir bulan", "contoh_penggunaan": "laporan untuk akhir bulan mei kemarin"},
-    {"jenis_entitas": "tanggal", "nilai_entitas": "awal tahun", "contoh_penggunaan": "rekap penjualan awal tahun 2026"},
-    {"jenis_entitas": "tanggal", "nilai_entitas": "senin lalu", "contoh_penggunaan": "pesanan senin lalu sudah dikirim lunas"},
-    {"jenis_entitas": "tanggal", "nilai_entitas": "21-04-2026", "contoh_penggunaan": "pesanan tanggal 21-04-2026 diubah"},
-    {"jenis_entitas": "tanggal", "nilai_entitas": "2026-06-10", "contoh_penggunaan": "transaksi tanggal 2026-06-10 selesai"},
-    {"jenis_entitas": "tanggal", "nilai_entitas": "mei kemarin", "contoh_penggunaan": "rekap penjualan bulan mei kemarin dicatat"},
-    {"jenis_entitas": "tanggal", "nilai_entitas": "juni ini", "contoh_penggunaan": "laporan transaksi juni ini diekspor"},
-    {"jenis_entitas": "tanggal", "nilai_entitas": "3 hari yang lalu", "contoh_penggunaan": "transaksi 3 hari yang lalu belum lunas"},
-    {"jenis_entitas": "tanggal", "nilai_entitas": "1 minggu lagi", "contoh_penggunaan": "pesanan diambil 1 minggu lagi hari selasa"},
-    {"jenis_entitas": "tanggal", "nilai_entitas": "tanggal 25", "contoh_penggunaan": "rekap transaksi tanggal 25 lunas cash"},
-    {"jenis_entitas": "tanggal", "nilai_entitas": "pertengahan bulan", "contoh_penggunaan": "rekap pertengahan bulan juni 2026"}
+    {
+        "jenis_entitas": "tanggal",
+        "nilai_entitas": "16 juni 2026",
+        "contoh_penggunaan": "tampilkan transaksi tanggal 16 juni 2026",
+    },
+    {
+        "jenis_entitas": "tanggal",
+        "nilai_entitas": "kemarin",
+        "contoh_penggunaan": "rekap penjualan kemarin hari senin",
+    },
+    {
+        "jenis_entitas": "tanggal",
+        "nilai_entitas": "hari ini",
+        "contoh_penggunaan": "tampilkan transaksi hari ini lunas",
+    },
+    {
+        "jenis_entitas": "tanggal",
+        "nilai_entitas": "besok",
+        "contoh_penggunaan": "diambil besok pagi jam 9 oleh budi",
+    },
+    {
+        "jenis_entitas": "tanggal",
+        "nilai_entitas": "lusa",
+        "contoh_penggunaan": "pesanan dikirim lusa hari rabu",
+    },
+    {
+        "jenis_entitas": "tanggal",
+        "nilai_entitas": "minggu ini",
+        "contoh_penggunaan": "laporan penjualan minggu ini lengkap",
+    },
+    {
+        "jenis_entitas": "tanggal",
+        "nilai_entitas": "12-05-2026",
+        "contoh_penggunaan": "transaksi tanggal 12-05-2026 lunas",
+    },
+    {
+        "jenis_entitas": "tanggal",
+        "nilai_entitas": "01/06/2026",
+        "contoh_penggunaan": "penjualan tanggal 01/06/2026 kontan",
+    },
+    {
+        "jenis_entitas": "tanggal",
+        "nilai_entitas": "15 Juni",
+        "contoh_penggunaan": "transaksi hari senin 15 Juni dicatat",
+    },
+    {
+        "jenis_entitas": "tanggal",
+        "nilai_entitas": "akhir bulan",
+        "contoh_penggunaan": "laporan untuk akhir bulan mei kemarin",
+    },
+    {
+        "jenis_entitas": "tanggal",
+        "nilai_entitas": "awal tahun",
+        "contoh_penggunaan": "rekap penjualan awal tahun 2026",
+    },
+    {
+        "jenis_entitas": "tanggal",
+        "nilai_entitas": "senin lalu",
+        "contoh_penggunaan": "pesanan senin lalu sudah dikirim lunas",
+    },
+    {
+        "jenis_entitas": "tanggal",
+        "nilai_entitas": "21-04-2026",
+        "contoh_penggunaan": "pesanan tanggal 21-04-2026 diubah",
+    },
+    {
+        "jenis_entitas": "tanggal",
+        "nilai_entitas": "2026-06-10",
+        "contoh_penggunaan": "transaksi tanggal 2026-06-10 selesai",
+    },
+    {
+        "jenis_entitas": "tanggal",
+        "nilai_entitas": "mei kemarin",
+        "contoh_penggunaan": "rekap penjualan bulan mei kemarin dicatat",
+    },
+    {
+        "jenis_entitas": "tanggal",
+        "nilai_entitas": "juni ini",
+        "contoh_penggunaan": "laporan transaksi juni ini diekspor",
+    },
+    {
+        "jenis_entitas": "tanggal",
+        "nilai_entitas": "3 hari yang lalu",
+        "contoh_penggunaan": "transaksi 3 hari yang lalu belum lunas",
+    },
+    {
+        "jenis_entitas": "tanggal",
+        "nilai_entitas": "1 minggu lagi",
+        "contoh_penggunaan": "pesanan diambil 1 minggu lagi hari selasa",
+    },
+    {
+        "jenis_entitas": "tanggal",
+        "nilai_entitas": "tanggal 25",
+        "contoh_penggunaan": "rekap transaksi tanggal 25 lunas cash",
+    },
+    {
+        "jenis_entitas": "tanggal",
+        "nilai_entitas": "pertengahan bulan",
+        "contoh_penggunaan": "rekap pertengahan bulan juni 2026",
+    },
 ]
 
 # ---------------------------------------------------------
@@ -499,7 +1086,6 @@ data_sebelum_normalisasi = [
     {"sumber_input": "teks", "data_mentah": "edit nominal byar orderan pak ardi"},
     {"sumber_input": "teks", "data_mentah": "update hrg roti pia roda mjdi 15000"},
     {"sumber_input": "teks", "data_mentah": "ubah data pesanan udin ganti brg ke permen coklat"},
-
     # OCR (50 data dengan simulasi noise OCR khas)
     {"sumber_input": "OCR", "data_mentah": "3pc kaoss htm 75.000"},
     {"sumber_input": "OCR", "data_mentah": "tamp11kan transaks1 kemar1n"},
@@ -550,8 +1136,9 @@ data_sebelum_normalisasi = [
     {"sumber_input": "OCR", "data_mentah": "r1wayat pe5anan ud1n 1hat"},
     {"sumber_input": "OCR", "data_mentah": "penjua1an har1 1n1 1ns lhat"},
     {"sumber_input": "OCR", "data_mentah": "transaks1 pembayaran trn5fer cek"},
-    {"sumber_input": "OCR", "data_mentah": "1ap0ran penjua1an bu1anan lhat"}
+    {"sumber_input": "OCR", "data_mentah": "1ap0ran penjua1an bu1anan lhat"},
 ]
+
 
 def is_numeric_word(w):
     # Hilangkan tanda baca seperti . , dan suffix seperti rb, jt, k
@@ -562,13 +1149,14 @@ def is_numeric_word(w):
         w_clean = w_clean[:-1]
     return w_clean.isdigit()
 
+
 # Jalankan koreksi_teks untuk menghasilkan "data_setelah_normalisasi"
 # Kami juga mereplikasi logika penggantian OCR dasar untuk kasus OCR tertentu agar hasilnya maksimal
 def custom_ocr_cleanup(text):
     # Bersihkan penggantian karakter OCR yang sangat umum sebelum masuk normalizer
     t = text.lower()
     t = t.replace(".000", " 000")  # pisahkan titik pada angka ribuan untuk tokenisasi
-    
+
     # Deteksi dan ganti OCR angka-huruf spesifik
     replacements = {
         "tamp11kan": "tampilkan",
@@ -642,9 +1230,9 @@ def custom_ocr_cleanup(text):
         "htm": "hitam",
         "pc5": "pcs",
         "lns": "lunas",
-        "blm": "belum"
+        "blm": "belum",
     }
-    
+
     words = t.split()
     cleaned_words = []
     for w in words:
@@ -659,21 +1247,22 @@ def custom_ocr_cleanup(text):
             if len(w_clean) > 2:
                 w_clean = w_clean.replace("1", "i").replace("0", "o").replace("5", "s")
             cleaned_words.append(w_clean)
-            
+
     return " ".join(cleaned_words)
+
 
 # Buat list untuk dataset Setelah Normalisasi
 data_setelah_normalisasi = []
 for i, item in enumerate(data_sebelum_normalisasi):
     raw_text = item["data_mentah"]
     sumber = item["sumber_input"]
-    
+
     # 1. Jalankan pra-pembersihan untuk semua data (teks maupun OCR)
     text_clean = custom_ocr_cleanup(raw_text)
-        
+
     # 2. Jalankan koreksi normalisasi sistem
     normalized = koreksi_teks(text_clean)
-    
+
     # Pembersihan tambahan agar kalimat baku terdengar alami
     # Misal mengganti "tmbh" -> "tambah", "htm" -> "hitam", "pth" -> "putih", "jkt" -> "jaket", dll.
     words = normalized.lower().split()
@@ -726,12 +1315,11 @@ for i, item in enumerate(data_sebelum_normalisasi):
             final_words.append("tambah")
         else:
             final_words.append(w)
-            
+
     normalized_final = " ".join(final_words)
-    data_setelah_normalisasi.append({
-        "data_sebelum_normalisasi": raw_text,
-        "data_setelah_normalisasi": normalized_final
-    })
+    data_setelah_normalisasi.append(
+        {"data_sebelum_normalisasi": raw_text, "data_setelah_normalisasi": normalized_final}
+    )
 
 # ---------------------------------------------------------
 # EXPORT PROSES

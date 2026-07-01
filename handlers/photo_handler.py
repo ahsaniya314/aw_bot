@@ -1,66 +1,76 @@
 """
 Photo Handler — OCR processing (simplified: only show extracted text)
 """
-import os
-import logging
 import html
+import logging
+import os
 import re
 from datetime import datetime
 from time import perf_counter
 
-from rapidfuzz import process, fuzz
+from rapidfuzz import fuzz, process
 
 from core.bot_context import ctx
-from utils.security import authorized_only, safe_edit_message, sanitize_input, log_exception, notify_admins
-from utils.helpers import cocokkan_nama
+from core.master_data import cari_harga_default, format_rupiah, parse_rupiah
 from handlers.command_handler import build_reply_keyboard
-from services.cache_manager import get_cached_barang, get_cached_metode
 from nlp.normalizer import koreksi_teks
 from nlp.processor import proses_nlp
-from core.master_data import cari_harga_default, format_rupiah, parse_rupiah
+from services.cache_manager import get_cached_barang, get_cached_metode
 from services.debt_tracker import cari_hutang_aktif
 from services.ui_transaksi import susun_balasan_multi_resume, susun_balasan_resume
+from utils.helpers import cocokkan_nama
+from utils.security import (
+    authorized_only,
+    log_exception,
+    notify_admins,
+    safe_edit_message,
+    sanitize_input,
+)
 
 logger = logging.getLogger("bot_logger")
 
 _DATE_RE = re.compile(r"\b(\d{1,2})\s*[-/]\s*(\d{1,2})\s*[-/]\s*(\d{2,4})\b")
-_OCR_DATE_CHARS = str.maketrans({
-    "o": "0",
-    "O": "0",
-    "i": "1",
-    "I": "1",
-    "l": "1",
-    "L": "1",
-    "g": "9",
-    "G": "9",
-    "z": "2",
-    "Z": "2",
-    "s": "5",
-    "S": "5",
-    "b": "8",
-    "B": "8",
-})
+_OCR_DATE_CHARS = str.maketrans(
+    {
+        "o": "0",
+        "O": "0",
+        "i": "1",
+        "I": "1",
+        "l": "1",
+        "L": "1",
+        "g": "9",
+        "G": "9",
+        "z": "2",
+        "Z": "2",
+        "s": "5",
+        "S": "5",
+        "b": "8",
+        "B": "8",
+    }
+)
 _OCR_DATE_TOKEN_RE = re.compile(
     r"\b([0-9A-Za-z]{1,4})\s*([-/])\s*([0-9A-Za-z]{1,4})\s*([-/])\s*([0-9A-Za-z]{2,4})\b"
 )
-_OCR_QTY_CHARS = str.maketrans({
-    "o": "0",
-    "O": "0",
-    "i": "1",
-    "I": "1",
-    "l": "1",
-    "L": "1",
-    "t": "1",
-    "T": "1",
-    "z": "2",
-    "Z": "2",
-    "s": "5",
-    "S": "5",
-    "b": "8",
-    "B": "8",
-    "g": "9",
-    "G": "9",
-})
+_OCR_QTY_CHARS = str.maketrans(
+    {
+        "o": "0",
+        "O": "0",
+        "i": "1",
+        "I": "1",
+        "l": "1",
+        "L": "1",
+        "t": "1",
+        "T": "1",
+        "z": "2",
+        "Z": "2",
+        "s": "5",
+        "S": "5",
+        "b": "8",
+        "B": "8",
+        "g": "9",
+        "G": "9",
+    }
+)
 _UNIT_RE = (
     r"(?:dus|pcs|toples|pack|bungkus|karton|bks|buah|botol|kg|bal|kantong|lusin|koli|roll|meter|lembar|"
     r"box|renceng|pouch|kaleng|slop|sak|liter|biji|tablet|kapsul|gelas|cup|can|sachet|pak|ctn|cen|cth)"
@@ -89,9 +99,7 @@ _BOT_UI_LABEL_LINE_RE = re.compile(
 
 def _normalize_ocr_line(text):
     line = (text or "").strip()
-    line = re.sub(
-        r"^[\s👤📅📦🔢💳🏦💵⚠️✅🤖]+", "", line
-    ).strip()
+    line = re.sub(r"^[\s👤📅📦🔢💳🏦💵⚠️✅🤖]+", "", line).strip()
     line = re.sub(r"^\[\d+\]\s*", "", line).strip()
     line = re.sub(r"^[\s~•*\-–—]+", "", line).strip()
     line = re.sub(r"\s+", " ", line).strip()
@@ -172,7 +180,7 @@ def _extract_date_and_remainder(text):
     m = _DATE_RE.search(cleaned)
     if m:
         date_iso = _to_iso_date(m.group(0))
-        remainder = (cleaned[:m.start()] + " " + cleaned[m.end():]).strip()
+        remainder = (cleaned[: m.start()] + " " + cleaned[m.end() :]).strip()
         remainder = _normalize_ocr_line(remainder)
         return date_iso, remainder
 
@@ -269,7 +277,14 @@ def _get_known_customer_names():
         from database import db_client
 
         try:
-            res = db_client.get_supabase().table("pelanggan").select("nama").order("id", desc=True).limit(300).execute()
+            res = (
+                db_client.get_supabase()
+                .table("pelanggan")
+                .select("nama")
+                .order("id", desc=True)
+                .limit(300)
+                .execute()
+            )
             for row in res.data or []:
                 nama = re.sub(r"\s+", " ", str(row.get("nama") or "")).strip(" .,:;-")
                 if nama:
@@ -328,7 +343,7 @@ def _match_product_phrase(tokens, start_idx, daftar_b=None):
         return None, None
     max_len = min(4, len(tokens) - start_idx)
     for phrase_len in range(max_len, 0, -1):
-        phrase_tokens = tokens[start_idx:start_idx + phrase_len]
+        phrase_tokens = tokens[start_idx : start_idx + phrase_len]
         if any(re.fullmatch(_UNIT_RE, tok, flags=re.IGNORECASE) for tok in phrase_tokens):
             continue
         if any(_is_ocr_number_like_token(tok) for tok in phrase_tokens[1:]):
@@ -389,7 +404,7 @@ def _split_inline_name_and_items(line, daftar_b=None):
     if not first_qty:
         return after_name, None
 
-    before_first_qty = after_name[:first_qty.start()].strip(" .,:;-")
+    before_first_qty = after_name[: first_qty.start()].strip(" .,:;-")
     if not before_first_qty:
         return None, after_name
 
@@ -431,7 +446,7 @@ def _split_unlabeled_name_and_items(line, daftar_b=None):
     if not first_qty:
         return None, None
 
-    before_first_qty = teks[:first_qty.start()]
+    before_first_qty = teks[: first_qty.start()]
     before_first_qty = re.sub(r"\s*:\s*$", "", before_first_qty).strip(" .,:;-")
     if not before_first_qty:
         return None, None
@@ -589,7 +604,9 @@ def _extract_item_lines_from_block(lines, daftar_b=None):
             for unit_idx in range(len(tail_tokens) - 1, -1, -1):
                 if re.fullmatch(_UNIT_RE, tail_tokens[unit_idx], flags=re.IGNORECASE):
                     unit = _normalize_unit_for_nlp(tail_tokens[unit_idx])
-                    raw_tokens = [tok for tok in tail_tokens[:unit_idx] if _is_ocr_number_like_token(tok)]
+                    raw_tokens = [
+                        tok for tok in tail_tokens[:unit_idx] if _is_ocr_number_like_token(tok)
+                    ]
                     if raw_tokens:
                         qty_raw = " ".join(raw_tokens)
                     break
@@ -648,7 +665,7 @@ def _extract_item_lines_from_block(lines, daftar_b=None):
         # Fallback untuk OCR yang menggabungkan beberapa item dalam satu baris.
         last_end = 0
         for match in qty_matches:
-            name = working[last_end:match.start()].strip(" .,:;-")
+            name = working[last_end : match.start()].strip(" .,:;-")
             name = re.sub(r"^(dan|,)\s*", "", name, flags=re.IGNORECASE).strip(" .,:;-")
             name = re.sub(r"^(produk|barang)\s+", "", name, flags=re.IGNORECASE).strip(" .,:;-")
             qty = _normalize_qty_token(match.group("qty"))
@@ -682,13 +699,15 @@ def _extract_payment_entries(blocks, daftar_b=None):
             amount = parse_rupiah(nominal_src) if nominal_src else 0
             if amount <= 0:
                 continue
-            entries.append({
-                "date": date_disp or datetime.now().strftime("%d-%m-%Y"),
-                "name": name,
-                "amount": amount,
-                "method": metode,
-                "raw_line": line,
-            })
+            entries.append(
+                {
+                    "date": date_disp or datetime.now().strftime("%d-%m-%Y"),
+                    "name": name,
+                    "amount": amount,
+                    "method": metode,
+                    "raw_line": line,
+                }
+            )
     return entries
 
 
@@ -713,12 +732,14 @@ def _build_structured_nlp_input(ocr_text, daftar_b=None):
         for item_line in item_lines:
             generated_lines.append(f"tanggal {date_disp} nama {name} {item_line} belum lunas")
             sales_contexts.append({"TANGGAL": date_disp, "NAMA": name})
-            sales_entries.append({
-                "TANGGAL": date_disp,
-                "NAMA": name,
-                "ITEM_TEXT": item_line,
-                "METODE_PEMBAYARAN": metode,
-            })
+            sales_entries.append(
+                {
+                    "TANGGAL": date_disp,
+                    "NAMA": name,
+                    "ITEM_TEXT": item_line,
+                    "METODE_PEMBAYARAN": metode,
+                }
+            )
 
     if not generated_lines:
         return ocr_text, payment_entries, [], []
@@ -735,7 +756,7 @@ def _build_sales_results_from_ocr_entries(sales_entries, daftar_b, mapping_m):
         m = re.match(
             rf"^(?P<name>.+?)\s+(?P<qty>[0-9lIoO]{{1,6}})\s+(?P<unit>{_UNIT_RE})$",
             item_text,
-            flags=re.IGNORECASE
+            flags=re.IGNORECASE,
         )
         if m:
             normalized_name = _normalize_product_name(m.group("name"), daftar_b)
@@ -758,7 +779,7 @@ def _build_sales_results_from_ocr_entries(sales_entries, daftar_b, mapping_m):
                 mapping_metode=mapping_m,
                 already_normalized=True,
             )
-            base = (parsed[0] if parsed else {"intent": "Unknown", "entitas": {}})
+            base = parsed[0] if parsed else {"intent": "Unknown", "entitas": {}}
             ent = base.get("entitas", {}) or {}
 
             # Paksa field penting dari parser blok OCR, bukan tebakan NLP kalimat panjang.
@@ -767,7 +788,9 @@ def _build_sales_results_from_ocr_entries(sales_entries, daftar_b, mapping_m):
             ent["AKSI"] = "Tambah Penjualan"
             ent["STATUS"] = "Hutang"
             ent["NOMINAL_BAYAR"] = None
-            ent["METODE_PEMBAYARAN"] = entry.get("METODE_PEMBAYARAN") or ent.get("METODE_PEMBAYARAN") or None
+            ent["METODE_PEMBAYARAN"] = (
+                entry.get("METODE_PEMBAYARAN") or ent.get("METODE_PEMBAYARAN") or None
+            )
 
             if ent.get("BARANG"):
                 ent["BARANG"] = _normalize_product_name(ent.get("BARANG"), daftar_b)
@@ -785,7 +808,9 @@ def _build_sales_results_from_ocr_entries(sales_entries, daftar_b, mapping_m):
             if m_sat:
                 ent["SATUAN"] = _normalize_unit_for_nlp(m_sat.group(1))
 
-        results.append({"intent": "Catat_Penjualan_Cicil", "entitas": ent, "original_text": item_text})
+        results.append(
+            {"intent": "Catat_Penjualan_Cicil", "entitas": ent, "original_text": item_text}
+        )
 
     return results
 
@@ -809,7 +834,9 @@ def _render_payment_summary(payment_entries):
             parts.append(
                 f"• {html.escape(item['date'])}: <code>{format_rupiah(item['amount'])}</code>"
             )
-        parts.append(f"💰 <b>Total Cicilan Akhir:</b> <code>{format_rupiah(payload['total'])}</code>")
+        parts.append(
+            f"💰 <b>Total Cicilan Akhir:</b> <code>{format_rupiah(payload['total'])}</code>"
+        )
 
         if ctx.IS_DB_CONNECTED:
             try:
@@ -817,7 +844,9 @@ def _render_payment_summary(payment_entries):
                 outstanding = int(sum(float(h.get("tagihan", 0) or 0) for h in hutang_list))
                 if hutang_list and outstanding > 0:
                     remaining_payment = int(payload["total"])
-                    parts.append(f"⚠️ <b>Total Tagihan Aktif:</b> <code>{format_rupiah(outstanding)}</code>")
+                    parts.append(
+                        f"⚠️ <b>Total Tagihan Aktif:</b> <code>{format_rupiah(outstanding)}</code>"
+                    )
                     parts.append("🧾 <b>Alokasi Cicilan ke Tagihan Aktif:</b>")
 
                     for idx, hutang in enumerate(hutang_list, start=1):
@@ -828,15 +857,17 @@ def _render_payment_summary(payment_entries):
                         barang = html.escape(str(hutang.get("barang") or "-"))
                         tanggal = html.escape(str(hutang.get("tanggal") or "-"))
                         if terpakai > 0:
-                            apply_plan.append({
-                                "name": name,
-                                "row_index": hutang.get("row_index"),
-                                "barang": hutang.get("barang") or "-",
-                                "tanggal": hutang.get("tanggal") or "-",
-                                "tagihan_awal": tagihan_awal,
-                                "bayar": terpakai,
-                                "sisa": sisa,
-                            })
+                            apply_plan.append(
+                                {
+                                    "name": name,
+                                    "row_index": hutang.get("row_index"),
+                                    "barang": hutang.get("barang") or "-",
+                                    "tanggal": hutang.get("tanggal") or "-",
+                                    "tagihan_awal": tagihan_awal,
+                                    "bayar": terpakai,
+                                    "sisa": sisa,
+                                }
+                            )
                         parts.append(
                             f"{idx}. {tanggal} | {barang}\n"
                             f"   Tagihan awal: <code>{format_rupiah(tagihan_awal)}</code>\n"
@@ -845,9 +876,13 @@ def _render_payment_summary(payment_entries):
                         )
 
                     sisa_total = max(0, outstanding - payload["total"])
-                    parts.append(f"📉 <b>Total Sisa Akhir:</b> <code>{format_rupiah(sisa_total)}</code>")
+                    parts.append(
+                        f"📉 <b>Total Sisa Akhir:</b> <code>{format_rupiah(sisa_total)}</code>"
+                    )
                     if remaining_payment > 0:
-                        parts.append(f"💚 <b>Kelebihan Cicilan:</b> <code>{format_rupiah(remaining_payment)}</code>")
+                        parts.append(
+                            f"💚 <b>Kelebihan Cicilan:</b> <code>{format_rupiah(remaining_payment)}</code>"
+                        )
                 elif outstanding <= 0:
                     parts.append("✅ <b>Tidak ada tagihan aktif yang cocok di database.</b>")
             except Exception:
@@ -888,7 +923,9 @@ def _build_pelunasan_results_from_payment_entries(payment_entries):
             "METODE_PEMBAYARAN": payload.get("method") or None,
         }
         original_text = f"{name} bayar cicilan {format_rupiah(amount)}"
-        results.append({"intent": "Pelunasan_Hutang", "entitas": ent, "original_text": original_text})
+        results.append(
+            {"intent": "Pelunasan_Hutang", "entitas": ent, "original_text": original_text}
+        )
     return results
 
 
@@ -904,8 +941,8 @@ def _proses_hasil_ocr_ke_nlp(chat_id, message_id_target, ocr_text):
 
     nlp_stage_start = perf_counter()
     clean_ocr_text = _remove_bot_ui_noise(ocr_text)
-    nlp_input_text, payment_entries, sales_contexts, sales_entries = (
-        _build_structured_nlp_input(clean_ocr_text, daftar_b=daftar_b)
+    nlp_input_text, payment_entries, sales_contexts, sales_entries = _build_structured_nlp_input(
+        clean_ocr_text, daftar_b=daftar_b
     )
     fallback_name = _extract_first_name_fallback(clean_ocr_text, daftar_b=daftar_b)
 
@@ -917,7 +954,9 @@ def _proses_hasil_ocr_ke_nlp(chat_id, message_id_target, ocr_text):
             if _is_placeholder_name(entitas.get("NAMA")) and fallback_name:
                 entitas["NAMA"] = fallback_name
             sess["hasil_nlp"] = hasil_nlp
-            sess["entitas"] = {k: v for k, v in entitas.items() if v is not None and str(v).strip() != ""}
+            sess["entitas"] = {
+                k: v for k, v in entitas.items() if v is not None and str(v).strip() != ""
+            }
             sess["state"] = "pending_confirmation"
             render_start = perf_counter()
             susun_balasan_resume(chat_id, message_id_target)
@@ -959,7 +998,8 @@ def _proses_hasil_ocr_ke_nlp(chat_id, message_id_target, ocr_text):
         return
 
     valid_results = [
-        r for r in results_nlp
+        r
+        for r in results_nlp
         if r.get("entitas", {}).get("AKSI")
         or r.get("entitas", {}).get("NAMA")
         or r.get("entitas", {}).get("BARANG")
@@ -1144,7 +1184,9 @@ def _proses_hasil_ocr_ke_nlp(chat_id, message_id_target, ocr_text):
             entitas["STATUS"] = "Hutang"
 
         sess["hasil_nlp"] = hasil_nlp
-        sess["entitas"] = {k: v for k, v in entitas.items() if v is not None and str(v).strip() != ""}
+        sess["entitas"] = {
+            k: v for k, v in entitas.items() if v is not None and str(v).strip() != ""
+        }
         sess["state"] = "pending_confirmation"
         render_start = perf_counter()
         susun_balasan_resume(chat_id, message_id_target)
@@ -1191,12 +1233,12 @@ def handle_docs_photo(message):
         msg_proses = bot.reply_to(
             message,
             "Sedang diproses...",
-            reply_markup=(build_reply_keyboard() if need_keyboard else None)
+            reply_markup=(build_reply_keyboard() if need_keyboard else None),
         )
         file_info = bot.get_file(message.photo[-1].file_id)
         downloaded_file = bot.download_file(file_info.file_path)
 
-        with open(temp_image_path, 'wb') as new_file:
+        with open(temp_image_path, "wb") as new_file:
             new_file.write(downloaded_file)
 
         logger.debug(f"Foto OCR untuk chat {chat_id} mulai diproses via ctx.ocr_service")
@@ -1216,13 +1258,15 @@ def handle_docs_photo(message):
                 bot,
                 "❌ Tidak ada teks terdeteksi di foto. Coba foto lagi dengan kualitas lebih baik.",
                 chat_id,
-                msg_proses.message_id
+                msg_proses.message_id,
             )
             return
 
         if str(hasil_akhir).strip().startswith("Error OCR:"):
             error_message = str(hasil_akhir).strip()
-            logger.warning("OCR service returned error text instead of extracted text: %s", error_message)
+            logger.warning(
+                "OCR service returned error text instead of extracted text: %s", error_message
+            )
             safe_edit_message(
                 bot,
                 f"❌ Gagal memproses foto dengan OCR:\n{error_message}\n\n"
@@ -1237,7 +1281,7 @@ def handle_docs_photo(message):
 
         # Send the OCR result
         chunk_size = 3200
-        chunks = [hasil_akhir[i:i + chunk_size] for i in range(0, len(hasil_akhir), chunk_size)]
+        chunks = [hasil_akhir[i : i + chunk_size] for i in range(0, len(hasil_akhir), chunk_size)]
         total = len(chunks)
         for idx, chunk in enumerate(chunks[:10], start=1):
             header = "🔍 <b>HASIL EKSTRAKSI OCR</b>"
@@ -1245,9 +1289,7 @@ def handle_docs_photo(message):
                 header = f"{header} <i>({idx}/{total})</i>"
             payload = f"{header}\n<pre>{html.escape(chunk)}</pre>"
             if idx == 1:
-                safe_edit_message(
-                    bot, payload, chat_id, msg_proses.message_id, parse_mode="HTML"
-                )
+                safe_edit_message(bot, payload, chat_id, msg_proses.message_id, parse_mode="HTML")
             else:
                 bot.send_message(chat_id, payload, parse_mode="HTML")
 
@@ -1269,7 +1311,7 @@ def handle_docs_photo(message):
         bot.reply_to(
             message,
             "❌ Terjadi kesalahan pemrosesan gambar. Coba ulangi 1x, jika masih gagal "
-            "kirim foto yang lebih jelas."
+            "kirim foto yang lebih jelas.",
         )
     finally:
         if os.path.exists(temp_image_path):
@@ -1278,4 +1320,4 @@ def handle_docs_photo(message):
 
 def register_handlers(bot):
     """Register photo handler ke bot instance."""
-    bot.message_handler(content_types=['photo'])(authorized_only(handle_docs_photo))
+    bot.message_handler(content_types=["photo"])(authorized_only(handle_docs_photo))

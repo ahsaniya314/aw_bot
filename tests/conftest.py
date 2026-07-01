@@ -2,9 +2,10 @@
 Test Configuration and Fixtures
 """
 
-import pytest
 import os
 from pathlib import Path
+
+import pytest
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -19,6 +20,7 @@ os.environ["DEBUG"] = "true"
 def config():
     """Provide test configuration."""
     from config import reload_config
+
     return reload_config()
 
 
@@ -26,6 +28,7 @@ def config():
 def bot():
     """Provide mock bot instance."""
     from unittest.mock import MagicMock
+
     return MagicMock()
 
 

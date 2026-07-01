@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 def register(bot):
     from handlers.text_handler import register_handlers
+
     register_handlers(bot)
     logger.info("Text message handler registered (text_handler.py)")
 

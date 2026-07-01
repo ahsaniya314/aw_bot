@@ -1,13 +1,15 @@
-import re
 import logging
+import re
 from time import perf_counter
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
+
 from core.bot_context import ctx
-from utils.security import safe_edit_message
-from core.master_data import format_rupiah, parse_rupiah, cari_harga_default
-from services.debt_tracker import hitung_sisa_tagihan
+from core.master_data import cari_harga_default, format_rupiah, parse_rupiah
 from services.cache_manager import get_cached_barang
-from services.ui_common import _missing_keys_single, _missing_keys_multi, _friendly_field_name
+from services.debt_tracker import hitung_sisa_tagihan
+from services.ui_common import _friendly_field_name, _missing_keys_multi, _missing_keys_single
+from utils.security import safe_edit_message
 
 logger = logging.getLogger("bot_logger")
 
@@ -121,7 +123,9 @@ def kirim_halaman_read(chat_id, page=1, message_id_to_edit=None, call_id=None):
 
     if chat_id not in user_sessions or user_sessions[chat_id].get("action") != "reading_pagination":
         if call_id:
-            bot.answer_callback_query(call_id, "❌ Sesi berakhir, silakan minta laporan lagi", show_alert=True)
+            bot.answer_callback_query(
+                call_id, "❌ Sesi berakhir, silakan minta laporan lagi", show_alert=True
+            )
         return
 
     sess = user_sessions[chat_id]
@@ -139,30 +143,36 @@ def kirim_halaman_read(chat_id, page=1, message_id_to_edit=None, call_id=None):
     if sess.get("konteks_agregasi") != "Dashboard Harian":
         for item in halaman_data:
             emo_bayar = (
-                "✅" if "lunas" in item["Status"].lower() else
-                "⏳" if any(k in item["Status"].lower() for k in ["cicil", "dicicil", "nyicil", "dp"]) else
-                "🔴"
+                "✅"
+                if "lunas" in item["Status"].lower()
+                else "⏳"
+                if any(k in item["Status"].lower() for k in ["cicil", "dicicil", "nyicil", "dp"])
+                else "🔴"
             )
             # Tampilkan Jumlah Tagihan jika ada piutang
             _tagihan_val = item.get("Tagihan", "")
             baris_tagihan_read = (
                 f"⚠️ <b>Tagihan:</b> <code>{_tagihan_val}</code>\n"
-                if _tagihan_val and _tagihan_val not in ("0", "") else ""
+                if _tagihan_val and _tagihan_val not in ("0", "")
+                else ""
             )
             _uang_masuk_val = item.get("UangMasuk", "")
             baris_uang_masuk_read = (
                 f"💸 <b>Uang Masuk:</b> <code>{_uang_masuk_val}</code>\n"
-                if _uang_masuk_val and _uang_masuk_val not in ("",) else ""
+                if _uang_masuk_val and _uang_masuk_val not in ("",)
+                else ""
             )
             _harga_val = item.get("Harga", "")
             baris_harga_read = (
                 f"💰 <b>Harga Satuan:</b> <code>{_harga_val}</code>\n"
-                if _harga_val and _harga_val not in ("",) else ""
+                if _harga_val and _harga_val not in ("",)
+                else ""
             )
             _metode_val = item.get("Metode", "")
             baris_metode_read = (
                 f"🏦 <b>Metode:</b> <b>{_metode_val}</b>\n"
-                if _metode_val and _metode_val not in ("-", "") else ""
+                if _metode_val and _metode_val not in ("-", "")
+                else ""
             )
             layout = (
                 f"👤 <b>Pelanggan:</b> {item['Nama']}\n"
@@ -206,7 +216,8 @@ def susun_balasan_update(chat_id, message_id_target):
     bot = ctx.bot
     user_sessions = ctx.user_sessions
 
-    if chat_id not in user_sessions: return
+    if chat_id not in user_sessions:
+        return
     sess = user_sessions[chat_id]
     entitas = sess["entitas"]
     sess["state"] = "pending_update"
@@ -214,9 +225,9 @@ def susun_balasan_update(chat_id, message_id_target):
     sess["summary_msg_id"] = message_id_target
 
     # Kalkulasi preview Jumlah Tagihan & Uang Masuk
-    _total_num   = parse_rupiah(entitas.get("TOTAL") or 0)
+    _total_num = parse_rupiah(entitas.get("TOTAL") or 0)
     _nominal_sum = parse_rupiah(entitas.get("NOMINAL_BAYAR") or 0)
-    _status_val  = entitas.get("STATUS") or ""
+    _status_val = entitas.get("STATUS") or ""
     _tagihan, _uang_masuk, _ = hitung_sisa_tagihan(_total_num, _nominal_sum, _status_val)
 
     sess["action"] = "update_data"
@@ -245,7 +256,11 @@ def susun_balasan_update(chat_id, message_id_target):
 
     # Untuk preview sisa tagihan, kita gunakan skenario "Tambah" sebagai default preview
     _tagihan, _, _ = hitung_sisa_tagihan(_total_num, total_jika_tambah, _status_val)
-    baris_tagihan = f"⚠️ <b>Sisa Tagihan (Jika Tambah):</b> <code>{format_rupiah(_tagihan)}</code>" if _tagihan > 0 else "✅ <b>Status:</b> LUNAS"
+    baris_tagihan = (
+        f"⚠️ <b>Sisa Tagihan (Jika Tambah):</b> <code>{format_rupiah(_tagihan)}</code>"
+        if _tagihan > 0
+        else "✅ <b>Status:</b> LUNAS"
+    )
 
     # Info Extra
     info_extra = ""
@@ -283,7 +298,7 @@ def susun_balasan_update(chat_id, message_id_target):
         else:
             markup.row(
                 InlineKeyboardButton("➕ Tambah Cicilan", callback_data="upd_mode_tambah"),
-                InlineKeyboardButton("✏️ Koreksi Data", callback_data="upd_mode_koreksi")
+                InlineKeyboardButton("✏️ Koreksi Data", callback_data="upd_mode_koreksi"),
             )
     else:
         markup.add(InlineKeyboardButton("✅ Kirim Update", callback_data="btn_update_kirim"))
@@ -292,7 +307,14 @@ def susun_balasan_update(chat_id, message_id_target):
     markup.add(InlineKeyboardButton("❌ Batal", callback_data="btn_batal_edit"))
 
     try:
-        safe_edit_message(bot, text=balasan, chat_id=chat_id, message_id=message_id_target, parse_mode="HTML", reply_markup=markup)
+        safe_edit_message(
+            bot,
+            text=balasan,
+            chat_id=chat_id,
+            message_id=message_id_target,
+            parse_mode="HTML",
+            reply_markup=markup,
+        )
     except Exception:
         pass
 
@@ -311,19 +333,25 @@ def susun_balasan_resume(chat_id, message_id_target, is_expert=False, confirm_fo
     sess["summary_msg_id"] = message_id_target
 
     # Kalkulasi preview Jumlah Tagihan & Uang Masuk untuk ditampilkan di ringkasan
-    _total_num   = parse_rupiah(entitas.get("TOTAL") or 0)
+    _total_num = parse_rupiah(entitas.get("TOTAL") or 0)
     _nominal_num = parse_rupiah(entitas.get("NOMINAL_BAYAR") or 0)
-    _status_val  = entitas.get("STATUS") or ""
+    _status_val = entitas.get("STATUS") or ""
     _tagihan, _uang_masuk, _ = hitung_sisa_tagihan(_total_num, _nominal_num, _status_val)
 
-    baris_uang_masuk = f"💸 <b>Uang Masuk:</b> <b>{format_rupiah(_uang_masuk)}</b>\n"   if _uang_masuk > 0 else ""
-    baris_tagihan    = f"⚠️ <b>Jumlah Tagihan:</b> <b>{format_rupiah(_tagihan)}</b>\n" if _tagihan > 0 else ""
+    baris_uang_masuk = (
+        f"💸 <b>Uang Masuk:</b> <b>{format_rupiah(_uang_masuk)}</b>\n" if _uang_masuk > 0 else ""
+    )
+    baris_tagihan = (
+        f"⚠️ <b>Jumlah Tagihan:</b> <b>{format_rupiah(_tagihan)}</b>\n" if _tagihan > 0 else ""
+    )
 
     # Label Harga Bawaan & Validasi Satuan
     lbl_harga = "💰 <b>Harga Satuan:</b>"
     warning_satuan = ""
     if ctx.IS_DB_CONNECTED and entitas.get("BARANG"):
-        matches = cari_harga_default(ctx.db_barang, entitas["BARANG"], satuan_cari=entitas.get("SATUAN"))
+        matches = cari_harga_default(
+            ctx.db_barang, entitas["BARANG"], satuan_cari=entitas.get("SATUAN")
+        )
         if matches:
             info_h = matches[0]
             if entitas.get("HARGA") and format_rupiah(info_h["harga"]) == entitas["HARGA"]:
@@ -350,7 +378,15 @@ def susun_balasan_resume(chat_id, message_id_target, is_expert=False, confirm_fo
     if aksi == "Catat Pelunasan":
         field_wajib = ["TANGGAL", "NAMA", "NOMINAL_BAYAR"]
     else:
-        field_wajib = ["TANGGAL", "NAMA", "BARANG", "JUMLAH", "TOTAL", "STATUS", "METODE_PEMBAYARAN"]
+        field_wajib = [
+            "TANGGAL",
+            "NAMA",
+            "BARANG",
+            "JUMLAH",
+            "TOTAL",
+            "STATUS",
+            "METODE_PEMBAYARAN",
+        ]
     missing = [f for f in field_wajib if not entitas.get(f)]
     sess["missing_fields"] = missing
     warning_missing = ""
@@ -358,16 +394,28 @@ def susun_balasan_resume(chat_id, message_id_target, is_expert=False, confirm_fo
     if missing:
         label = []
         for m in missing:
-            if m == "TANGGAL": label.append("Tanggal")
-            elif m == "NAMA": label.append("Nama")
-            elif m == "BARANG": label.append("Barang")
-            elif m == "JUMLAH": label.append("Jumlah")
-            elif m == "TOTAL": label.append("Total")
-            elif m == "STATUS": label.append("Status")
-            elif m == "METODE_PEMBAYARAN": label.append("Metode")
-            elif m == "NOMINAL_BAYAR": label.append("Nominal")
-        warning_missing = "⚠️ <b>DATA BELUM LENGKAP:</b> " + ", ".join(label) + "\n━━━━━━━━━━━━━━━━━━\n"
-        peringatan_lengkapi = "⚠️ <i>Lengkapi field yang kosong lewat tombol <b>Lengkapi Data</b>.</i>\n\n"
+            if m == "TANGGAL":
+                label.append("Tanggal")
+            elif m == "NAMA":
+                label.append("Nama")
+            elif m == "BARANG":
+                label.append("Barang")
+            elif m == "JUMLAH":
+                label.append("Jumlah")
+            elif m == "TOTAL":
+                label.append("Total")
+            elif m == "STATUS":
+                label.append("Status")
+            elif m == "METODE_PEMBAYARAN":
+                label.append("Metode")
+            elif m == "NOMINAL_BAYAR":
+                label.append("Nominal")
+        warning_missing = (
+            "⚠️ <b>DATA BELUM LENGKAP:</b> " + ", ".join(label) + "\n━━━━━━━━━━━━━━━━━━\n"
+        )
+        peringatan_lengkapi = (
+            "⚠️ <i>Lengkapi field yang kosong lewat tombol <b>Lengkapi Data</b>.</i>\n\n"
+        )
 
     if aksi == "Catat Pelunasan":
         balasan = (
@@ -408,7 +456,7 @@ def susun_balasan_resume(chat_id, message_id_target, is_expert=False, confirm_fo
             f"✅ <i>Terbaca (belum disimpan): {entitas.get('NAMA') or 'Pembeli'} membeli {entitas.get('JUMLAH') or 'barang'} {entitas.get('BARANG') or ''}.</i>\n\n"
             "<i>Data belum masuk database sebelum Anda klik tombol <b>Kirim Data</b> di bawah.</i>"
         )
-    
+
     if is_expert:
         balasan = (
             "🤖 <b>[Mode Mahir] Data dikenali dengan lengkap!</b>\nBerikut ringkasannya:\n"
@@ -433,44 +481,55 @@ def susun_balasan_resume(chat_id, message_id_target, is_expert=False, confirm_fo
         if missing:
             markup.add(
                 InlineKeyboardButton("⚠️ Lengkapi Data", callback_data="btn_lengkapi"),
-                InlineKeyboardButton("🛠️ Ubah Data", callback_data="btn_masuk_edit")
+                InlineKeyboardButton("🛠️ Ubah Data", callback_data="btn_masuk_edit"),
             )
-            markup.add(InlineKeyboardButton("💳 Proses Pelunasan", callback_data="btn_masuk_pelunasan"))
+            markup.add(
+                InlineKeyboardButton("💳 Proses Pelunasan", callback_data="btn_masuk_pelunasan")
+            )
         else:
             markup.add(
                 InlineKeyboardButton("💳 Proses Pelunasan", callback_data="btn_masuk_pelunasan"),
-                InlineKeyboardButton("✏️ Edit Parameter", callback_data="btn_masuk_edit")
+                InlineKeyboardButton("✏️ Edit Parameter", callback_data="btn_masuk_edit"),
             )
     else:
         if missing:
             if confirm_force:
                 markup.add(
                     InlineKeyboardButton("⚠️ Lengkapi Data", callback_data="btn_lengkapi"),
-                    InlineKeyboardButton("🛠️ Ubah Data", callback_data="btn_masuk_edit")
+                    InlineKeyboardButton("🛠️ Ubah Data", callback_data="btn_masuk_edit"),
                 )
                 markup.add(InlineKeyboardButton("✅ Tetap Kirim", callback_data="btn_kirim_force"))
             else:
                 markup.add(
                     InlineKeyboardButton("⚠️ Lengkapi Data", callback_data="btn_lengkapi"),
-                    InlineKeyboardButton("🛠️ Ubah Data", callback_data="btn_masuk_edit")
+                    InlineKeyboardButton("🛠️ Ubah Data", callback_data="btn_masuk_edit"),
                 )
                 markup.add(InlineKeyboardButton("✅ Kirim Data", callback_data="btn_kirim"))
         else:
             markup.add(
                 InlineKeyboardButton("✅ Kirim Data", callback_data="btn_kirim"),
-                InlineKeyboardButton("✏️ Edit Parameter", callback_data="btn_masuk_edit")
+                InlineKeyboardButton("✏️ Edit Parameter", callback_data="btn_masuk_edit"),
             )
     markup.add(InlineKeyboardButton("❌ Tutup", callback_data="btn_buang"))
 
     try:
-        safe_edit_message(bot, text=balasan, chat_id=chat_id, message_id=message_id_target, parse_mode="HTML", reply_markup=markup)
+        safe_edit_message(
+            bot,
+            text=balasan,
+            chat_id=chat_id,
+            message_id=message_id_target,
+            parse_mode="HTML",
+            reply_markup=markup,
+        )
     except Exception:
-        pass # Handle unchanged status
+        pass  # Handle unchanged status
 
 
 def susun_balasan_conversational(chat_id, message_id_target, missing_fields):
     sess = ctx.user_sessions[chat_id]
-    susun_balasan_resume(chat_id, message_id_target, confirm_force=(sess.get("state") == "confirm_empty_submit"))
+    susun_balasan_resume(
+        chat_id, message_id_target, confirm_force=(sess.get("state") == "confirm_empty_submit")
+    )
 
 
 def tampilkan_menu_kriteria_edit(chat_id, message_id_target, mode="all"):
@@ -552,7 +611,12 @@ def tampilkan_menu_kriteria_edit(chat_id, message_id_target, mode="all"):
                 continue
             label = _btn_label(key, base)
         else:
-            label = _btn_label(key, base) if key in {"TANGGAL", "NAMA", "BARANG", "JUMLAH", "TOTAL", "STATUS", "METODE_PEMBAYARAN"} else base
+            label = (
+                _btn_label(key, base)
+                if key
+                in {"TANGGAL", "NAMA", "BARANG", "JUMLAH", "TOTAL", "STATUS", "METODE_PEMBAYARAN"}
+                else base
+            )
         markup.add(InlineKeyboardButton(label, callback_data=cb))
         shown += 1
 
@@ -567,7 +631,15 @@ def tampilkan_menu_kriteria_edit(chat_id, message_id_target, mode="all"):
         markup.add(InlineKeyboardButton("🔙 Kembali", callback_data="btn_batal_edit"))
     markup.row(InlineKeyboardButton("🔙 Kembali", callback_data="btn_batal_edit"))
 
-    safe_edit_message(bot, text=teks, chat_id=chat_id, message_id=message_id_target, parse_mode="HTML", reply_markup=markup)
+    safe_edit_message(
+        bot,
+        text=teks,
+        chat_id=chat_id,
+        message_id=message_id_target,
+        parse_mode="HTML",
+        reply_markup=markup,
+    )
+
 
 def tampilkan_menu_kriteria_edit_multi(chat_id, message_id_target, item_index, mode="all"):
     bot = ctx.bot
@@ -593,7 +665,11 @@ def tampilkan_menu_kriteria_edit_multi(chat_id, message_id_target, item_index, m
     if missing:
         missing_label = f"⚠️ <b>Data belum lengkap:</b> {', '.join([_friendly_field_name(m) for m in missing])}\n━━━━━━━━━━━━━━━━━━\n"
 
-    judul = "🧩 <b>LENGKAPI DATA (BATCH)</b>" if mode == "missing_only" else "🛠️ <b>UBAH DATA (BATCH)</b>"
+    judul = (
+        "🧩 <b>LENGKAPI DATA (BATCH)</b>"
+        if mode == "missing_only"
+        else "🛠️ <b>UBAH DATA (BATCH)</b>"
+    )
     teks = (
         f"{judul}\n"
         "━━━━━━━━━━━━━━━━━━\n"
@@ -648,7 +724,14 @@ def tampilkan_menu_kriteria_edit_multi(chat_id, message_id_target, item_index, m
         markup = InlineKeyboardMarkup(row_width=1)
 
     markup.row(InlineKeyboardButton("🔙 Kembali", callback_data="btn_multi_pick_back"))
-    safe_edit_message(bot, text=teks, chat_id=chat_id, message_id=message_id_target, parse_mode="HTML", reply_markup=markup)
+    safe_edit_message(
+        bot,
+        text=teks,
+        chat_id=chat_id,
+        message_id=message_id_target,
+        parse_mode="HTML",
+        reply_markup=markup,
+    )
 
 
 def susun_balasan_multi_resume(chat_id, message_id_target):
@@ -658,7 +741,8 @@ def susun_balasan_multi_resume(chat_id, message_id_target):
     render_start = perf_counter()
 
     sess = user_sessions.get(chat_id)
-    if not sess or "multi_results" not in sess: return
+    if not sess or "multi_results" not in sess:
+        return
 
     results = sess["multi_results"]
     count = len(results)
@@ -709,7 +793,8 @@ def susun_balasan_multi_resume(chat_id, message_id_target):
                     try:
                         jml_num = int(re.search(r"\d+", str(ent["JUMLAH"])).group())
                         ent["TOTAL"] = format_rupiah(jml_num * matches[0]["harga"])
-                    except: pass
+                    except:
+                        pass
         else:
             if ent.get("HARGA") and ent.get("JUMLAH") and not ent.get("TOTAL"):
                 try:
@@ -770,7 +855,11 @@ def susun_balasan_multi_resume(chat_id, message_id_target):
         f"💰 Total Omzet: <code>{format_rupiah(total_omzet)}</code>\n"
         f"💸 Total Uang Masuk: <code>{format_rupiah(total_masuk)}</code>\n"
         f"━━━━━━━━━━━━━━━━━━━━━━\n"
-        + (f"⚠️ <b>PERINGATAN:</b> Ada <b>{missing_items}</b> item yang belum lengkap. Klik <b>Lengkapi Batch</b> untuk mengisi field yang kosong.\n" if any_missing else "")
+        + (
+            f"⚠️ <b>PERINGATAN:</b> Ada <b>{missing_items}</b> item yang belum lengkap. Klik <b>Lengkapi Batch</b> untuk mengisi field yang kosong.\n"
+            if any_missing
+            else ""
+        )
         + f"<i>Klik tombol di bawah untuk menyimpan semua data secara bersamaan ke Database.</i>"
     )
 
@@ -785,7 +874,9 @@ def susun_balasan_multi_resume(chat_id, message_id_target):
     markup.add(InlineKeyboardButton("✅ Simpan Semua", callback_data="btn_multi_kirim"))
     markup.add(InlineKeyboardButton("❌ Tutup", callback_data="btn_buang"))
 
-    safe_edit_message(bot, summary_text, chat_id, message_id_target, parse_mode="HTML", reply_markup=markup)
+    safe_edit_message(
+        bot, summary_text, chat_id, message_id_target, parse_mode="HTML", reply_markup=markup
+    )
     logger.info(
         "[Perf][ui] chat_id=%s lookup_harga_ms=%.1f render_multi_resume_ms=%.1f items=%s",
         chat_id,
@@ -793,6 +884,3 @@ def susun_balasan_multi_resume(chat_id, message_id_target):
         (perf_counter() - render_start) * 1000,
         count,
     )
-
-
-

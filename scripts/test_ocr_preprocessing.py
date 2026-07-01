@@ -4,9 +4,10 @@ import sys
 # Tambahkan direktori root ke path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from services.ocr_service import OCRService
-from services.ocr_preprocessor import OCRPreprocessor
 import logging
+
+from services.ocr_preprocessor import OCRPreprocessor
+from services.ocr_service import OCRService
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 

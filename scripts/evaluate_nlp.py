@@ -2,20 +2,20 @@
 Script untuk mengevaluasi performa model NLP (fuzzy matching) Anda!
 Cara jalankan: python scripts/evaluate_nlp.py
 """
-import sys
 import io
-from pathlib import Path
+import sys
 from collections import defaultdict
+from pathlib import Path
 
 # Set encoding untuk console Windows
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 
 # Tambahkan root ke path agar bisa import module proyek
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from nlp.intent_matcher import match_intent_from_dataset, DATASET_TO_SYSTEM_INTENT
 from nlp.embedded_data import NLP_TRAINING_EXAMPLES
+from nlp.intent_matcher import DATASET_TO_SYSTEM_INTENT, match_intent_from_dataset
 
 
 def evaluate_nlp():
@@ -54,13 +54,15 @@ def evaluate_nlp():
         if predicted_intent == actual_intent:
             correct += 1
         else:
-            wrong.append({
-                "text": text,
-                "actual_tag": actual_tag,
-                "actual_intent": actual_intent,
-                "predicted": predicted_intent,
-                "score": score
-            })
+            wrong.append(
+                {
+                    "text": text,
+                    "actual_tag": actual_tag,
+                    "actual_intent": actual_intent,
+                    "predicted": predicted_intent,
+                    "score": score,
+                }
+            )
 
     # Hitung metrik
     accuracy = (correct / total) * 100 if total > 0 else 0

@@ -1,8 +1,9 @@
-import os
 import logging
-from supabase import create_client, Client
-from supabase.lib.client_options import ClientOptions
+import os
+
 from dotenv import load_dotenv
+from supabase import Client, create_client
+from supabase.lib.client_options import ClientOptions
 
 load_dotenv()
 
@@ -12,6 +13,7 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
 _supabase_client: Client = None
+
 
 def get_supabase() -> Client:
     """Menginisialisasi dan mengembalikan instance Supabase client (Singleton)."""
@@ -41,6 +43,7 @@ def get_supabase() -> Client:
             raise
     return _supabase_client
 
+
 # =====================================================
 # OPERASI MASTER BARANG
 # =====================================================
@@ -49,33 +52,38 @@ def get_all_barang_db():
     response = supabase.table("master_barang").select("*").order("id").execute()
     return response.data
 
+
 def insert_barang_db(nama, harga, satuan="pcs"):
     supabase = get_supabase()
-    data = {
-        "nama_barang": nama,
-        "harga": harga,
-        "satuan": satuan
-    }
+    data = {"nama_barang": nama, "harga": harga, "satuan": satuan}
     try:
-        response = supabase.table("master_barang").upsert(data, on_conflict="nama_barang,satuan").execute()
+        response = (
+            supabase.table("master_barang").upsert(data, on_conflict="nama_barang,satuan").execute()
+        )
         return response.data
     except Exception:
         response = supabase.table("master_barang").insert(data).execute()
         return response.data
 
+
 def update_barang_db(id_barang, nama=None, harga=None, satuan=None):
     supabase = get_supabase()
     data = {}
-    if nama is not None: data["nama_barang"] = nama
-    if harga is not None: data["harga"] = harga
-    if satuan is not None: data["satuan"] = satuan
+    if nama is not None:
+        data["nama_barang"] = nama
+    if harga is not None:
+        data["harga"] = harga
+    if satuan is not None:
+        data["satuan"] = satuan
     response = supabase.table("master_barang").update(data).eq("id", id_barang).execute()
     return response.data
+
 
 def delete_barang_db(id_barang):
     supabase = get_supabase()
     response = supabase.table("master_barang").delete().eq("id", id_barang).execute()
     return response.data
+
 
 def delete_all_barang_db():
     supabase = get_supabase()
@@ -125,27 +133,30 @@ def get_all_metode_db():
     response = supabase.table("master_metode").select("*").order("id").execute()
     return response.data
 
+
 def insert_metode_db(nama, keyword):
     supabase = get_supabase()
-    data = {
-        "nama_metode": nama,
-        "kata_kunci": keyword
-    }
+    data = {"nama_metode": nama, "kata_kunci": keyword}
     response = supabase.table("master_metode").insert(data).execute()
     return response.data
+
 
 def update_metode_db(id_metode, nama=None, keyword=None):
     supabase = get_supabase()
     data = {}
-    if nama is not None: data["nama_metode"] = nama
-    if keyword is not None: data["kata_kunci"] = keyword
+    if nama is not None:
+        data["nama_metode"] = nama
+    if keyword is not None:
+        data["kata_kunci"] = keyword
     response = supabase.table("master_metode").update(data).eq("id", id_metode).execute()
     return response.data
+
 
 def delete_metode_db(id_metode):
     supabase = get_supabase()
     response = supabase.table("master_metode").delete().eq("id", id_metode).execute()
     return response.data
+
 
 # =====================================================
 # OPERASI TRANSAKSI
@@ -166,20 +177,24 @@ def insert_transaksi_db(data_transaksi):
             return cek.data
     raise RuntimeError("Insert transaksi tidak terkonfirmasi (response kosong).")
 
+
 def update_transaksi_db(id_transaksi, data_update):
     supabase = get_supabase()
     response = supabase.table("transaksi").update(data_update).eq("id", id_transaksi).execute()
     return response.data
+
 
 def delete_transaksi_db(id_transaksi):
     supabase = get_supabase()
     response = supabase.table("transaksi").delete().eq("id", id_transaksi).execute()
     return response.data
 
+
 def get_semua_transaksi_db(columns="*"):
     supabase = get_supabase()
     response = supabase.table("transaksi").select(columns).order("id").execute()
     return response.data
+
 
 def get_transaksi_by_filter(kolom, nilai, operator="eq", columns="*"):
     """
@@ -188,7 +203,7 @@ def get_transaksi_by_filter(kolom, nilai, operator="eq", columns="*"):
     """
     supabase = get_supabase()
     query = supabase.table("transaksi").select(columns)
-    
+
     if operator == "eq":
         query = query.eq(kolom, nilai)
     elif operator == "ilike":
@@ -201,9 +216,10 @@ def get_transaksi_by_filter(kolom, nilai, operator="eq", columns="*"):
         query = query.lte(kolom, nilai)
     elif operator == "gt":
         query = query.gt(kolom, nilai)
-        
+
     response = query.order("id").execute()
     return response.data
+
 
 def get_transaksi_multi_filter(filters, columns="*"):
     """
@@ -212,12 +228,12 @@ def get_transaksi_multi_filter(filters, columns="*"):
     """
     supabase = get_supabase()
     query = supabase.table("transaksi").select(columns)
-    
+
     for f in filters:
         k = f["kolom"]
         v = f["nilai"]
         op = f.get("operator", "eq")
-        
+
         if op == "eq":
             query = query.eq(k, v)
         elif op == "ilike":
@@ -230,7 +246,7 @@ def get_transaksi_multi_filter(filters, columns="*"):
             query = query.lte(k, v)
         elif op == "gt":
             query = query.gt(k, v)
-            
+
     response = query.order("id").execute()
     return response.data
 
@@ -243,7 +259,15 @@ def find_duplicate_transaksi_flat(data_flat):
     try:
         supabase = get_supabase()
         q = supabase.table("transaksi").select("id")
-        for k in ["tanggal", "nama_pelanggan", "barang", "jumlah_satuan", "total", "status", "metode_pembayaran"]:
+        for k in [
+            "tanggal",
+            "nama_pelanggan",
+            "barang",
+            "jumlah_satuan",
+            "total",
+            "status",
+            "metode_pembayaran",
+        ]:
             if k in data_flat:
                 q = q.eq(k, data_flat[k])
         res = q.order("id", desc=True).limit(1).execute()
@@ -295,6 +319,7 @@ def delete_transaksi_ids(ids):
             logger.error(f"Gagal hapus transaksi id={rid}: {e}")
     return ok
 
+
 # =====================================================
 # OPERASI HISTORI PELUNASAN
 # =====================================================
@@ -302,6 +327,7 @@ def insert_histori_pelunasan_db(data_histori):
     supabase = get_supabase()
     response = supabase.table("histori_pelunasan").insert(data_histori).execute()
     return response.data
+
 
 # =====================================================
 # OPERASI RELASIONAL (FASE 2)
@@ -316,17 +342,20 @@ def get_or_create_pelanggan(nama):
     ins = supabase.table("pelanggan").insert({"nama": nama}).execute()
     return ins.data[0]["id"] if ins.data else None
 
+
 def insert_pesanan(data_pesanan):
     """Menyimpan data pesanan induk."""
     supabase = get_supabase()
     response = supabase.table("pesanan").insert(data_pesanan).execute()
     return response.data
 
+
 def insert_pesanan_item(data_item):
     """Menyimpan rincian item ke dalam suatu pesanan."""
     supabase = get_supabase()
     response = supabase.table("pesanan_item").insert(data_item).execute()
     return response.data
+
 
 # =====================================================
 # UTILS & KEEP ALIVE
@@ -336,16 +365,17 @@ def get_pesanan_by_filter(kolom, nilai, operator="eq"):
     supabase = get_supabase()
     # supabase-py mendukung relasi, misal pesanan(..., pelanggan(nama), pesanan_item(...))
     query = supabase.table("pesanan").select("*, pelanggan(*), pesanan_item(*)")
-    
+
     if operator == "eq":
         query = query.eq(kolom, nilai)
     elif operator == "ilike":
         query = query.ilike(kolom, f"%{nilai}%")
     elif operator == "gt":
         query = query.gt(kolom, nilai)
-        
+
     response = query.order("id").execute()
     return response.data
+
 
 # =====================================================
 # OPERASI BOT SESSIONS (PERSISTENSI STATUS SESI)
@@ -359,25 +389,26 @@ def load_session_db(chat_id):
             return res.data[0]["session_data"]
     except Exception as e:
         if "bot_sessions" in str(e):
-            logger.warning(f"[NOTICE] Menggunakan sesi RAM lokal karena tabel 'bot_sessions' belum dibuat di Supabase.")
+            logger.warning(
+                f"[NOTICE] Menggunakan sesi RAM lokal karena tabel 'bot_sessions' belum dibuat di Supabase."
+            )
         else:
             logger.error(f"Gagal memuat sesi chat {chat_id}: {e}")
     return {}
+
 
 def save_session_db(chat_id, data):
     """Menyimpan data sesi (upsert) ke tabel bot_sessions di database."""
     try:
         supabase = get_supabase()
-        payload = {
-            "chat_id": chat_id,
-            "session_data": data
-        }
+        payload = {"chat_id": chat_id, "session_data": data}
         res = supabase.table("bot_sessions").upsert(payload, on_conflict="chat_id").execute()
         return res.data
     except Exception as e:
         if "bot_sessions" not in str(e):
             logger.error(f"Gagal menyimpan sesi chat {chat_id}: {e}")
         return None
+
 
 # =====================================================
 # KEEP-ALIVE (ANTI-PAUSE)

@@ -81,11 +81,13 @@ def load_csv_dataset():
                     if "=" in pair:
                         k, v = pair.split("=", 1)
                         entities_dict[k.strip()] = v.strip()
-            rows.append({
-                "text": row.get("text", "") or "",
-                "intent": row.get("intent", "") or "",
-                "entities": entities_dict,
-            })
+            rows.append(
+                {
+                    "text": row.get("text", "") or "",
+                    "intent": row.get("intent", "") or "",
+                    "entities": entities_dict,
+                }
+            )
     return rows
 
 

@@ -9,11 +9,11 @@ Usage:
     logger.info("Starting bot...")
 """
 
+import json
 import logging
 import logging.handlers
-import json
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
 
 

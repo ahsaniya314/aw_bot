@@ -2,6 +2,7 @@
 UI Common - Utility functions yang dibagikan antar module UI
 """
 import logging
+
 logger = logging.getLogger("bot_logger")
 
 
@@ -43,6 +44,6 @@ def _friendly_field_name(field_key):
         "TOTAL": "Total Harga",
         "STATUS": "Status Pembayaran",
         "METODE_PEMBAYARAN": "Metode Pembayaran",
-        "NOMINAL_BAYAR": "DP/Cicilan"
+        "NOMINAL_BAYAR": "DP/Cicilan",
     }
     return mapping.get(field_key, field_key)

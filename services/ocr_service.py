@@ -1,14 +1,17 @@
-import os
 import base64
-import requests
-import numpy as np
-import logging
-import tempfile
 import hashlib
+import logging
+import os
+import tempfile
 from collections import OrderedDict
+
+import numpy as np
+import requests
+
 from config.settings import get_settings
 
 logger = logging.getLogger("bot_logger")
+
 
 class OCRService:
     def __init__(self, preprocessor_output_dir=None):
@@ -51,6 +54,7 @@ class OCRService:
         ttl_seconds = self._env_int("OCR_RESULT_CACHE_TTL_SECONDS", 3600)
         if ttl_seconds > 0:
             import time
+
             if (time.time() - entry.get("time", 0.0)) > ttl_seconds:
                 self._ocr_result_cache.pop(cache_key, None)
                 return None
@@ -62,6 +66,7 @@ class OCRService:
         if not cache_key or text is None:
             return
         import time
+
         self._ocr_result_cache[cache_key] = {"text": text, "time": time.time()}
         self._ocr_result_cache.move_to_end(cache_key)
 
@@ -72,7 +77,10 @@ class OCRService:
     def _try_init_mistral(self):
         try:
             if not self.settings.MISTRAL_API_KEY:
-                return None, "MISTRAL_API_KEY is not set. Silakan setting MISTRAL_API_KEY di environment variables!"
+                return (
+                    None,
+                    "MISTRAL_API_KEY is not set. Silakan setting MISTRAL_API_KEY di environment variables!",
+                )
             # Just check that we have the API key, no need for SDK
             return True, None
         except Exception as e:
@@ -87,18 +95,18 @@ class OCRService:
         # Step 1: Handle cases with spaces between dots and slashes
         while True:
             old_sanitized = sanitized
-            sanitized = re.sub(r'\.\s+\.', r'..', sanitized)
-            sanitized = re.sub(r'\.\s+([/\\])', r'.\1', sanitized)
-            sanitized = re.sub(r'([/\\])\s+\.', r'\1.', sanitized)
-            sanitized = re.sub(r'\.\s+([^\./\\])', r'./\1', sanitized)
+            sanitized = re.sub(r"\.\s+\.", r"..", sanitized)
+            sanitized = re.sub(r"\.\s+([/\\])", r".\1", sanitized)
+            sanitized = re.sub(r"([/\\])\s+\.", r"\1.", sanitized)
+            sanitized = re.sub(r"\.\s+([^\./\\])", r"./\1", sanitized)
             if sanitized == old_sanitized:
                 break
 
         # Step 2: Fix missing slash: ".contoh" → "./contoh"
-        sanitized = re.sub(r'^\.([^\./\\])', r'./\1', sanitized)
+        sanitized = re.sub(r"^\.([^\./\\])", r"./\1", sanitized)
 
         # Step 3: Remove any extra spaces
-        sanitized = sanitized.replace(' ', '')
+        sanitized = sanitized.replace(" ", "")
 
         # Step 4: Normalize the path
         sanitized = os.path.normpath(sanitized)
@@ -133,7 +141,7 @@ class OCRService:
         try:
             final_path = self._find_image_path(image_path)
             with open(final_path, "rb") as image_file:
-                return base64.b64encode(image_file.read()).decode('utf-8')
+                return base64.b64encode(image_file.read()).decode("utf-8")
         except Exception as e:
             logger.error(f"[OCR] Failed to encode image: {e}")
             return None
@@ -155,6 +163,7 @@ class OCRService:
         read_timeout = max(30, self._env_int("MISTRAL_OCR_READ_TIMEOUT_SECONDS", 180))
         max_attempts = max(1, self._env_int("MISTRAL_OCR_MAX_ATTEMPTS", 3))
         import time
+
         base64_image = self._encode_image_to_base64(image_path)
         if not base64_image:
             raise RuntimeError("Gagal encode gambar!")
@@ -174,7 +183,7 @@ class OCRService:
         url = "https://api.mistral.ai/v1/chat/completions"
         headers = {
             "Authorization": f"Bearer {self.settings.MISTRAL_API_KEY}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
         payload = {
             "model": "pixtral-large-latest",
@@ -182,16 +191,20 @@ class OCRService:
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": "Extract all text from this receipt or document. Return only the extracted text, no explanations."},
-                        {"type": "image_url", "image_url": image_url}
-                    ]
+                        {
+                            "type": "text",
+                            "text": "Extract all text from this receipt or document. Return only the extracted text, no explanations.",
+                        },
+                        {"type": "image_url", "image_url": image_url},
+                    ],
                 }
             ],
             "temperature": 0,
-            "max_tokens": 2048
+            "max_tokens": 2048,
         }
 
         import urllib3
+
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
         last_error = None
@@ -211,7 +224,9 @@ class OCRService:
                 last_error = e
                 logger.warning(f"[OCR] Mistral timeout attempt {attempt}/{max_attempts}")
                 if attempt >= max_attempts:
-                    raise RuntimeError(f"Timeout OCR ke Mistral setelah {max_attempts}x percobaan (read timeout={read_timeout}s)!") from e
+                    raise RuntimeError(
+                        f"Timeout OCR ke Mistral setelah {max_attempts}x percobaan (read timeout={read_timeout}s)!"
+                    ) from e
                 time.sleep(min(attempt, 3))
             except requests.exceptions.HTTPError as e:
                 last_error = e
@@ -277,11 +292,18 @@ class OCRService:
                         "best_quality": 1.0,
                         "line_regions_quality": -1.0,
                         "candidates": [
-                            {"name": "mistralocr", "quality": 1.0, "lines": len(extracted_text.splitlines()), "score": 1.0}
+                            {
+                                "name": "mistralocr",
+                                "quality": 1.0,
+                                "lines": len(extracted_text.splitlines()),
+                                "score": 1.0,
+                            }
                         ],
                     }
                     if (os.getenv("OCR_DEBUG") or "").strip().lower() in ("1", "true", "yes", "on"):
-                        logger.info(f"[OCR][DEBUG] Ran Mistral OCR directly on image. Lines: {len(extracted_text.splitlines())}")
+                        logger.info(
+                            f"[OCR][DEBUG] Ran Mistral OCR directly on image. Lines: {len(extracted_text.splitlines())}"
+                        )
                     self._set_cached_ocr_result(cache_key, extracted_text)
                     return extracted_text
                 except Exception as mistral_error:

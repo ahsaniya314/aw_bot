@@ -1,20 +1,23 @@
 """
 Helper Utilities — Nama Matching, Total Calculation
 """
-import re
 import logging
+import re
+
 from rapidfuzz import fuzz
+
 from core.master_data import format_rupiah
 
 logger = logging.getLogger("bot_logger")
 
 
 def bersihkan_nama(nama):
-    if not nama: return ""
+    if not nama:
+        return ""
     nama_bersih = str(nama).lower().strip()
     for gelar in ["bapak ", "pak ", "ibu ", "bu ", "mas ", "mbak ", "atas nama "]:
         if nama_bersih.startswith(gelar):
-            nama_bersih = nama_bersih[len(gelar):].strip()
+            nama_bersih = nama_bersih[len(gelar) :].strip()
     return nama_bersih
 
 
@@ -55,7 +58,7 @@ def hitung_ulang_total_dinamis(entitas):
     """Mengkalkulasi ulang harga total & sinkronisasi Satuan jika sedang dilakukan pengeditan"""
     try:
         jumlah_str = str(entitas.get("JUMLAH") or "0")
-        harga_str  = str(entitas.get("HARGA") or "0")
+        harga_str = str(entitas.get("HARGA") or "0")
         satuan_ref = entitas.get("SATUAN")
 
         # Ekstrak angka murni

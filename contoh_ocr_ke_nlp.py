@@ -12,6 +12,7 @@ if __name__ == "__main__":
 
 # Load environment variables
 from dotenv import load_dotenv
+
 load_dotenv()
 
 print("=" * 80)
@@ -21,6 +22,7 @@ print()
 
 # 1. Inisialisasi OCR Service
 from services.ocr_service import OCRService
+
 print("1. Inisialisasi OCR Service...")
 ocr_service = OCRService()
 if not ocr_service.load_model():
@@ -86,7 +88,7 @@ nlp_result = proses_nlp(
     teks_user=teks_ocr,
     db_metode=semua_metode,
     daftar_barang=daftar_nama_barang,
-    mapping_metode=mapping_metode
+    mapping_metode=mapping_metode,
 )
 
 if not nlp_result["valid_results"]:
@@ -100,9 +102,10 @@ if not nlp_result["valid_results"]:
 print(f"   ✅ Berhasil mengekstrak {len(nlp_result['valid_results'])} transaksi!")
 print()
 
-# 5. Hitung total harga
-from core.master_data import cari_harga_default, parse_rupiah, format_rupiah
 import re
+
+# 5. Hitung total harga
+from core.master_data import cari_harga_default, format_rupiah, parse_rupiah
 
 print("=" * 80)
 print("HASIL AKHIR:")
@@ -117,26 +120,23 @@ for idx, transaksi in enumerate(nlp_result["valid_results"], 1):
     print(f"  Satuan: {transaksi.get('SATUAN', 'Tidak terdeteksi')}")
     print(f"  Status: {transaksi.get('STATUS', 'Tidak terdeteksi')}")
     print(f"  Metode: {transaksi.get('METODE_PEMBAYARAN', 'Tidak terdeteksi')}")
-    
+
     # Hitung harga jika ada
     nama_barang = transaksi.get("BARANG")
     satuan = transaksi.get("SATUAN")
     jumlah_str = transaksi.get("JUMLAH")
-    
+
     if nama_barang and semua_barang:
         harga_list = cari_harga_default(
-            None,
-            nama_barang,
-            satuan_cari=satuan,
-            semua_barang=semua_barang
+            None, nama_barang, satuan_cari=satuan, semua_barang=semua_barang
         )
-        
+
         if harga_list:
             harga_satuan = harga_list[0]["harga"]
             angka_jumlah_match = re.search(r"\d+", str(jumlah_str))
             jumlah = int(angka_jumlah_match.group()) if angka_jumlah_match else 1
             total = harga_satuan * jumlah
-            
+
             print(f"  Harga Satuan: {format_rupiah(harga_satuan)}")
             print(f"  Total: {format_rupiah(total)}")
         else:

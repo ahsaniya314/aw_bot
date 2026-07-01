@@ -1,7 +1,8 @@
-from nlp.processor import proses_nlp, _apply_multi_overrides, split_multi_entries
-from nlp.normalizer import koreksi_teks
-from nlp.extractor import ekstrak_entitas
 import pprint
+
+from nlp.extractor import ekstrak_entitas
+from nlp.normalizer import koreksi_teks
+from nlp.processor import _apply_multi_overrides, proses_nlp, split_multi_entries
 
 input_test = "pak anDi Pesan prmen1 10 dus, mses 5 bks, will0 3 dus belum lunwas semua"
 

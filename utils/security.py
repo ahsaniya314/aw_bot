@@ -1,14 +1,14 @@
 """
 Security Utilities — Rate Limiting, RBAC, Input Sanitization, Safe Edit
 """
-import logging
 import json
+import logging
 import os
 import re
+import traceback
 import urllib.request
 from datetime import datetime
 from functools import wraps
-import traceback
 
 from core.bot_context import ctx
 
@@ -20,6 +20,7 @@ logger = logging.getLogger("bot_logger")
 # ==========================================
 class RateLimiter:
     """Simple rate limiter untuk mencegah spam"""
+
     def __init__(self, max_requests=10, time_window=60):
         self.max_requests = max_requests
         self.time_window = time_window  # dalam detik
@@ -33,7 +34,8 @@ class RateLimiter:
 
         # Hapus request lama (> time_window)
         self.user_requests[user_id] = [
-            req_time for req_time in self.user_requests[user_id]
+            req_time
+            for req_time in self.user_requests[user_id]
             if (now - req_time).total_seconds() < self.time_window
         ]
 
@@ -51,6 +53,7 @@ class RateLimiter:
 # ==========================================
 def authorized_only(func):
     """Decorator untuk membatasi akses bot hanya untuk admin terdaftar."""
+
     @wraps(func)
     def wrapper(obj, *args, **kwargs):
         try:
@@ -58,24 +61,28 @@ def authorized_only(func):
             user_id = obj.from_user.id
             func_name = func.__name__
             obj_type = type(obj).__name__
-            
-            logger.debug(f"[AUTH] Checking access for user {user_id} → {func_name} (type: {obj_type})")
-            
+
+            logger.debug(
+                f"[AUTH] Checking access for user {user_id} → {func_name} (type: {obj_type})"
+            )
+
             # Jika AUTHORIZED_ADMINS kosong, izinkan semua (mode pengembangan/transisi)
             # Jika sudah diisi, blokir user asing.
             if ctx.AUTHORIZED_ADMINS and user_id not in ctx.AUTHORIZED_ADMINS:
-                logger.warning(f"[AUTH] BLOCKED: Akses tidak sah dari User ID {user_id} → {func_name}")
+                logger.warning(
+                    f"[AUTH] BLOCKED: Akses tidak sah dari User ID {user_id} → {func_name}"
+                )
                 try:
                     ctx.bot.reply_to(
                         obj,
                         f"🚫 <b>Akses Ditolak.</b>\nID Telegram Anda (<code>{user_id}</code>) belum terdaftar sebagai pengelola sistem kasir ini.\n\n"
                         f"💡 <i>Silakan salin ID di atas dan masukkan ke variabel <code>TELEGRAM_BOT_ADMIN_IDS</code> di dalam file <code>.env</code> Anda!</i>",
-                        parse_mode="HTML"
+                        parse_mode="HTML",
                     )
                 except Exception:
                     pass  # For callback queries, reply_to doesn't work anyway
                 return
-            
+
             logger.debug(f"[AUTH] ALLOWED: User {user_id} → {func_name}")
             return func(obj, *args, **kwargs)
         except Exception as e:
@@ -83,6 +90,7 @@ def authorized_only(func):
             logger.error(traceback.format_exc())
             # Fallback: allow the function to proceed if decorator fails
             return func(obj, *args, **kwargs)
+
     return wrapper
 
 
@@ -107,26 +115,27 @@ def safe_edit_message(bot, text, chat_id, message_id, reply_markup=None, parse_m
         return bot.edit_message_text(**kwargs)
     except Exception as e:
         err = str(e).lower()
-        if any(x in err for x in [
-            "message to edit not found",
-            "message is not modified",
-            "message can't be edited",
-            "message can`t be edited",
-            "can't be edited",
-            "message is too old",
-            "message_id_invalid",
-            "message_too_long",
-            "too long",
-        ]):
+        if any(
+            x in err
+            for x in [
+                "message to edit not found",
+                "message is not modified",
+                "message can't be edited",
+                "message can`t be edited",
+                "can't be edited",
+                "message is too old",
+                "message_id_invalid",
+                "message_too_long",
+                "too long",
+            ]
+        ):
             try:
                 send_kwargs = {"chat_id": chat_id, "text": text}
                 if parse_mode is not None:
                     send_kwargs["parse_mode"] = parse_mode
                 if reply_markup is not False and reply_markup is not None:
                     send_kwargs["reply_markup"] = reply_markup
-                return bot.send_message(
-                    **send_kwargs
-                )
+                return bot.send_message(**send_kwargs)
             except Exception as e2:
                 logger.error(f"Error fallback send_message: {e2}")
                 return None
@@ -148,16 +157,16 @@ def sanitize_input(text):
     # Karakter yang benar-benar berisiko tinggi untuk SQL/Script injection
     # Namun tetap izinkan karakter umum seperti ' (kutip) untuk nama seperti "Pak Ma'ruf"
     # dan | (pipe) karena digunakan internal oleh nlp_processor.
-    
+
     # Kita fokus menghapus karakter kontrol dan script tag
     sanitized = text
     # Hapus tag HTML sederhana
-    sanitized = re.sub(r'<[^>]*?>', '', sanitized)
-    
+    sanitized = re.sub(r"<[^>]*?>", "", sanitized)
+
     # Hapus karakter yang jarang digunakan tapi berisiko
-    dangerous_chars = [';', '$', '`', '{', '}', '\\']
+    dangerous_chars = [";", "$", "`", "{", "}", "\\"]
     for char in dangerous_chars:
-        sanitized = sanitized.replace(char, '')
+        sanitized = sanitized.replace(char, "")
 
     return sanitized.strip()
 
@@ -182,7 +191,9 @@ def log_exception(prefix, e):
         pass
 
 
-def safe_debug_event(payload, env_path=".dbg/save-dashboard-mismatch.env", default_url="http://127.0.0.1:7777/event"):
+def safe_debug_event(
+    payload, env_path=".dbg/save-dashboard-mismatch.env", default_url="http://127.0.0.1:7777/event"
+):
     """
     Kirim event debug ke local debug server jika tersedia.
     Jangan pernah memutus flow utama bila file env hilang atau koneksi ditolak.

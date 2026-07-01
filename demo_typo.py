@@ -2,13 +2,13 @@
 Demo Fuzzy Matching & Koreksi Typo
 """
 
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from nlp.processor import proses_nlp
 from nlp.normalizer import koreksi_teks
+from nlp.processor import proses_nlp
 
 
 def demo_typo():

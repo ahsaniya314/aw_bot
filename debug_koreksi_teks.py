@@ -1,10 +1,13 @@
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import re
-from rapidfuzz import process, fuzz
-from nlp.dictionaries import DAFTAR_KATA_KUNCI, NORMALIZATION_DICT, KAMUS_ALIAS
+
+from rapidfuzz import fuzz, process
+
+from nlp.dictionaries import DAFTAR_KATA_KUNCI, KAMUS_ALIAS, NORMALIZATION_DICT
 
 ignore_words = {
     "pak", "bu", "mas", "atas", "nama", "hari", "bulan", "tahun", "kemarin", "besok", "lusa", "minggu",

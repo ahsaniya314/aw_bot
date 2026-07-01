@@ -1,16 +1,17 @@
 """
 Command Handlers — /start, /help, /dashboard, /master_barang, /master_metode
 """
-import os
-import logging
 import ipaddress
+import logging
+import os
 from datetime import datetime
 from urllib.parse import urlparse
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from core.bot_context import ctx
-from utils.security import authorized_only, safe_edit_message
 from handlers.handler_dashboard import tangani_dashboard_harian
+from utils.security import authorized_only, safe_edit_message
 
 logger = logging.getLogger("bot_logger")
 
@@ -36,7 +37,13 @@ def _is_public_http_url(url: str):
             return False
         try:
             ip = ipaddress.ip_address(host)
-            if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved or ip.is_multicast:
+            if (
+                ip.is_private
+                or ip.is_loopback
+                or ip.is_link_local
+                or ip.is_reserved
+                or ip.is_multicast
+            ):
                 return False
         except ValueError:
             pass
@@ -46,7 +53,9 @@ def _is_public_http_url(url: str):
 
 
 def get_dashboard_web_url():
-    explicit = _normalize_url_maybe(os.getenv("DASHBOARD_WEB_URL") or os.getenv("DASHBOARD_PUBLIC_URL") or "")
+    explicit = _normalize_url_maybe(
+        os.getenv("DASHBOARD_WEB_URL") or os.getenv("DASHBOARD_PUBLIC_URL") or ""
+    )
     if explicit:
         url = explicit.rstrip("/")
         if not url.endswith("/dashboard"):
@@ -58,7 +67,9 @@ def get_dashboard_web_url():
         url = f"https://{space_host}/dashboard"
         return url if _is_public_http_url(url) else None
 
-    public_base = _normalize_url_maybe(os.getenv("PUBLIC_BASE_URL") or os.getenv("APP_BASE_URL") or os.getenv("BASE_URL") or "")
+    public_base = _normalize_url_maybe(
+        os.getenv("PUBLIC_BASE_URL") or os.getenv("APP_BASE_URL") or os.getenv("BASE_URL") or ""
+    )
     if public_base:
         url = f"{public_base.rstrip('/')}/dashboard"
         return url if _is_public_http_url(url) else None
@@ -182,7 +193,7 @@ GUIDE_PAGES = {
         "• Jika OCR salah baca, kirim foto lebih terang dan lurus.\n"
         "• Jika total tidak muncul, cek harga barang dan satuannya.\n"
         "• Jika mode offline, koneksi database perlu diperiksa."
-    )
+    ),
 }
 
 
@@ -191,7 +202,7 @@ def build_main_menu_markup():
     # Row 1: Fast Inputs
     markup.add(
         InlineKeyboardButton("📝 Catat (Teks)", callback_data="quick_input_text"),
-        InlineKeyboardButton("📷 Catat (Foto)", callback_data="quick_input_ocr")
+        InlineKeyboardButton("📷 Catat (Foto)", callback_data="quick_input_ocr"),
     )
     # Row 2: Search and Dashboard
     dashboard_web_btn = build_dashboard_web_button()
@@ -203,25 +214,23 @@ def build_main_menu_markup():
     else:
         markup.add(
             InlineKeyboardButton("🔍 Cari Transaksi", callback_data="quick_search_menu"),
-            InlineKeyboardButton("📊 Dashboard Bot", callback_data="dashboard_refresh")
+            InlineKeyboardButton("📊 Dashboard Bot", callback_data="dashboard_refresh"),
         )
     # Row 3: History and Debts
     markup.add(
         InlineKeyboardButton("📑 Riwayat", callback_data="read_all_transaksi"),
-        InlineKeyboardButton("💰 Cek Hutang", callback_data="read_filter_hutang")
+        InlineKeyboardButton("💰 Cek Hutang", callback_data="read_filter_hutang"),
     )
     # Row 4: Master Settings
     markup.add(
         InlineKeyboardButton("📦 Kelola Barang", callback_data="mb_list"),
-        InlineKeyboardButton("📐 Kelola Satuan", callback_data="ms_menu")
+        InlineKeyboardButton("📐 Kelola Satuan", callback_data="ms_menu"),
     )
-    markup.add(
-        InlineKeyboardButton("💳 Metode Bayar", callback_data="mm_list")
-    )
+    markup.add(InlineKeyboardButton("💳 Metode Bayar", callback_data="mm_list"))
     # Row 5: Guides and Help
     markup.add(
         InlineKeyboardButton("📘 Panduan", callback_data="help_guide"),
-        InlineKeyboardButton("❓ Bantuan", callback_data="quick_help")
+        InlineKeyboardButton("❓ Bantuan", callback_data="quick_help"),
     )
     # Row 6: Actions
     markup.row(InlineKeyboardButton("❌ Tutup Menu", callback_data="btn_buang"))
@@ -229,20 +238,12 @@ def build_main_menu_markup():
 
 
 def build_reply_keyboard():
-    from telebot.types import ReplyKeyboardMarkup, KeyboardButton
+    from telebot.types import KeyboardButton, ReplyKeyboardMarkup
+
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    markup.add(
-        KeyboardButton("📘 Panduan"),
-        KeyboardButton("🔎 Cari Pesanan")
-    )
-    markup.add(
-        KeyboardButton("📑 Riwayat"),
-        KeyboardButton("🌐 Dasbor Web")
-    )
-    markup.add(
-        KeyboardButton("💰 Cek Hutang"),
-        KeyboardButton("📐 Kelola Satuan")
-    )
+    markup.add(KeyboardButton("📘 Panduan"), KeyboardButton("🔎 Cari Pesanan"))
+    markup.add(KeyboardButton("📑 Riwayat"), KeyboardButton("🌐 Dasbor Web"))
+    markup.add(KeyboardButton("💰 Cek Hutang"), KeyboardButton("📐 Kelola Satuan"))
     markup.add(KeyboardButton("📦 Kelola Barang"))
     return markup
 
@@ -251,24 +252,24 @@ def build_guide_markup(active_key="guide_home"):
     markup = InlineKeyboardMarkup(row_width=2)
     markup.add(
         InlineKeyboardButton("🏠 Utama", callback_data="guide_home"),
-        InlineKeyboardButton("📝 Input", callback_data="guide_input")
+        InlineKeyboardButton("📝 Input", callback_data="guide_input"),
     )
     markup.add(
         InlineKeyboardButton("📷 OCR", callback_data="guide_ocr"),
-        InlineKeyboardButton("🔎 Cari", callback_data="guide_search")
+        InlineKeyboardButton("🔎 Cari", callback_data="guide_search"),
     )
     markup.add(
         InlineKeyboardButton("💰 Hutang", callback_data="guide_hutang"),
-        InlineKeyboardButton("🌐 Dasbor", callback_data="guide_dashboard")
+        InlineKeyboardButton("🌐 Dasbor", callback_data="guide_dashboard"),
     )
     markup.add(
         InlineKeyboardButton("📦 Barang", callback_data="guide_barang"),
-        InlineKeyboardButton("📐 Satuan", callback_data="guide_satuan")
+        InlineKeyboardButton("📐 Satuan", callback_data="guide_satuan"),
     )
     markup.row(InlineKeyboardButton("🧯 Tips", callback_data="guide_troubleshoot"))
     markup.add(
         InlineKeyboardButton("🏠 Menu", callback_data="menu_main"),
-        InlineKeyboardButton("❌ Tutup", callback_data="btn_buang")
+        InlineKeyboardButton("❌ Tutup", callback_data="btn_buang"),
     )
     return markup
 
@@ -303,7 +304,11 @@ def send_welcome(message):
 
     if not ctx.rate_limiter.is_allowed(user_id):
         logger.warning(f"Rate limit exceeded untuk user {user_id}")
-        bot.reply_to(message, "⏱️ <b>Terlalu banyak request.</b>\nMohon tunggu sebentar...", parse_mode="HTML")
+        bot.reply_to(
+            message,
+            "⏱️ <b>Terlalu banyak request.</b>\nMohon tunggu sebentar...",
+            parse_mode="HTML",
+        )
         return
 
     logger.info(f"User {user_id} (chat {chat_id}) gunakan /start atau /help")
@@ -330,9 +335,13 @@ def cmd_menu(message):
     user_id = message.from_user.id
     chat_id = message.chat.id
     if not ctx.rate_limiter.is_allowed(user_id):
-        bot.reply_to(message, "⏱️ <b>Terlalu banyak request.</b>\nMohon tunggu sebentar...", parse_mode="HTML")
+        bot.reply_to(
+            message,
+            "⏱️ <b>Terlalu banyak request.</b>\nMohon tunggu sebentar...",
+            parse_mode="HTML",
+        )
         return
-    
+
     # Tampilkan menu utama langsung
     reply_markup = build_reply_keyboard()
     bot.send_message(chat_id, build_menu_text(), parse_mode="HTML", reply_markup=reply_markup)
@@ -343,9 +352,18 @@ def cmd_panduan(message):
     user_id = message.from_user.id
     chat_id = message.chat.id
     if not ctx.rate_limiter.is_allowed(user_id):
-        bot.reply_to(message, "⏱️ <b>Terlalu banyak request.</b>\nMohon tunggu sebentar...", parse_mode="HTML")
+        bot.reply_to(
+            message,
+            "⏱️ <b>Terlalu banyak request.</b>\nMohon tunggu sebentar...",
+            parse_mode="HTML",
+        )
         return
-    bot.send_message(chat_id, build_guide_page_text("guide_home"), parse_mode="HTML", reply_markup=build_guide_markup("guide_home"))
+    bot.send_message(
+        chat_id,
+        build_guide_page_text("guide_home"),
+        parse_mode="HTML",
+        reply_markup=build_guide_markup("guide_home"),
+    )
 
 
 def cmd_dashboard(message):
@@ -353,10 +371,10 @@ def cmd_dashboard(message):
     bot = ctx.bot
     chat_id = message.chat.id
     url = get_dashboard_web_url() or "https://aw-bot-backend.onrender.com/dashboard/"
-    
+
     markup = InlineKeyboardMarkup(row_width=1)
     markup.add(InlineKeyboardButton("🌐 Buka Dasbor Web", url=url))
-    
+
     teks = (
         "🌐 <b>DASBOR WEB AW PRODUCTION</b>\n"
         "━━━━━━━━━━━━━━━━━━━━━━\n"
@@ -378,13 +396,13 @@ def cmd_master_barang(message):
     )
     markup = InlineKeyboardMarkup(row_width=2)
     markup.add(
-        InlineKeyboardButton("📋 Lihat Daftar",  callback_data="mb_list"),
-        InlineKeyboardButton("➕ Tambah Baru",   callback_data="mb_tambah"),
-        InlineKeyboardButton("✏️ Edit Harga",    callback_data="mb_edit"),
-        InlineKeyboardButton("🗑️ Hapus Barang",  callback_data="mb_hapus"),
+        InlineKeyboardButton("📋 Lihat Daftar", callback_data="mb_list"),
+        InlineKeyboardButton("➕ Tambah Baru", callback_data="mb_tambah"),
+        InlineKeyboardButton("✏️ Edit Harga", callback_data="mb_edit"),
+        InlineKeyboardButton("🗑️ Hapus Barang", callback_data="mb_hapus"),
     )
     markup.add(
-        InlineKeyboardButton("❌ Batal / Tutup",  callback_data="btn_buang"),
+        InlineKeyboardButton("❌ Batal / Tutup", callback_data="btn_buang"),
     )
     bot.reply_to(message, teks, parse_mode="HTML", reply_markup=markup)
 
@@ -402,10 +420,10 @@ def cmd_master_metode(message):
     )
     markup = InlineKeyboardMarkup(row_width=2)
     markup.add(
-        InlineKeyboardButton("📋 Lihat Daftar",   callback_data="mm_list"),
-        InlineKeyboardButton("➕ Tambah Baru",    callback_data="mm_tambah"),
-        InlineKeyboardButton("✏️ Edit Keyword",   callback_data="mm_edit"),
-        InlineKeyboardButton("🗑️ Hapus Metode",   callback_data="mm_hapus"),
+        InlineKeyboardButton("📋 Lihat Daftar", callback_data="mm_list"),
+        InlineKeyboardButton("➕ Tambah Baru", callback_data="mm_tambah"),
+        InlineKeyboardButton("✏️ Edit Keyword", callback_data="mm_edit"),
+        InlineKeyboardButton("🗑️ Hapus Metode", callback_data="mm_hapus"),
     )
     bot.reply_to(message, teks, parse_mode="HTML", reply_markup=markup)
 
@@ -423,10 +441,10 @@ def cmd_master_satuan(message):
     )
     markup = InlineKeyboardMarkup(row_width=2)
     markup.add(
-        InlineKeyboardButton("📋 Lihat Daftar",   callback_data="ms_list"),
-        InlineKeyboardButton("➕ Tambah Baru",    callback_data="ms_tambah"),
-        InlineKeyboardButton("✏️ Edit Satuan",    callback_data="ms_edit"),
-        InlineKeyboardButton("🗑️ Hapus Satuan",   callback_data="ms_hapus"),
+        InlineKeyboardButton("📋 Lihat Daftar", callback_data="ms_list"),
+        InlineKeyboardButton("➕ Tambah Baru", callback_data="ms_tambah"),
+        InlineKeyboardButton("✏️ Edit Satuan", callback_data="ms_edit"),
+        InlineKeyboardButton("🗑️ Hapus Satuan", callback_data="ms_hapus"),
     )
     markup.add(InlineKeyboardButton("❌ Tutup", callback_data="btn_buang"))
     bot.reply_to(message, teks, parse_mode="HTML", reply_markup=markup)
@@ -441,6 +459,7 @@ def cmd_dedup_transaksi(message):
 
     try:
         from database import db_client
+
         rows = db_client.get_semua_transaksi_db()
         dup_ids = db_client.find_adjacent_duplicate_transaksi_ids(rows)
         if not dup_ids:
@@ -470,6 +489,7 @@ def set_bot_commands(bot):
     """Mengatur daftar commands yang muncul di Menu Button (tombol biru di sebelah kiri kolom chat).
     Semua fungsi Reply Keyboard lama sudah dipindahkan ke sini."""
     from telebot.types import BotCommand
+
     commands = [
         BotCommand("menu", "🏠 Menu Utama"),
         BotCommand("catat", "📝 Catat Penjualan"),
@@ -495,7 +515,7 @@ def cmd_catat(message):
     """Command /catat — shortcut untuk catat penjualan via teks."""
     bot = ctx.bot
     chat_id = message.chat.id
-    
+
     teks = (
         "✍️ <b>PENCATATAN TRANSAKSI</b>\n"
         "━━━━━━━━━━━━━━━━━━━━━━\n"
@@ -503,15 +523,15 @@ def cmd_catat(message):
         "📝 <b>Teks:</b> Ketik manual detail pesanan secara fleksibel.\n"
         "📷 <b>Foto:</b> Kirim foto nota/struk, bot akan membaca otomatis."
     )
-    
+
     markup = InlineKeyboardMarkup(row_width=2)
     markup.add(
         InlineKeyboardButton("📝 Catat via Teks", callback_data="quick_input_text"),
-        InlineKeyboardButton("📷 Catat via Foto (OCR)", callback_data="quick_input_ocr")
+        InlineKeyboardButton("📷 Catat via Foto (OCR)", callback_data="quick_input_ocr"),
     )
     markup.add(
         InlineKeyboardButton("🔍 Cari Transaksi", callback_data="quick_search_menu"),
-        InlineKeyboardButton("🏠 Menu Utama", callback_data="menu_main")
+        InlineKeyboardButton("🏠 Menu Utama", callback_data="menu_main"),
     )
     bot.send_message(chat_id, teks, parse_mode="HTML", reply_markup=markup)
 
@@ -532,11 +552,11 @@ def cmd_foto(message):
     markup = InlineKeyboardMarkup(row_width=2)
     markup.add(
         InlineKeyboardButton("📘 Pelajari Tips OCR", callback_data="guide_ocr"),
-        InlineKeyboardButton("📝 Catat via Teks", callback_data="quick_input_text")
+        InlineKeyboardButton("📝 Catat via Teks", callback_data="quick_input_text"),
     )
     markup.add(
         InlineKeyboardButton("🏠 Menu Utama", callback_data="menu_main"),
-        InlineKeyboardButton("❌ Tutup", callback_data="btn_buang")
+        InlineKeyboardButton("❌ Tutup", callback_data="btn_buang"),
     )
     bot.send_message(chat_id, teks, parse_mode="HTML", reply_markup=markup)
 
@@ -565,7 +585,7 @@ def cmd_cari(message):
     )
     markup.add(
         InlineKeyboardButton("🏠 Menu Utama", callback_data="menu_main"),
-        InlineKeyboardButton("❌ Tutup", callback_data="btn_buang")
+        InlineKeyboardButton("❌ Tutup", callback_data="btn_buang"),
     )
     bot.send_message(chat_id, teks, parse_mode="HTML", reply_markup=markup)
 
@@ -581,6 +601,7 @@ def cmd_riwayat(message):
     sess["entitas"] = {"AKSI": "Read Data", "SEMUA": True}
     msg_proses = bot.reply_to(message, "⏳ Memuat riwayat transaksi...")
     from handlers.crud_transaksi import tangani_read_data
+
     tangani_read_data(chat_id, msg_proses.message_id)
 
 
@@ -592,9 +613,14 @@ def cmd_hutang(message):
         bot.reply_to(message, "❌ Mode Offline: Tidak dapat mengakses data.")
         return
     sess = ctx.user_sessions.ensure(chat_id)
-    sess["entitas"] = {"AKSI": "Read Data", "STATUS": "Hutang", "KONTEKS_AGREGASI": "Summary Jatuh Tempo"}
+    sess["entitas"] = {
+        "AKSI": "Read Data",
+        "STATUS": "Hutang",
+        "KONTEKS_AGREGASI": "Summary Jatuh Tempo",
+    }
     msg_proses = bot.reply_to(message, "⏳ Memuat daftar hutang...")
     from handlers.crud_transaksi import tangani_read_data
+
     tangani_read_data(chat_id, msg_proses.message_id)
 
 
@@ -603,21 +629,22 @@ def register_handlers(bot):
     try:
         bot.delete_my_commands()
         from telebot.types import MenuButtonDefault
+
         bot.set_chat_menu_button(menu_button=MenuButtonDefault(type="default"))
         logger.info("[OK] Bot commands dan menu button berhasil dihapus!")
     except Exception as e:
         logger.warning(f"[WARNING] Gagal hapus bot commands/menu: {e}")
-    
-    bot.message_handler(commands=['start', 'help'])(authorized_only(send_welcome))
-    bot.message_handler(commands=['menu'])(authorized_only(cmd_menu))
-    bot.message_handler(commands=['catat'])(authorized_only(cmd_catat))
-    bot.message_handler(commands=['foto'])(authorized_only(cmd_foto))
-    bot.message_handler(commands=['cari'])(authorized_only(cmd_cari))
-    bot.message_handler(commands=['riwayat'])(authorized_only(cmd_riwayat))
-    bot.message_handler(commands=['hutang'])(authorized_only(cmd_hutang))
-    bot.message_handler(commands=['panduan', 'guide'])(authorized_only(cmd_panduan))
-    bot.message_handler(commands=['dashboard'])(authorized_only(cmd_dashboard))
-    bot.message_handler(commands=['master_barang'])(cmd_master_barang)
-    bot.message_handler(commands=['master_satuan'])(cmd_master_satuan)
-    bot.message_handler(commands=['master_metode'])(cmd_master_metode)
-    bot.message_handler(commands=['dedup_transaksi'])(authorized_only(cmd_dedup_transaksi))
+
+    bot.message_handler(commands=["start", "help"])(authorized_only(send_welcome))
+    bot.message_handler(commands=["menu"])(authorized_only(cmd_menu))
+    bot.message_handler(commands=["catat"])(authorized_only(cmd_catat))
+    bot.message_handler(commands=["foto"])(authorized_only(cmd_foto))
+    bot.message_handler(commands=["cari"])(authorized_only(cmd_cari))
+    bot.message_handler(commands=["riwayat"])(authorized_only(cmd_riwayat))
+    bot.message_handler(commands=["hutang"])(authorized_only(cmd_hutang))
+    bot.message_handler(commands=["panduan", "guide"])(authorized_only(cmd_panduan))
+    bot.message_handler(commands=["dashboard"])(authorized_only(cmd_dashboard))
+    bot.message_handler(commands=["master_barang"])(cmd_master_barang)
+    bot.message_handler(commands=["master_satuan"])(cmd_master_satuan)
+    bot.message_handler(commands=["master_metode"])(cmd_master_metode)
+    bot.message_handler(commands=["dedup_transaksi"])(authorized_only(cmd_dedup_transaksi))

@@ -1,6 +1,8 @@
-import sys
 import os
+import sys
+
 import numpy as np
+
 
 def get_box_metrics(box):
     """Menghitung x_min, y_min, y_max, dan y_center dari bounding box PaddleOCR."""
@@ -12,6 +14,7 @@ def get_box_metrics(box):
     height = y_max - y_min
     return x_min, y_min, y_max, y_center, height
 
+
 def sort_ocr_results(results):
     """
     Menyortir hasil OCR secara spatial dengan logika pengelompokan baris yang lebih fleksibel:
@@ -21,37 +24,39 @@ def sort_ocr_results(results):
     """
     if not results or not results[0]:
         return []
-    
+
     extracted_data = []
     for line in results[0]:
         box = line[0]
         text = line[1][0]
         x_min, y_min, y_max, y_center, height = get_box_metrics(box)
-        extracted_data.append({
-            "text": text,
-            "y_min": y_min,
-            "y_max": y_max,
-            "y_center": y_center,
-            "x_min": x_min,
-            "height": height
-        })
-    
+        extracted_data.append(
+            {
+                "text": text,
+                "y_min": y_min,
+                "y_max": y_max,
+                "y_center": y_center,
+                "x_min": x_min,
+                "height": height,
+            }
+        )
+
     # 1. Urutkan berdasarkan koordinat Y center (Atas ke Bawah)
     extracted_data.sort(key=lambda x: x["y_center"])
-    
+
     rows = []
     if not extracted_data:
         return rows
-        
+
     current_row = [extracted_data[0]]
-    
+
     for i in range(1, len(extracted_data)):
         item = extracted_data[i]
-        
+
         # Hitung rata-rata center dan height dari baris saat ini
         avg_y_center = sum(x["y_center"] for x in current_row) / len(current_row)
         avg_height = sum(x["height"] for x in current_row) / len(current_row)
-        
+
         # Toleransi: Jika jarak vertikal center < 45% dari tinggi baris, anggap baris yang sama
         # Ini lebih toleran terhadap tulisan tangan yang sedikit naik/turun
         if abs(item["y_center"] - avg_y_center) < (avg_height * 0.45):
@@ -61,13 +66,14 @@ def sort_ocr_results(results):
             current_row.sort(key=lambda x: x["x_min"])
             rows.append(current_row)
             current_row = [item]
-            
+
     # Tambahkan baris terakhir
     if current_row:
         current_row.sort(key=lambda x: x["x_min"])
         rows.append(current_row)
-        
+
     return rows
+
 
 def _normalize_predict_result(raw):
     """
@@ -122,9 +128,11 @@ def _normalize_predict_result(raw):
 
     return [lines]
 
+
 def run_ocr(image_path):
     try:
         from paddleocr import PaddleOCR
+
         try:
             ocr_engine = PaddleOCR(
                 text_detection_model_name="PP-OCRv5_mobile_det",
@@ -140,23 +148,23 @@ def run_ocr(image_path):
                 ocr_engine = PaddleOCR(use_angle_cls=True, lang="en")
             except Exception:
                 ocr_engine = PaddleOCR(lang="en")
-        
+
         input_data = image_path
         raw = ocr_engine.predict(input_data)
-        
+
         # Normalize predict() output ke format legacy [[box, [text, score]], ...]
         result = _normalize_predict_result(raw)
-        
+
         # 2. Sort secara spatial untuk mempertahankan tata letak baris & kolom
         sorted_rows = sort_ocr_results(result)
-        
+
         # 3. Susun teks per baris (satu baris teks per baris receipt)
         extracted_text = []
         for row in sorted_rows:
             row_text = " ".join([item["text"] for item in row])
             if row_text.strip():
                 extracted_text.append(row_text.strip())
-                
+
         if extracted_text:
             print("\n".join(extracted_text))
         else:
@@ -165,14 +173,15 @@ def run_ocr(image_path):
         sys.stderr.write(f"OCR Error: {str(e)}\n")
         sys.exit(1)
 
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         sys.stderr.write("Usage: python ocr_runner.py <image_path>\n")
         sys.exit(1)
-        
+
     img_path = sys.argv[1]
     if not os.path.exists(img_path):
         sys.stderr.write(f"Error: File not found {img_path}\n")
         sys.exit(1)
-        
+
     run_ocr(img_path)

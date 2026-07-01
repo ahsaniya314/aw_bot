@@ -7,8 +7,8 @@ dijalankan langsung di terminal tanpa Jupyter Notebook.
 - Menunjukkan logika untuk laporan bagian PENYUSUNAN DATA TRANSAKSI
 """
 
-import sys
 import os
+import sys
 
 # Fix encoding di Windows
 if sys.platform == 'win32':
@@ -18,12 +18,13 @@ if sys.platform == 'win32':
 # Tambahkan root direktori ke path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from nlp.processor import proses_nlp, split_multi_entries, _apply_multi_overrides
-from nlp.normalizer import koreksi_teks
-from nlp.extractor import ekstrak_entitas
-from nlp.dictionaries import KAMUS_ALIAS, NORMALIZATION_DICT, DAFTAR_KATA_KUNCI
-from core.master_data import cari_harga_default, format_rupiah, parse_rupiah
 import re
+
+from core.master_data import cari_harga_default, format_rupiah, parse_rupiah
+from nlp.dictionaries import DAFTAR_KATA_KUNCI, KAMUS_ALIAS, NORMALIZATION_DICT
+from nlp.extractor import ekstrak_entitas
+from nlp.normalizer import koreksi_teks
+from nlp.processor import _apply_multi_overrides, proses_nlp, split_multi_entries
 
 
 def print_separator(title):
@@ -107,7 +108,7 @@ def langkah_6_normalization_fuzzy_matching():
     
     print("\n--- Bagian B: LANGKAH-LANGKAH KOREKSI TYPO SEPERTI SISTEM NYATA ---")
     from rapidfuzz import fuzz, process
-    
+
     # Proses satu per satu entri untuk menunjukkan alur
     for idx_entri, entry in enumerate(entries, 1):
         print(f"\n=== MENGKOREKSI ENTRI {idx_entri}: '{entry}' ===")

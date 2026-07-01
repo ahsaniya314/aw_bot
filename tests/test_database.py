@@ -2,8 +2,9 @@
 Unit Tests for Database
 """
 
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
 
 
 class TestDatabaseClient:

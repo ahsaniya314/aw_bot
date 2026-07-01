@@ -1,8 +1,10 @@
 import os
 import sys
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from services.ocr_service import OCRService
+
 
 def calculate_cer(reference: str, hypothesis: str) -> float:
     """Calculate Character Error Rate (CER) between reference and hypothesis text."""

@@ -1,29 +1,54 @@
 """
 Text Handler — Router utama untuk pesan teks natural language
 """
-import re
 import logging
+import re
 from datetime import datetime
 from time import perf_counter
 
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from core.bot_context import ctx
-from utils.security import authorized_only, safe_edit_message, sanitize_input, log_exception, notify_admins, safe_delete_message
-from services.cache_manager import get_cached_barang, get_cached_metode
-from nlp.processor import proses_nlp
-from nlp.normalizer import koreksi_teks
 from core.master_data import (
-    format_rupiah, parse_rupiah, cari_harga_default, normalisasi_tanggal_gs,
-    get_all_barang, tambah_barang, update_barang
+    cari_harga_default,
+    format_rupiah,
+    get_all_barang,
+    normalisasi_tanggal_gs,
+    parse_rupiah,
+    tambah_barang,
+    update_barang,
 )
-from handlers.handler_dashboard import tangani_dashboard_harian, tangani_dashboard_custom_date, handle_dashboard_date_input
 from handlers.command_handler import (
-    send_welcome, cmd_dashboard, cmd_master_barang, cmd_menu, cmd_panduan,
-    build_reply_keyboard, get_dashboard_web_url, cmd_catat, cmd_foto,
-    cmd_cari, cmd_riwayat, cmd_hutang
+    build_reply_keyboard,
+    cmd_cari,
+    cmd_catat,
+    cmd_dashboard,
+    cmd_foto,
+    cmd_hutang,
+    cmd_master_barang,
+    cmd_menu,
+    cmd_panduan,
+    cmd_riwayat,
+    get_dashboard_web_url,
+    send_welcome,
 )
+from handlers.handler_dashboard import (
+    handle_dashboard_date_input,
+    tangani_dashboard_custom_date,
+    tangani_dashboard_harian,
+)
+from nlp.normalizer import koreksi_teks
+from nlp.processor import proses_nlp
+from services.cache_manager import get_cached_barang, get_cached_metode
 from services.ui_transaksi import susun_balasan_resume
+from utils.security import (
+    authorized_only,
+    log_exception,
+    notify_admins,
+    safe_delete_message,
+    safe_edit_message,
+    sanitize_input,
+)
 
 logger = logging.getLogger("bot_logger")
 
@@ -55,7 +80,7 @@ def _extract_batch_context_from_text(user_text, mapping_metode=None):
         context["NAMA"] = re.sub(r"\s+", " ", m_named.group(1)).strip().title()
     else:
         # Nama natural sebelum kata kerja transaksi
-        text_wo_date = text[m_date.end():].strip(" ,.-") if m_date else text
+        text_wo_date = text[m_date.end() :].strip(" ,.-") if m_date else text
         m_name = re.search(
             r"^([a-zA-Z][a-zA-Z\s\.'-]{1,80}?)\s+(?:pesan|beli|ambil|order|mau|minta)\b",
             text_wo_date,
@@ -103,7 +128,11 @@ def _looks_like_structured_block_text(user_text):
     text = str(user_text or "")
     if "\n" not in text:
         return False
-    lines = [ln.strip() for ln in text.replace("\r\n", "\n").replace("\r", "\n").split("\n") if ln.strip()]
+    lines = [
+        ln.strip()
+        for ln in text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+        if ln.strip()
+    ]
     if len(lines) < 4:
         return False
     date_lines = sum(1 for ln in lines if _BATCH_DATE_RE.search(ln))
@@ -128,6 +157,7 @@ def _extract_fast_date(text):
     if "kemarin" in raw or "kemaren" in raw:
         try:
             from datetime import timedelta
+
             return (datetime.now() - timedelta(days=1)).strftime("%d-%m-%Y")
         except Exception:
             return None
@@ -158,14 +188,28 @@ def _build_fast_text_route(user_text):
             ent["TANGGAL"] = tgl
         return {"entitas": ent, "loading": "⏳ Memuat pembeli terbanyak..."}
 
-    if any(k in lower for k in ["siapa yang masih hutang", "siapa yg masih hutang", "siapa yang punya hutang", "siapa yg msh hutang", "daftar hutang", "tampilkan daftar hutang"]):
+    if any(
+        k in lower
+        for k in [
+            "siapa yang masih hutang",
+            "siapa yg masih hutang",
+            "siapa yang punya hutang",
+            "siapa yg msh hutang",
+            "daftar hutang",
+            "tampilkan daftar hutang",
+        ]
+    ):
         ent = {"AKSI": "Read Data", "KONTEKS_AGREGASI": "Tunggakan Terbanyak", "STATUS": "Hutang"}
         tgl = _extract_fast_date(text)
         if tgl:
             ent["TANGGAL"] = tgl
         return {"entitas": ent, "loading": "⏳ Memuat daftar hutang..."}
 
-    m_read = re.match(r"^(?:tampilkan|lihat|cek|cari|show)\s+(?:pesanan|transaksi|orderan|order|penjualan)\s+(.+)$", text, re.IGNORECASE)
+    m_read = re.match(
+        r"^(?:tampilkan|lihat|cek|cari|show)\s+(?:pesanan|transaksi|orderan|order|penjualan)\s+(.+)$",
+        text,
+        re.IGNORECASE,
+    )
     if m_read:
         target = re.sub(r"\s+", " ", m_read.group(1)).strip(" .,:;-")
         ent = {"AKSI": "Read Data"}
@@ -178,18 +222,35 @@ def _build_fast_text_route(user_text):
         return {"entitas": ent, "loading": "⏳ Mencari data pesanan..."}
 
     for prefixes, aksi, loading in [
-        (["hapus produk", "hapus barang", "hapus item", "delete barang", "delete item"], "Hapus Barang", "⏳ Memuat data barang untuk dihapus..."),
-        (["harga produk", "harga barang", "cek harga", "cek harga produk", "cek harga barang", "tampilkan harga produk", "tampilkan harga barang"], "Cek Harga Barang", "⏳ Memuat informasi harga barang..."),
+        (
+            ["hapus produk", "hapus barang", "hapus item", "delete barang", "delete item"],
+            "Hapus Barang",
+            "⏳ Memuat data barang untuk dihapus...",
+        ),
+        (
+            [
+                "harga produk",
+                "harga barang",
+                "cek harga",
+                "cek harga produk",
+                "cek harga barang",
+                "tampilkan harga produk",
+                "tampilkan harga barang",
+            ],
+            "Cek Harga Barang",
+            "⏳ Memuat informasi harga barang...",
+        ),
     ]:
         for prefix in prefixes:
             if lower.startswith(prefix):
-                sisa = text[len(prefix):].strip(" .,:;-")
+                sisa = text[len(prefix) :].strip(" .,:;-")
                 ent = {"AKSI": aksi}
                 if sisa:
                     ent["BARANG"] = sisa
                 return {"entitas": ent, "loading": loading}
 
     return None
+
 
 def _terima_multi_nama_pemesan(message):
     bot = ctx.bot
@@ -207,7 +268,14 @@ def _terima_multi_nama_pemesan(message):
 
     if text.lower() in {"batal", "cancel", "stop", "exit"}:
         try:
-            safe_edit_message(bot, "❌ <b>Dibatalkan.</b> Silakan ketik perintah baru.", chat_id, sess.get("prompt_msg_id") or message.message_id, parse_mode="HTML", reply_markup=None)
+            safe_edit_message(
+                bot,
+                "❌ <b>Dibatalkan.</b> Silakan ketik perintah baru.",
+                chat_id,
+                sess.get("prompt_msg_id") or message.message_id,
+                parse_mode="HTML",
+                reply_markup=None,
+            )
         except Exception:
             pass
         try:
@@ -240,6 +308,7 @@ def _terima_multi_nama_pemesan(message):
 
     sess["state"] = "pending_multi_insert"
     from services.ui_transaksi import susun_balasan_multi_resume
+
     susun_balasan_multi_resume(chat_id, sess.get("prompt_msg_id") or message.message_id)
 
 
@@ -253,7 +322,7 @@ def handle_text_message(message):
     teks_clean = user_text.strip()
 
     # Skip command messages
-    if user_text.startswith('/'):
+    if user_text.startswith("/"):
         return
 
     # ==============================
@@ -262,41 +331,80 @@ def handle_text_message(message):
     # ==============================
     sess = user_sessions.get(chat_id)
     teks_upper = teks_clean.upper()
-    
+
     # Daftar semua tombol menu yang harus tetap berfungsi
     tombol_menu = ["🏠 Menu Utama", "MENU", "MENU UTAMA"]
     tombol_catat = ["📝 Catat Penjualan", "CATAT", "CATAT PENJUALAN", "📝 Catat"]
     tombol_foto = ["📷 Input Foto Nota", "INPUT FOTO", "FOTO", "📷 Input Foto"]
-    tombol_dashboard = ["🌐 Dasbor Web", "DASBOR WEB", "DASHBOARD WEBSITE", "📊 Dashboard", "DASHBOARD", "🌐 Dashboard Website"]
+    tombol_dashboard = [
+        "🌐 Dasbor Web",
+        "DASBOR WEB",
+        "DASHBOARD WEBSITE",
+        "📊 Dashboard",
+        "DASHBOARD",
+        "🌐 Dashboard Website",
+    ]
     tombol_cari = ["🔎 Cari Pesanan", "CARI PESANAN", "CARI"]
     tombol_riwayat = ["📑 Riwayat", "📑 Riwayat Transaksi", "RIWAYAT", "RIWAYAT PESANAN"]
     tombol_hutang = ["💰 Cek Hutang", "CEK HUTANG", "HUTANG"]
-    tombol_barang = ["📦 Kelola Barang", "📦 Daftar Barang", "KELOLA BARANG", "DAFTAR BARANG", "LIST BARANG"]
-    tombol_satuan = ["📐 Kelola Satuan", "KELOLA SATUAN", "MASTER SATUAN", "DAFTAR SATUAN", "TAMBAH SATUAN"]
+    tombol_barang = [
+        "📦 Kelola Barang",
+        "📦 Daftar Barang",
+        "KELOLA BARANG",
+        "DAFTAR BARANG",
+        "LIST BARANG",
+    ]
+    tombol_satuan = [
+        "📐 Kelola Satuan",
+        "KELOLA SATUAN",
+        "MASTER SATUAN",
+        "DAFTAR SATUAN",
+        "TAMBAH SATUAN",
+    ]
     tombol_panduan = ["📘 Panduan", "PANDUAN", "GUIDE", "BUKU PANDUAN"]
     tombol_bantuan = ["❓ Bantuan", "BANTUAN", "HELP"]
-    
-    is_menu_command = (teks_clean in tombol_menu or teks_upper in [t.upper() for t in tombol_menu] or
-                      teks_clean in tombol_catat or teks_upper in [t.upper() for t in tombol_catat] or
-                      teks_clean in tombol_foto or teks_upper in [t.upper() for t in tombol_foto] or
-                      teks_clean in tombol_dashboard or teks_upper in [t.upper() for t in tombol_dashboard] or
-                      teks_clean in tombol_cari or teks_upper in [t.upper() for t in tombol_cari] or
-                      teks_clean in tombol_riwayat or teks_upper in [t.upper() for t in tombol_riwayat] or
-                      teks_clean in tombol_hutang or teks_upper in [t.upper() for t in tombol_hutang] or
-                      teks_clean in tombol_barang or teks_upper in [t.upper() for t in tombol_barang] or
-                      teks_clean in tombol_satuan or (teks_upper in ["TAMBAH SATUAN", "KELOLA SATUAN", "MASTER SATUAN", "DAFTAR SATUAN"]) or
-                      teks_clean in tombol_panduan or teks_upper in [t.upper() for t in tombol_panduan] or
-                      teks_clean in tombol_bantuan or teks_upper in [t.upper() for t in tombol_bantuan])
-    
+
+    is_menu_command = (
+        teks_clean in tombol_menu
+        or teks_upper in [t.upper() for t in tombol_menu]
+        or teks_clean in tombol_catat
+        or teks_upper in [t.upper() for t in tombol_catat]
+        or teks_clean in tombol_foto
+        or teks_upper in [t.upper() for t in tombol_foto]
+        or teks_clean in tombol_dashboard
+        or teks_upper in [t.upper() for t in tombol_dashboard]
+        or teks_clean in tombol_cari
+        or teks_upper in [t.upper() for t in tombol_cari]
+        or teks_clean in tombol_riwayat
+        or teks_upper in [t.upper() for t in tombol_riwayat]
+        or teks_clean in tombol_hutang
+        or teks_upper in [t.upper() for t in tombol_hutang]
+        or teks_clean in tombol_barang
+        or teks_upper in [t.upper() for t in tombol_barang]
+        or teks_clean in tombol_satuan
+        or (teks_upper in ["TAMBAH SATUAN", "KELOLA SATUAN", "MASTER SATUAN", "DAFTAR SATUAN"])
+        or teks_clean in tombol_panduan
+        or teks_upper in [t.upper() for t in tombol_panduan]
+        or teks_clean in tombol_bantuan
+        or teks_upper in [t.upper() for t in tombol_bantuan]
+    )
+
     # Jika itu perintah menu atau "batal", reset sesi!
-    if (teks_clean.lower() in {"batal", "cancel", "stop", "exit"} or is_menu_command) and sess and sess.get("state") and sess.get("state") != "standby":
+    if (
+        (teks_clean.lower() in {"batal", "cancel", "stop", "exit"} or is_menu_command)
+        and sess
+        and sess.get("state")
+        and sess.get("state") != "standby"
+    ):
         try:
             del user_sessions[chat_id]
         except Exception:
             sess.clear()
             sess["state"] = "standby"
         if teks_clean.lower() in {"batal", "cancel", "stop", "exit"}:
-            bot.reply_to(message, "❌ <b>Dibatalkan.</b> Silakan ketik perintah baru.", parse_mode="HTML")
+            bot.reply_to(
+                message, "❌ <b>Dibatalkan.</b> Silakan ketik perintah baru.", parse_mode="HTML"
+            )
             return
     # Clear old entitas if we're starting a new command (not continuing a transaction)
     if sess and sess.get("state") == "standby" and "entitas" in sess:
@@ -308,58 +416,85 @@ def handle_text_message(message):
     # ==============================
     if sess:
         state = sess.get("state")
-        
+
         # JANGAN skip jika state adalah awaiting_edit_teks atau awaiting_edit_teks_multi!
         if state in ["awaiting_edit_teks", "awaiting_edit_teks_multi"]:
             # Handle edit states!
             if state == "awaiting_edit_teks":
                 from handlers.crud_transaksi import tangani_revisi_manual
+
                 tangani_revisi_manual(message)
                 return
             elif state == "awaiting_edit_teks_multi":
                 from handlers.crud_transaksi import tangani_revisi_manual_multi
+
                 tangani_revisi_manual_multi(message)
                 return
 
         if state == "awaiting_riwayat_search":
             from handlers.callback_transaksi import _handle_riwayat_search_input
+
             _handle_riwayat_search_input(message)
             return
-        
+
         # Cek apakah dalam wizard state, atau ada ms/step info
         skip = False
         if state:
-            if (str(state).startswith("ms_") or 
-                str(state).startswith("mb_") or 
-                str(state).startswith("mm_") or 
-                str(state).startswith("pending_") or 
-                (str(state).startswith("awaiting_") and state not in ["awaiting_edit_teks", "awaiting_edit_teks_multi", "awaiting_dashboard_date", "awaiting_riwayat_search"])):
+            if (
+                str(state).startswith("ms_")
+                or str(state).startswith("mb_")
+                or str(state).startswith("mm_")
+                or str(state).startswith("pending_")
+                or (
+                    str(state).startswith("awaiting_")
+                    and state
+                    not in [
+                        "awaiting_edit_teks",
+                        "awaiting_edit_teks_multi",
+                        "awaiting_dashboard_date",
+                        "awaiting_riwayat_search",
+                    ]
+                )
+            ):
                 skip = True
                 logger.info(f"Skipping text handler karena state = {state}")
-        
+
         # Cek apakah sedang dalam proses ms (master satuan)
         if not skip and ("ms_msg_idx" in sess or "ms_edit_id" in sess):
             skip = True
             logger.info("Skipping text handler karena dalam proses master satuan")
-        
+
         if skip:
             return
 
     # ✨ HANDLING TOMBOL REPLY KEYBOARD & KEYWORDS
-    
+
     # Daftar semua tombol baru untuk pengenalan
     tombol_menu = ["🏠 Menu Utama", "MENU", "MENU UTAMA"]
     tombol_catat = ["📝 Catat Penjualan", "CATAT", "CATAT PENJUALAN", "📝 Catat"]
     tombol_foto = ["📷 Input Foto Nota", "INPUT FOTO", "FOTO", "📷 Input Foto"]
-    tombol_dashboard = ["🌐 Dasbor Web", "DASBOR WEB", "DASHBOARD WEBSITE", "📊 Dashboard", "DASHBOARD", "🌐 Dashboard Website"]
+    tombol_dashboard = [
+        "🌐 Dasbor Web",
+        "DASBOR WEB",
+        "DASHBOARD WEBSITE",
+        "📊 Dashboard",
+        "DASHBOARD",
+        "🌐 Dashboard Website",
+    ]
     tombol_cari = ["🔎 Cari Pesanan", "CARI PESANAN", "CARI"]
     tombol_riwayat = ["📑 Riwayat Transaksi", "RIWAYAT", "RIWAYAT PESANAN", "📑 Riwayat"]
     tombol_hutang = ["💰 Cek Hutang", "CEK HUTANG", "HUTANG"]
     tombol_barang = ["📦 Daftar Barang", "DAFTAR BARANG", "LIST BARANG"]
-    tombol_satuan = ["📐 Kelola Satuan", "KELOLA SATUAN", "MASTER SATUAN", "DAFTAR SATUAN", "TAMBAH SATUAN"]
+    tombol_satuan = [
+        "📐 Kelola Satuan",
+        "KELOLA SATUAN",
+        "MASTER SATUAN",
+        "DAFTAR SATUAN",
+        "TAMBAH SATUAN",
+    ]
     tombol_panduan = ["📘 Panduan", "PANDUAN", "GUIDE", "BUKU PANDUAN"]
     tombol_bantuan = ["❓ Bantuan", "BANTUAN", "HELP"]
-    
+
     if teks_clean in tombol_menu or teks_upper in [t.upper() for t in tombol_menu]:
         cmd_menu(message)
         return
@@ -372,7 +507,15 @@ def handle_text_message(message):
     elif teks_clean in tombol_dashboard or teks_upper in [t.upper() for t in tombol_dashboard]:
         cmd_dashboard(message)
         return
-    elif (any(k in teks_upper for k in ["HARI INI", "HARI IINI", "HARIINI"])) and any(k in teks_upper for k in ["TRANSAKSI", "TRANSAKI", "TRANAKSI", "TERANSAKSI", "PESANAN"]) and any(k in teks_upper for k in ["TAMPIL", "TAMPILKAN", "TAMPILKN", "LIHAT", "CEK", "SHOW"]):
+    elif (
+        (any(k in teks_upper for k in ["HARI INI", "HARI IINI", "HARIINI"]))
+        and any(
+            k in teks_upper for k in ["TRANSAKSI", "TRANSAKI", "TRANAKSI", "TERANSAKSI", "PESANAN"]
+        )
+        and any(
+            k in teks_upper for k in ["TAMPIL", "TAMPILKAN", "TAMPILKN", "LIHAT", "CEK", "SHOW"]
+        )
+    ):
         if not ctx.IS_DB_CONNECTED:
             bot.reply_to(message, "❌ Mode Offline: Tidak dapat mengakses data.")
             return
@@ -384,6 +527,7 @@ def handle_text_message(message):
         sess["entitas"] = {"AKSI": "Read Data", "TANGGAL": tgl}
         msg_proses = bot.reply_to(message, f"⏳ Memuat transaksi hari ini ({tgl})...")
         from handlers.crud_transaksi import tangani_read_data
+
         tangani_read_data(chat_id, msg_proses.message_id)
         return
     elif teks_clean in tombol_cari or teks_upper in [t.upper() for t in tombol_cari]:
@@ -403,11 +547,15 @@ def handle_text_message(message):
         sess = user_sessions.ensure(chat_id)
         sess.update({"entitas": {"AKSI": "Cek Harga Barang"}})
         from handlers.crud_barang import tangani_cek_harga_chat
+
         tangani_cek_harga_chat(chat_id, msg_proses.message_id)
         return
     # Hanya match exact phrase untuk satuan, bukan bagian dari kata lain
-    elif teks_clean in tombol_satuan or (teks_upper in ["TAMBAH SATUAN", "KELOLA SATUAN", "MASTER SATUAN", "DAFTAR SATUAN"]):
+    elif teks_clean in tombol_satuan or (
+        teks_upper in ["TAMBAH SATUAN", "KELOLA SATUAN", "MASTER SATUAN", "DAFTAR SATUAN"]
+    ):
         from handlers.command_handler import cmd_master_satuan
+
         cmd_master_satuan(message)
         return
     elif teks_clean in tombol_panduan or teks_upper in [t.upper() for t in tombol_panduan]:
@@ -416,8 +564,17 @@ def handle_text_message(message):
     elif teks_clean in tombol_bantuan or teks_upper in [t.upper() for t in tombol_bantuan]:
         send_welcome(message)
         return
-    elif teks_clean == "📦 Kelola Barang" or teks_upper in ["KELOLA BARANG", "TAMBAH BARANG", "INPUT BARANG", "TAMBAH PRODUK", "INPUT PRODUK", "TAMBAH ITEM", "BARANG BARU"]:
+    elif teks_clean == "📦 Kelola Barang" or teks_upper in [
+        "KELOLA BARANG",
+        "TAMBAH BARANG",
+        "INPUT BARANG",
+        "TAMBAH PRODUK",
+        "INPUT PRODUK",
+        "TAMBAH ITEM",
+        "BARANG BARU",
+    ]:
         from handlers.command_handler import cmd_master_barang
+
         cmd_master_barang(message)
         return
 
@@ -433,8 +590,15 @@ def handle_text_message(message):
         sess["ui_keyboard_shown"] = True
 
     teks_upper = (user_text or "").upper()
-    if any(k in teks_upper for k in ["TOMBOL HILANG", "TOMBOLNYA HILANG", "TOMBOL KOK HILANG", "KEYBOARD HILANG"]):
-        bot.reply_to(message, "💡 Gunakan tombol biru <b>Menu</b> di sebelah kiri kolom chat untuk akses semua fitur.", parse_mode="HTML")
+    if any(
+        k in teks_upper
+        for k in ["TOMBOL HILANG", "TOMBOLNYA HILANG", "TOMBOL KOK HILANG", "KEYBOARD HILANG"]
+    ):
+        bot.reply_to(
+            message,
+            "💡 Gunakan tombol biru <b>Menu</b> di sebelah kiri kolom chat untuk akses semua fitur.",
+            parse_mode="HTML",
+        )
         return
 
     # Sanitize input
@@ -450,8 +614,8 @@ def handle_text_message(message):
             chat_id,
             fast_route["entitas"].get("AKSI") or fast_route["entitas"].get("KONTEKS_AGREGASI"),
         )
-        from handlers.crud_transaksi import tangani_read_data
         from handlers.crud_barang import tangani_cek_harga_chat, tangani_hapus_barang_chat
+        from handlers.crud_transaksi import tangani_read_data
 
         aksi_fast = fast_route["entitas"].get("AKSI")
         if aksi_fast == "Read Data":
@@ -463,13 +627,18 @@ def handle_text_message(message):
         return
 
     # Shortcut: tampilkan daftar produk/barang tanpa NLP panjang
-    if ("DAFTAR" in teks_upper or "LIST" in teks_upper) and ("PRODUK" in teks_upper or "BARANG" in teks_upper) and any(k in teks_upper for k in ["TAMPIL", "TAMPILKAN", "LIHAT", "CEK"]):
+    if (
+        ("DAFTAR" in teks_upper or "LIST" in teks_upper)
+        and ("PRODUK" in teks_upper or "BARANG" in teks_upper)
+        and any(k in teks_upper for k in ["TAMPIL", "TAMPILKAN", "LIHAT", "CEK"])
+    ):
         if not ctx.IS_DB_CONNECTED:
             bot.reply_to(message, "❌ Mode Offline: Tidak dapat mengakses Master Barang.")
             return
         msg_proses = bot.reply_to(message, "⏳ Memuat daftar produk...")
         sess.update({"entitas": {"AKSI": "Cek Harga Barang"}})
         from handlers.crud_barang import tangani_cek_harga_chat
+
         tangani_cek_harga_chat(chat_id, msg_proses.message_id)
         return
 
@@ -557,7 +726,9 @@ def handle_text_message(message):
 
         teks_lower = combined_text.lower()
         if not entitas.get("STATUS"):
-            entitas["STATUS"] = "Lunas" if any(k in teks_lower for k in ["lunas", "dibayar"]) else "Hutang"
+            entitas["STATUS"] = (
+                "Lunas" if any(k in teks_lower for k in ["lunas", "dibayar"]) else "Hutang"
+            )
 
         if not entitas.get("METODE_PEMBAYARAN"):
             if any(k in teks_lower for k in ["transfer", "tf", "trf"]):
@@ -569,7 +740,9 @@ def handle_text_message(message):
 
         # Auto-lookup harga & hitung total jika memungkinkan
         if ctx.IS_DB_CONNECTED and entitas.get("BARANG") and not entitas.get("HARGA"):
-            matches = cari_harga_default(ctx.db_barang, entitas["BARANG"], satuan_cari=entitas.get("SATUAN"))
+            matches = cari_harga_default(
+                ctx.db_barang, entitas["BARANG"], satuan_cari=entitas.get("SATUAN")
+            )
             if matches:
                 info_h = matches[0]
                 entitas["HARGA"] = format_rupiah(info_h["harga"])
@@ -609,14 +782,25 @@ def handle_text_message(message):
             susun_balasan_resume(chat_id, msg.message_id)
 
     # ✨ OCR FLOW: Jika bot sedang menunggu nama pelanggan dari input foto
-    if chat_id in user_sessions and user_sessions[chat_id].get("state") in ["awaiting_ocr_year", "awaiting_ocr_product", "awaiting_ocr_customer"]:
+    if chat_id in user_sessions and user_sessions[chat_id].get("state") in [
+        "awaiting_ocr_year",
+        "awaiting_ocr_product",
+        "awaiting_ocr_customer",
+    ]:
         sess = user_sessions[chat_id]
         prompt_msg_id = sess.get("prompt_msg_id")
-        
+
         # Tangani batal!
         if text.lower() in {"batal", "cancel", "stop", "exit"}:
             try:
-                safe_edit_message(bot, "❌ <b>Dibatalkan.</b> Silakan ketik perintah baru.", chat_id, prompt_msg_id or message.message_id, parse_mode="HTML", reply_markup=None)
+                safe_edit_message(
+                    bot,
+                    "❌ <b>Dibatalkan.</b> Silakan ketik perintah baru.",
+                    chat_id,
+                    prompt_msg_id or message.message_id,
+                    parse_mode="HTML",
+                    reply_markup=None,
+                )
             except Exception:
                 pass
             try:
@@ -630,7 +814,9 @@ def handle_text_message(message):
         if sess.get("state") == "awaiting_ocr_year":
             y = _extract_year(user_text)
             if not y:
-                bot.reply_to(message, "⚠️ Tahun tidak terbaca. Contoh: <code>2024</code>", parse_mode="HTML")
+                bot.reply_to(
+                    message, "⚠️ Tahun tidak terbaca. Contoh: <code>2024</code>", parse_mode="HTML"
+                )
                 return
             sess["ringkas"] = sess.get("ringkas") or {}
             sess["ringkas"]["year"] = y
@@ -640,7 +826,7 @@ def handle_text_message(message):
                 "📦 <b>Ini pesanan untuk produk/barang apa?</b>\n\nContoh: <code>willo</code>",
                 chat_id,
                 prompt_msg_id,
-                parse_mode="HTML"
+                parse_mode="HTML",
             )
             try:
                 bot.delete_message(chat_id, message.message_id)
@@ -652,7 +838,11 @@ def handle_text_message(message):
         if sess.get("state") == "awaiting_ocr_product":
             prod = _extract_product(user_text)
             if not prod:
-                bot.reply_to(message, "⚠️ Produk tidak terbaca. Contoh: <code>willo</code>", parse_mode="HTML")
+                bot.reply_to(
+                    message,
+                    "⚠️ Produk tidak terbaca. Contoh: <code>willo</code>",
+                    parse_mode="HTML",
+                )
                 return
             sess["produk"] = prod
             sess["state"] = "awaiting_ocr_customer"
@@ -661,7 +851,7 @@ def handle_text_message(message):
                 "📸 <b>Ini data penjualan siapa?</b>\n\nContoh: <code>Pak Edi</code>",
                 chat_id,
                 prompt_msg_id,
-                parse_mode="HTML"
+                parse_mode="HTML",
             )
             try:
                 bot.delete_message(chat_id, message.message_id)
@@ -673,11 +863,17 @@ def handle_text_message(message):
         if sess.get("state") == "awaiting_ocr_customer":
             nama = _extract_customer_name(user_text)
             if not nama:
-                bot.reply_to(message, "⚠️ Nama tidak terbaca. Contoh: <code>Pak Edi</code>", parse_mode="HTML")
+                bot.reply_to(
+                    message,
+                    "⚠️ Nama tidak terbaca. Contoh: <code>Pak Edi</code>",
+                    parse_mode="HTML",
+                )
                 return
             tahun = (sess.get("ringkas") or {}).get("year")
             produk = sess.get("produk") or (sess.get("entitas") or {}).get("BARANG")
-            _finalize_ocr_session(sess, nama=nama, tahun=tahun, produk=produk, prompt_msg_id=prompt_msg_id)
+            _finalize_ocr_session(
+                sess, nama=nama, tahun=tahun, produk=produk, prompt_msg_id=prompt_msg_id
+            )
             try:
                 bot.delete_message(chat_id, message.message_id)
             except Exception:
@@ -693,27 +889,36 @@ def handle_text_message(message):
         if wizard_state and str(wizard_state).startswith("ms_"):
             return
 
-        if teks_clean.lower() in {"batal", "cancel", "stop", "exit"} and wizard_state and wizard_state != "standby":
+        if (
+            teks_clean.lower() in {"batal", "cancel", "stop", "exit"}
+            and wizard_state
+            and wizard_state != "standby"
+        ):
             try:
                 del user_sessions[chat_id]
             except Exception:
                 sess_wizard.clear()
                 sess_wizard["state"] = "standby"
-            bot.reply_to(message, "❌ <b>Dibatalkan.</b> Silakan ketik perintah baru.", parse_mode="HTML")
+            bot.reply_to(
+                message, "❌ <b>Dibatalkan.</b> Silakan ketik perintah baru.", parse_mode="HTML"
+            )
             return
 
         if wizard_state == "awaiting_edit_teks":
             from handlers.crud_transaksi import tangani_revisi_manual
+
             tangani_revisi_manual(message)
             return
 
         if wizard_state == "awaiting_edit_teks_multi":
             from handlers.crud_transaksi import tangani_revisi_manual_multi
+
             tangani_revisi_manual_multi(message)
             return
 
         if wizard_state == "mb_awaiting_name":
             from handlers.crud_barang import _mb_terima_nama
+
             _mb_terima_nama(message)
             return
 
@@ -724,21 +929,25 @@ def handle_text_message(message):
 
         if mb_wizard and sess_wizard.get("mb_nama_baru") and "mb_harga_baru" not in sess_wizard:
             from handlers.crud_barang import _mb_terima_harga
+
             _mb_terima_harga(message)
             return
 
         if mb_wizard and sess_wizard.get("mb_nama_baru") and sess_wizard.get("mb_harga_baru"):
             from handlers.crud_barang import _mb_terima_satuan
+
             _mb_terima_satuan(message)
             return
 
         if wizard_state == "mb_hapus_browse":
             from handlers.callback_pengaturan import _mb_hapus_search_input
+
             _mb_hapus_search_input(message)
             return
 
         if wizard_state == "mb_edit_browse":
             from handlers.callback_pengaturan import _mb_edit_search_input
+
             _mb_edit_search_input(message)
             return
 
@@ -752,7 +961,7 @@ def handle_text_message(message):
         msg_proses = bot.reply_to(
             message,
             "Sedang diproses...",
-            reply_markup=(build_reply_keyboard() if need_keyboard else None)
+            reply_markup=(build_reply_keyboard() if need_keyboard else None),
         )
 
         # Ambil data dari Cache (Cepat!)
@@ -767,12 +976,20 @@ def handle_text_message(message):
             try:
                 structured_start = perf_counter()
                 from handlers.photo_handler import (
-                    _build_structured_nlp_input,
                     _build_sales_results_from_ocr_entries,
+                    _build_structured_nlp_input,
                 )
-                _nlp_text, structured_payment_entries, _sales_contexts, sales_entries = _build_structured_nlp_input(user_text)
+
+                (
+                    _nlp_text,
+                    structured_payment_entries,
+                    _sales_contexts,
+                    sales_entries,
+                ) = _build_structured_nlp_input(user_text)
                 if sales_entries:
-                    results_nlp = _build_sales_results_from_ocr_entries(sales_entries, daftar_b, mapping_m)
+                    results_nlp = _build_sales_results_from_ocr_entries(
+                        sales_entries, daftar_b, mapping_m
+                    )
                     structured_doc_mode = True
                 else:
                     results_nlp = []
@@ -803,7 +1020,10 @@ def handle_text_message(message):
         )
 
         if not results_nlp:
-            if user_sessions.get(chat_id, {}).get("state") in ["filling_missing_fields", "confirm_empty_submit"]:
+            if user_sessions.get(chat_id, {}).get("state") in [
+                "filling_missing_fields",
+                "confirm_empty_submit",
+            ]:
                 # If they are filling missing fields but NLP failed, just proceed with old entities
                 # We will check missing fields again
                 hasil_nlp = {"entitas": {}}
@@ -822,7 +1042,13 @@ def handle_text_message(message):
 
         # Handle Multi-Entry
         if len(results_nlp) > 1:
-            valid_results = [r for r in results_nlp if r["entitas"].get("AKSI") or r["entitas"].get("NAMA") or r["entitas"].get("BARANG")]
+            valid_results = [
+                r
+                for r in results_nlp
+                if r["entitas"].get("AKSI")
+                or r["entitas"].get("NAMA")
+                or r["entitas"].get("BARANG")
+            ]
             if len(valid_results) > 1:
                 base_aksi = None
                 for r in valid_results:
@@ -832,13 +1058,26 @@ def handle_text_message(message):
 
                 if base_aksi == "Tambah Barang":
                     if not ctx.IS_DB_CONNECTED:
-                        safe_edit_message(bot, "❌ Mode Offline: Tidak dapat mengakses Master Barang.", chat_id, msg_proses.message_id)
+                        safe_edit_message(
+                            bot,
+                            "❌ Mode Offline: Tidak dapat mengakses Master Barang.",
+                            chat_id,
+                            msg_proses.message_id,
+                        )
                         return
 
                     semua_existing = get_all_barang(ctx.db_barang)
                     existing_map = {}
                     placeholder_map = {}
-                    generic_names = {"permen", "serbuk", "roti", "pia", "roti pia", "roti/pia", "roti pia (generik)"}
+                    generic_names = {
+                        "permen",
+                        "serbuk",
+                        "roti",
+                        "pia",
+                        "roti pia",
+                        "roti/pia",
+                        "roti pia (generik)",
+                    }
                     for b in semua_existing:
                         n = str(b.get("nama", "")).strip().lower()
                         u = str(b.get("satuan", "")).strip().lower()
@@ -893,7 +1132,9 @@ def handle_text_message(message):
                         harga_raw = e.get("HARGA") or base_harga_raw
                         satuan = e.get("SATUAN") or base_satuan
                         picked = _pick_specific_name(r.get("original_text", ""))
-                        if picked and (not nama or str(nama or "").strip().lower() in generic_names):
+                        if picked and (
+                            not nama or str(nama or "").strip().lower() in generic_names
+                        ):
                             nama = picked
                         elif picked and "roti pia" in str(nama or "").lower():
                             nama = picked
@@ -901,9 +1142,12 @@ def handle_text_message(message):
                         if not nama or not harga_raw or not satuan:
                             fail += 1
                             missing = []
-                            if not nama: missing.append("nama")
-                            if not harga_raw: missing.append("harga")
-                            if not satuan: missing.append("satuan")
+                            if not nama:
+                                missing.append("nama")
+                            if not harga_raw:
+                                missing.append("harga")
+                            if not satuan:
+                                missing.append("satuan")
                             hasil_lines.append(f"• ❌ Gagal: data kurang ({', '.join(missing)})")
                             continue
 
@@ -912,25 +1156,43 @@ def handle_text_message(message):
                             key = (str(nama).strip().lower(), str(satuan).strip().lower())
                             row_idx = existing_map.get(key)
                             if row_idx:
-                                update_barang(ctx.db_barang, row_idx, harga=harga_num, satuan=satuan)
+                                update_barang(
+                                    ctx.db_barang, row_idx, harga=harga_num, satuan=satuan
+                                )
                                 updated += 1
-                                hasil_lines.append(f"• 🔄 {nama} — <code>{format_rupiah(harga_num)}</code> / {satuan}")
+                                hasil_lines.append(
+                                    f"• 🔄 {nama} — <code>{format_rupiah(harga_num)}</code> / {satuan}"
+                                )
                             else:
-                                placeholder_row = placeholder_map.get((str(satuan).strip().lower(), harga_num))
+                                placeholder_row = placeholder_map.get(
+                                    (str(satuan).strip().lower(), harga_num)
+                                )
                                 if placeholder_row:
-                                    update_barang(ctx.db_barang, placeholder_row, nama=nama, harga=harga_num, satuan=satuan)
+                                    update_barang(
+                                        ctx.db_barang,
+                                        placeholder_row,
+                                        nama=nama,
+                                        harga=harga_num,
+                                        satuan=satuan,
+                                    )
                                     updated += 1
-                                    hasil_lines.append(f"• 🔄 {nama} — <code>{format_rupiah(harga_num)}</code> / {satuan}")
+                                    hasil_lines.append(
+                                        f"• 🔄 {nama} — <code>{format_rupiah(harga_num)}</code> / {satuan}"
+                                    )
                                     existing_map[key] = placeholder_row
                                 else:
                                     new_id = tambah_barang(ctx.db_barang, nama, harga_num, satuan)
                                     ok += 1
-                                    hasil_lines.append(f"• ✅ {nama} — <code>{format_rupiah(harga_num)}</code> / {satuan}")
+                                    hasil_lines.append(
+                                        f"• ✅ {nama} — <code>{format_rupiah(harga_num)}</code> / {satuan}"
+                                    )
                                     if new_id:
                                         existing_map[key] = new_id
                         except Exception as ex:
                             fail += 1
-                            hasil_lines.append(f"• ❌ {nama} / {satuan} — <code>{str(ex)[:60]}</code>")
+                            hasil_lines.append(
+                                f"• ❌ {nama} / {satuan} — <code>{str(ex)[:60]}</code>"
+                            )
 
                     teks = (
                         "<b>HASIL TAMBAH BARANG (BULK)</b>\n"
@@ -938,8 +1200,7 @@ def handle_text_message(message):
                         f"✅ Ditambah: <b>{ok}</b>\n"
                         f"🔄 Diupdate: <b>{updated}</b>\n"
                         f"❌ Gagal: <b>{fail}</b>\n"
-                        "━━━━━━━━━━━━━━━━━━━━━━\n"
-                        + "\n".join(hasil_lines)
+                        "━━━━━━━━━━━━━━━━━━━━━━\n" + "\n".join(hasil_lines)
                     )
                     safe_edit_message(bot, teks, chat_id, msg_proses.message_id, parse_mode="HTML")
                     try:
@@ -953,7 +1214,14 @@ def handle_text_message(message):
                 existing_state = user_sessions.get(chat_id, {}).get("state")
                 # Only inherit old context if we're adding sales (not for search/delete!)
                 context_lama = {}
-                if existing_state in ["filling_missing_fields", "confirm_empty_submit", "pending_confirmation"] and (len(valid_results) > 0 and valid_results[0].get("entitas", {}).get("AKSI") == "Tambah Penjualan"):
+                if existing_state in [
+                    "filling_missing_fields",
+                    "confirm_empty_submit",
+                    "pending_confirmation",
+                ] and (
+                    len(valid_results) > 0
+                    and valid_results[0].get("entitas", {}).get("AKSI") == "Tambah Penjualan"
+                ):
                     context_lama = user_sessions[chat_id].get("entitas", {}).copy()
 
                 if structured_doc_mode:
@@ -967,10 +1235,16 @@ def handle_text_message(message):
                     context_pesan = _extract_batch_context_from_text(user_text, mapping_m)
                     if valid_results and isinstance(valid_results[0], dict):
                         ent0 = valid_results[0].get("entitas", {}) or {}
-                        for k in ["TANGGAL", "NAMA", "METODE_PEMBAYARAN", "STATUS", "NOMINAL_BAYAR"]:
+                        for k in [
+                            "TANGGAL",
+                            "NAMA",
+                            "METODE_PEMBAYARAN",
+                            "STATUS",
+                            "NOMINAL_BAYAR",
+                        ]:
                             if ent0.get(k) and not context_pesan.get(k):
                                 context_pesan[k] = ent0.get(k)
-                
+
                 lookup_total_ms = 0.0
                 for item in valid_results:
                     # Gabungkan: Data dari chat terbaru menimpa konteks lama
@@ -979,8 +1253,9 @@ def handle_text_message(message):
                         if v and not gabungan.get(k):
                             gabungan[k] = v
                     for k, v in item["entitas"].items():
-                        if v: gabungan[k] = v
-                    
+                        if v:
+                            gabungan[k] = v
+
                     # Pastikan AKSI terpasang
                     if base_aksi == "Tambah Penjualan":
                         gabungan["AKSI"] = "Tambah Penjualan"
@@ -997,7 +1272,10 @@ def handle_text_message(message):
                             if context_pesan.get(k):
                                 gabungan[k] = context_pesan[k]
 
-                        if context_pesan.get("NOMINAL_BAYAR") and str(gabungan.get("STATUS", "")).strip().lower() == "dicicil":
+                        if (
+                            context_pesan.get("NOMINAL_BAYAR")
+                            and str(gabungan.get("STATUS", "")).strip().lower() == "dicicil"
+                        ):
                             gabungan["NOMINAL_BAYAR"] = context_pesan["NOMINAL_BAYAR"]
 
                     if not gabungan.get("SATUAN") and gabungan.get("JUMLAH"):
@@ -1008,7 +1286,7 @@ def handle_text_message(message):
                         )
                         if m_sat:
                             gabungan["SATUAN"] = m_sat.group(1).lower()
-                    
+
                     # Lookup harga otomatis untuk setiap item di multi-entry
                     if ctx.IS_DB_CONNECTED and gabungan.get("BARANG") and not gabungan.get("HARGA"):
                         lookup_start = perf_counter()
@@ -1030,21 +1308,25 @@ def handle_text_message(message):
                                         raise ValueError("Jumlah tidak valid")
                                     jml_n = int(_m.group())
                                     gabungan["TOTAL"] = format_rupiah(jml_n * info_h["harga"])
-                                except: pass
-                    
+                                except:
+                                    pass
+
                     # Apply default date like single item does
                     aksi = gabungan.get("AKSI")
-                    if not gabungan.get("TANGGAL") and not gabungan.get("SEMUA") and not (aksi == "Read Data" and gabungan.get("NAMA")):
+                    if (
+                        not gabungan.get("TANGGAL")
+                        and not gabungan.get("SEMUA")
+                        and not (aksi == "Read Data" and gabungan.get("NAMA"))
+                    ):
                         gabungan["TANGGAL"] = datetime.now().strftime("%d-%m-%Y")
-                    
+
                     item["entitas"] = gabungan
 
-                sess.update({
-                    "multi_results": valid_results,
-                    "state": "pending_multi_insert"
-                })
+                sess.update({"multi_results": valid_results, "state": "pending_multi_insert"})
                 if structured_doc_mode:
-                    total_payment = int(sum(int(p.get("amount") or 0) for p in (structured_payment_entries or [])))
+                    total_payment = int(
+                        sum(int(p.get("amount") or 0) for p in (structured_payment_entries or []))
+                    )
                     if total_payment > 0:
                         sess["multi_batch_payment_total"] = total_payment
                         sess["multi_batch_context"] = {
@@ -1062,7 +1344,10 @@ def handle_text_message(message):
                 elif context_pesan:
                     sess["multi_batch_context"] = context_pesan.copy()
                     nominal_batch = parse_rupiah(context_pesan.get("NOMINAL_BAYAR") or 0)
-                    if nominal_batch > 0 and str(context_pesan.get("STATUS", "")).strip().lower() == "dicicil":
+                    if (
+                        nominal_batch > 0
+                        and str(context_pesan.get("STATUS", "")).strip().lower() == "dicicil"
+                    ):
                         sess["multi_batch_payment_total"] = nominal_batch
                     else:
                         sess.pop("multi_batch_payment_total", None)
@@ -1080,6 +1365,7 @@ def handle_text_message(message):
                     bot.register_next_step_handler(msg, _terima_multi_nama_pemesan)
                     return
                 from services.ui_transaksi import susun_balasan_multi_resume
+
                 logger.info(
                     "[Perf][chat] chat_id=%s lookup_harga_multi_ms=%.1f items=%s",
                     chat_id,
@@ -1105,7 +1391,10 @@ def handle_text_message(message):
 
         # --- SESSION MERGING (Interactive NLP) ---
         # Hanya merge jika aksi barunya tetap "Tambah Penjualan" atau belum ditentukan
-        if user_sessions.get(chat_id, {}).get("state") in ["filling_missing_fields", "confirm_empty_submit"] and aksi in [None, "Tambah Penjualan"]:
+        if user_sessions.get(chat_id, {}).get("state") in [
+            "filling_missing_fields",
+            "confirm_empty_submit",
+        ] and aksi in [None, "Tambah Penjualan"]:
             old_entitas = user_sessions[chat_id].get("entitas", {})
             for k, v in entitas.items():
                 if v:
@@ -1122,7 +1411,12 @@ def handle_text_message(message):
             user_sessions[chat_id]["entitas"] = entitas
 
         # ── Auto-lookup harga dari Master Barang jika HARGA kosong (Kecuali jika ingin Set Harga) ──
-        if ctx.IS_DB_CONNECTED and entitas.get("BARANG") and not entitas.get("HARGA") and entitas.get("AKSI") != "Set Harga Barang":
+        if (
+            ctx.IS_DB_CONNECTED
+            and entitas.get("BARANG")
+            and not entitas.get("HARGA")
+            and entitas.get("AKSI") != "Set Harga Barang"
+        ):
             lookup_start = perf_counter()
             matches = cari_harga_default(
                 ctx.db_barang,
@@ -1169,18 +1463,29 @@ def handle_text_message(message):
                 jml_val = 1
                 if entitas.get("JUMLAH"):
                     jml_match = re.search(r"\d+", str(entitas["JUMLAH"]))
-                    if jml_match: jml_val = int(jml_match.group())
-                
+                    if jml_match:
+                        jml_val = int(jml_match.group())
+
                 hrg_val = 0
                 if entitas.get("HARGA"):
                     hrg_val = parse_rupiah(entitas["HARGA"])
-                
+
                 if jml_val <= 0:
-                    safe_edit_message(bot, "⚠️ <b>Jumlah tidak valid.</b>\nJumlah barang harus lebih dari 0. Mohon perbaiki pesan Anda.", chat_id, msg_proses.message_id, parse_mode="HTML")
+                    safe_edit_message(
+                        bot,
+                        "⚠️ <b>Jumlah tidak valid.</b>\nJumlah barang harus lebih dari 0. Mohon perbaiki pesan Anda.",
+                        chat_id,
+                        msg_proses.message_id,
+                        parse_mode="HTML",
+                    )
                     return
-                
+
                 # Jika harga 0 dan bukan barang bonus/gratis, beri peringatan
-                if hrg_val <= 0 and "gratis" not in str(entitas.get("BARANG", "")).lower() and "bonus" not in str(entitas.get("BARANG", "")).lower():
+                if (
+                    hrg_val <= 0
+                    and "gratis" not in str(entitas.get("BARANG", "")).lower()
+                    and "bonus" not in str(entitas.get("BARANG", "")).lower()
+                ):
                     # Kita tetap izinkan tapi beri peringatan di resume nanti
                     pass
             except Exception as e:
@@ -1201,7 +1506,8 @@ def handle_text_message(message):
                     setengah_val = total_val // 2
                     entitas["NOMINAL_BAYAR"] = format_rupiah(setengah_val)
                     entitas["STATUS"] = "Dicicil"
-            except: pass
+            except:
+                pass
 
         intent = hasil_nlp.get("intent")
         aksi = entitas.get("AKSI")
@@ -1210,7 +1516,11 @@ def handle_text_message(message):
         # --- FALLBACK DEFAULT VALUES ---
         # Jika sedang mencari data (Read Data) dengan filter NAMA, jangan default ke hari ini
         # agar riwayat transaksi orang tersebut bisa tampil semua.
-        if not entitas.get("TANGGAL") and not entitas.get("SEMUA") and not (aksi == "Read Data" and entitas.get("NAMA")):
+        if (
+            not entitas.get("TANGGAL")
+            and not entitas.get("SEMUA")
+            and not (aksi == "Read Data" and entitas.get("NAMA"))
+        ):
             entitas["TANGGAL"] = datetime.now().strftime("%d-%m-%Y")
         if not entitas.get("STATUS") and entitas.get("NOMINAL_BAYAR"):
             _nom = parse_rupiah(entitas["NOMINAL_BAYAR"])
@@ -1219,7 +1529,12 @@ def handle_text_message(message):
                 entitas["STATUS"] = "Cicil"
             elif _nom >= _tot and _tot > 0:
                 entitas["STATUS"] = "Lunas"
-        if not entitas.get("METODE_PEMBAYARAN") and entitas.get("STATUS") in ["Lunas", "Cicil", "LUNAS", "DICICIL"]:
+        if not entitas.get("METODE_PEMBAYARAN") and entitas.get("STATUS") in [
+            "Lunas",
+            "Cicil",
+            "LUNAS",
+            "DICICIL",
+        ]:
             # Jika ada pembayaran tapi gak ada metode, default ke Tunai saja atau dibiarkan kosong untuk ditanya?
             pass
 
@@ -1229,19 +1544,29 @@ def handle_text_message(message):
                 "👋 <b>Halo! Saya Bot Penjualan A&W Production.</b>\n\n"
                 "Saya bisa membantu Anda mencatat penjualan, cek stok, dan dashboard keuangan.\n\n"
                 "<b>Contoh Perintah:</b>\n"
-                "• <i>\"Hari ini Budi ambil permen 2 dus lunas\"</i>\n"
-                "• <i>\"Cek penjualan hari ini\"</i>\n"
-                "• <i>\"Berapa harga permen?\"</i>\n"
-                "• <i>\"Hapus pesanan Udin\"</i>\n\n"
+                '• <i>"Hari ini Budi ambil permen 2 dus lunas"</i>\n'
+                '• <i>"Cek penjualan hari ini"</i>\n'
+                '• <i>"Berapa harga permen?"</i>\n'
+                '• <i>"Hapus pesanan Udin"</i>\n\n'
                 "Ketik perintah Anda atau gunakan tombol menu di bawah."
             )
             safe_edit_message(bot, pesan_panduan, chat_id, msg_proses.message_id, parse_mode="HTML")
             return
 
         # Import handler functions lazily to avoid circular imports
-        from handlers.crud_transaksi import tangani_read_data, tangani_update_status, tangani_delete_data, tangani_catat_pelunasan
-        from handlers.crud_barang import tangani_tambah_barang_chat, tangani_cek_harga_chat, tangani_set_harga_chat, tangani_hapus_barang_chat
         from handlers.command_handler import cmd_master_barang
+        from handlers.crud_barang import (
+            tangani_cek_harga_chat,
+            tangani_hapus_barang_chat,
+            tangani_set_harga_chat,
+            tangani_tambah_barang_chat,
+        )
+        from handlers.crud_transaksi import (
+            tangani_catat_pelunasan,
+            tangani_delete_data,
+            tangani_read_data,
+            tangani_update_status,
+        )
         from services.ui_transaksi import susun_balasan_resume
 
         # ✨ DASHBOARD: Deteksi dashboard harian
@@ -1249,7 +1574,9 @@ def handle_text_message(message):
             tgl_nlp = entitas.get("TANGGAL")
             hari_ini = datetime.now().strftime("%d-%m-%Y")
             if tgl_nlp and tgl_nlp != hari_ini:
-                tangani_dashboard_custom_date(bot, chat_id, msg_proses.message_id, ctx.db_transaksi, tgl_nlp)
+                tangani_dashboard_custom_date(
+                    bot, chat_id, msg_proses.message_id, ctx.db_transaksi, tgl_nlp
+                )
             else:
                 tangani_dashboard_harian(bot, chat_id, msg_proses.message_id, ctx.db_transaksi)
         elif aksi == "Tambah Barang":
@@ -1262,8 +1589,10 @@ def handle_text_message(message):
             tangani_hapus_barang_chat(chat_id, msg_proses.message_id)
         elif aksi == "Master Data Menu":
             cmd_master_barang(message)
-            try: bot.delete_message(chat_id, msg_proses.message_id)
-            except: pass
+            try:
+                bot.delete_message(chat_id, msg_proses.message_id)
+            except:
+                pass
         elif aksi == "Catat Pelunasan":
             tangani_catat_pelunasan(chat_id, msg_proses.message_id)
         elif aksi == "Update Status":
@@ -1274,9 +1603,17 @@ def handle_text_message(message):
             tangani_delete_data(chat_id, msg_proses.message_id)
         elif aksi == "Tambah Penjualan":
             # --- VALIDASI FIELD WAJIB ---
-            field_wajib = ["TANGGAL", "NAMA", "BARANG", "JUMLAH", "TOTAL", "STATUS", "METODE_PEMBAYARAN"]
+            field_wajib = [
+                "TANGGAL",
+                "NAMA",
+                "BARANG",
+                "JUMLAH",
+                "TOTAL",
+                "STATUS",
+                "METODE_PEMBAYARAN",
+            ]
             missing = [f for f in field_wajib if not entitas.get(f)]
-            
+
             if missing:
                 user_sessions[chat_id]["state"] = "pending_confirmation"
                 susun_balasan_resume(chat_id, msg_proses.message_id)
@@ -1286,10 +1623,12 @@ def handle_text_message(message):
             susun_balasan_resume(chat_id, msg_proses.message_id)
     except Exception as e:
         log_exception("Error teks prosesor", e)
-        notify_admins(f"❌ <b>Error Text Handler</b>\nUser: <code>{user_id}</code>\nChat: <code>{chat_id}</code>\nPesan: <code>{str(e)[:200]}</code>")
+        notify_admins(
+            f"❌ <b>Error Text Handler</b>\nUser: <code>{user_id}</code>\nChat: <code>{chat_id}</code>\nPesan: <code>{str(e)[:200]}</code>"
+        )
         bot.reply_to(message, "❌ Terjadi error saat memproses pesan. Coba ketik ulang perintahnya.")
 
 
 def register_handlers(bot):
     """Register text handler ke bot instance."""
-    bot.message_handler(content_types=['text'])(authorized_only(handle_text_message))
+    bot.message_handler(content_types=["text"])(authorized_only(handle_text_message))

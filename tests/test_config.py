@@ -2,8 +2,10 @@
 Unit Tests for Configuration
 """
 
-import pytest
 import os
+
+import pytest
+
 from config.settings import Config, get_settings, reload_config
 
 

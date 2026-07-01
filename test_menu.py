@@ -1,9 +1,11 @@
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 # Force utf8 encoding for Windows
 import io
+
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 

@@ -8,10 +8,11 @@ Usage:
     print(config.TELEGRAM_BOT_TOKEN)
 """
 
-import os
 import logging
-from typing import Optional, List
+import os
 from pathlib import Path
+from typing import List, Optional
+
 from dotenv import load_dotenv
 
 # Load .env file
@@ -48,7 +49,11 @@ class Config:
     # ==========================================
     GSPREAD_SHEET_NAME: str = os.getenv("GSPREAD_SHEET_NAME", "AW PRODUCTION")
     GSPREAD_CREDENTIALS_FILE: str = os.getenv("GSPREAD_CREDENTIALS_FILE", "credentials.json")
-    GSPREAD_BACKUP_ENABLED: bool = os.getenv("GSPREAD_BACKUP_ENABLED", "true").lower() in ("true", "yes", "1")
+    GSPREAD_BACKUP_ENABLED: bool = os.getenv("GSPREAD_BACKUP_ENABLED", "true").lower() in (
+        "true",
+        "yes",
+        "1",
+    )
 
     # ==========================================
     # DATABASE CONFIGURATION
@@ -59,7 +64,9 @@ class Config:
     # ==========================================
     # NLP CONFIGURATION
     # ==========================================
-    NLP_MODEL_TYPE: str = os.getenv("NLP_MODEL_TYPE", "rule_based")  # rule_based, distilbert, indobert
+    NLP_MODEL_TYPE: str = os.getenv(
+        "NLP_MODEL_TYPE", "rule_based"
+    )  # rule_based, distilbert, indobert
     NLP_CONFIDENCE_THRESHOLD: float = float(os.getenv("NLP_CONFIDENCE_THRESHOLD", "0.7"))
     NLP_FUZZY_THRESHOLD: int = int(os.getenv("NLP_FUZZY_THRESHOLD", "85"))
 
@@ -67,7 +74,11 @@ class Config:
     # OCR CONFIGURATION
     # ==========================================
     OCR_LANGUAGE: str = os.getenv("OCR_LANGUAGE", "en")
-    OCR_ANGLE_DETECTION: bool = os.getenv("OCR_ANGLE_DETECTION", "true").lower() in ("true", "yes", "1")
+    OCR_ANGLE_DETECTION: bool = os.getenv("OCR_ANGLE_DETECTION", "true").lower() in (
+        "true",
+        "yes",
+        "1",
+    )
     OCR_CONFIDENCE_THRESHOLD: float = float(os.getenv("OCR_CONFIDENCE_THRESHOLD", "0.5"))
     OCR_ENGINE: str = os.getenv("OCR_ENGINE", "mistralocr")  # "paddleocr" or "mistralocr"
     MISTRAL_API_KEY: str = os.getenv("MISTRAL_API_KEY", "")
@@ -90,7 +101,11 @@ class Config:
     # ==========================================
     # RATE LIMITING
     # ==========================================
-    RATE_LIMIT_ENABLED: bool = os.getenv("RATE_LIMIT_ENABLED", "true").lower() in ("true", "yes", "1")
+    RATE_LIMIT_ENABLED: bool = os.getenv("RATE_LIMIT_ENABLED", "true").lower() in (
+        "true",
+        "yes",
+        "1",
+    )
     RATE_LIMIT_REQUESTS_PER_SECOND: int = int(os.getenv("RATE_LIMIT_REQUESTS_PER_SECOND", "10"))
     RATE_LIMIT_BURST_SIZE: int = int(os.getenv("RATE_LIMIT_BURST_SIZE", "20"))
 
@@ -111,7 +126,11 @@ class Config:
     # ==========================================
     ENABLE_OCR: bool = os.getenv("ENABLE_OCR", "true").lower() in ("true", "yes", "1")
     ENABLE_NLP: bool = os.getenv("ENABLE_NLP", "true").lower() in ("true", "yes", "1")
-    ENABLE_AUTO_REMINDER: bool = os.getenv("ENABLE_AUTO_REMINDER", "true").lower() in ("true", "yes", "1")
+    ENABLE_AUTO_REMINDER: bool = os.getenv("ENABLE_AUTO_REMINDER", "true").lower() in (
+        "true",
+        "yes",
+        "1",
+    )
     ENABLE_DASHBOARD: bool = os.getenv("ENABLE_DASHBOARD", "true").lower() in ("true", "yes", "1")
 
     # ==========================================
@@ -130,15 +149,106 @@ class Config:
     FLASK_DEBUG: bool = os.getenv("FLASK_DEBUG", "false").lower() in ("true", "yes", "1")
 
     def __init__(self):
-        """Initialize and validate configuration."""
+        """Initialize, load and validate configuration."""
+        self._load_env_values()
         self._parse_admin_ids()
         self._validate()
+
+    def _load_env_values(self):
+        """Load all environment variables into instance attributes."""
+        self.TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+        self.TELEGRAM_BOT_ADMIN_IDS = []
+        self.TELEGRAM_WEBHOOK_URL = os.getenv("TELEGRAM_WEBHOOK_URL")
+        self.TELEGRAM_WEBHOOK_PATH_SECRET = os.getenv("TELEGRAM_WEBHOOK_PATH_SECRET")
+        self.TELEGRAM_WEBHOOK_SECRET_TOKEN = os.getenv("TELEGRAM_WEBHOOK_SECRET_TOKEN")
+
+        self.SUPABASE_URL = os.getenv("SUPABASE_URL", "")
+        self.SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
+        self.SUPABASE_POSTGREST_TIMEOUT = int(os.getenv("SUPABASE_POSTGREST_TIMEOUT", "30"))
+        self.SUPABASE_STORAGE_TIMEOUT = int(os.getenv("SUPABASE_STORAGE_TIMEOUT", "20"))
+
+        self.GSPREAD_SHEET_NAME = os.getenv("GSPREAD_SHEET_NAME", "AW PRODUCTION")
+        self.GSPREAD_CREDENTIALS_FILE = os.getenv("GSPREAD_CREDENTIALS_FILE", "credentials.json")
+        self.GSPREAD_BACKUP_ENABLED = os.getenv("GSPREAD_BACKUP_ENABLED", "true").lower() in (
+            "true",
+            "yes",
+            "1",
+        )
+
+        self.DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///bot_data.db")
+        self.DATABASE_ECHO = os.getenv("DATABASE_ECHO", "false").lower() in ("true", "yes", "1")
+
+        self.NLP_MODEL_TYPE = os.getenv("NLP_MODEL_TYPE", "rule_based")
+        self.NLP_CONFIDENCE_THRESHOLD = float(os.getenv("NLP_CONFIDENCE_THRESHOLD", "0.7"))
+        self.NLP_FUZZY_THRESHOLD = int(os.getenv("NLP_FUZZY_THRESHOLD", "85"))
+
+        self.OCR_LANGUAGE = os.getenv("OCR_LANGUAGE", "en")
+        self.OCR_ANGLE_DETECTION = os.getenv("OCR_ANGLE_DETECTION", "true").lower() in (
+            "true",
+            "yes",
+            "1",
+        )
+        self.OCR_CONFIDENCE_THRESHOLD = float(os.getenv("OCR_CONFIDENCE_THRESHOLD", "0.5"))
+        self.OCR_ENGINE = os.getenv("OCR_ENGINE", "mistralocr")
+        self.MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY", "")
+        self.OCR_RUNTIME_MAX_DIM = int(os.getenv("OCR_RUNTIME_MAX_DIM", "2200"))
+        self.OCR_RUNTIME_JPEG_QUALITY = int(os.getenv("OCR_RUNTIME_JPEG_QUALITY", "88"))
+        self.OCR_RUNTIME_PNG_COMPRESSION = int(os.getenv("OCR_RUNTIME_PNG_COMPRESSION", "3"))
+        self.OCR_MISTRAL_MAX_DIM = int(os.getenv("OCR_MISTRAL_MAX_DIM", "1800"))
+        self.OCR_MISTRAL_JPEG_QUALITY = int(os.getenv("OCR_MISTRAL_JPEG_QUALITY", "82"))
+        self.OCR_MISTRAL_MAX_SOURCE_BYTES = int(
+            os.getenv("OCR_MISTRAL_MAX_SOURCE_BYTES", "1500000")
+        )
+        self.OCR_RESULT_CACHE_TTL_SECONDS = int(os.getenv("OCR_RESULT_CACHE_TTL_SECONDS", "3600"))
+        self.OCR_RESULT_CACHE_MAX_ITEMS = int(os.getenv("OCR_RESULT_CACHE_MAX_ITEMS", "64"))
+
+        self.LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+        self.LOG_FILE = os.getenv("LOG_FILE", "logs/bot.log")
+        self.LOG_FORMAT = os.getenv("LOG_FORMAT", "text")
+
+        self.RATE_LIMIT_ENABLED = os.getenv("RATE_LIMIT_ENABLED", "true").lower() in (
+            "true",
+            "yes",
+            "1",
+        )
+        self.RATE_LIMIT_REQUESTS_PER_SECOND = int(os.getenv("RATE_LIMIT_REQUESTS_PER_SECOND", "10"))
+        self.RATE_LIMIT_BURST_SIZE = int(os.getenv("RATE_LIMIT_BURST_SIZE", "20"))
+
+        self.CACHE_TTL_SECONDS = int(os.getenv("CACHE_TTL_SECONDS", "60"))
+        self.CACHE_MAX_SIZE = int(os.getenv("CACHE_MAX_SIZE", "1000"))
+
+        self.ITEM_PER_PAGE = int(os.getenv("ITEM_PER_PAGE", "5"))
+        self.MAX_MESSAGE_LENGTH = int(os.getenv("MAX_MESSAGE_LENGTH", "4096"))
+
+        self.ENABLE_OCR = os.getenv("ENABLE_OCR", "true").lower() in ("true", "yes", "1")
+        self.ENABLE_NLP = os.getenv("ENABLE_NLP", "true").lower() in ("true", "yes", "1")
+        self.ENABLE_AUTO_REMINDER = os.getenv("ENABLE_AUTO_REMINDER", "true").lower() in (
+            "true",
+            "yes",
+            "1",
+        )
+        self.ENABLE_DASHBOARD = os.getenv("ENABLE_DASHBOARD", "true").lower() in (
+            "true",
+            "yes",
+            "1",
+        )
+
+        self.ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+        self.DEBUG = os.getenv("DEBUG", "false").lower() in ("true", "yes", "1")
+        self.BUILD_ID = os.getenv("BUILD_ID", "dev-local")
+        self.SHOW_BUILD = os.getenv("SHOW_BUILD", "true").lower() in ("true", "yes", "1")
+
+        self.FLASK_HOST = os.getenv("FLASK_HOST", "0.0.0.0")
+        self.FLASK_PORT = int(os.getenv("FLASK_PORT", "7860"))
+        self.FLASK_DEBUG = os.getenv("FLASK_DEBUG", "false").lower() in ("true", "yes", "1")
 
     def _parse_admin_ids(self):
         """Parse TELEGRAM_BOT_ADMIN_IDS from comma-separated string."""
         admin_ids_str = os.getenv("TELEGRAM_BOT_ADMIN_IDS", "")
         try:
-            self.TELEGRAM_BOT_ADMIN_IDS = [int(id.strip()) for id in admin_ids_str.split(",") if id.strip()]
+            self.TELEGRAM_BOT_ADMIN_IDS = [
+                int(id.strip()) for id in admin_ids_str.split(",") if id.strip()
+            ]
         except ValueError:
             logger.warning(f"Invalid TELEGRAM_BOT_ADMIN_IDS format: {admin_ids_str}")
             self.TELEGRAM_BOT_ADMIN_IDS = []
@@ -161,6 +271,7 @@ class Config:
     def get_log_level(self):
         """Get logging level as logging constant."""
         import logging
+
         return getattr(logging, self.LOG_LEVEL.upper(), logging.INFO)
 
     def to_dict(self, include_secrets: bool = False) -> dict:
@@ -171,7 +282,9 @@ class Config:
                 continue
             value = getattr(self, key)
             # Mask sensitive values
-            if not include_secrets and any(secret in key for secret in ["TOKEN", "KEY", "SECRET", "PASSWORD"]):
+            if not include_secrets and any(
+                secret in key for secret in ["TOKEN", "KEY", "SECRET", "PASSWORD"]
+            ):
                 value = "***REDACTED***"
             result[key] = value
         return result
@@ -192,6 +305,6 @@ def get_settings() -> Config:
 def reload_config() -> Config:
     """Reload configuration from environment (useful for testing)."""
     global _config_instance
-    load_dotenv(override=True)
+    load_dotenv(override=False)
     _config_instance = Config()
     return _config_instance
