@@ -1,12 +1,13 @@
 """
 CRUD Master Satuan — Next-step handlers untuk Master Satuan
 """
+
 import logging
 
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from core.bot_context import ctx
-from core.master_data import get_all_satuan, tambah_satuan, update_satuan
+from core.master_data import get_all_satuan
 
 logger = logging.getLogger("bot_logger")
 

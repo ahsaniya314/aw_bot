@@ -4,7 +4,7 @@ Provides common functionality for all handlers
 """
 
 import logging
-from typing import Any, Callable
+from typing import Callable
 
 from telebot import TeleBot
 

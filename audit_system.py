@@ -46,7 +46,7 @@ for file_path, label in files_to_audit.items():
             issues.append((line_num, cmd_name))
 
     if issues:
-        print(f"\n--- Handlers WITHOUT answer_callback_query() ---")
+        print("\n--- Handlers WITHOUT answer_callback_query() ---")
         for line_num, cmd_name in issues[:15]:  # Show first 15
             print(f"   Line {line_num}: {cmd_name}*")
         if len(issues) > 15:
@@ -63,8 +63,7 @@ for file_path, label in files_to_audit.items():
 print("\n" + "=" * 70)
 print("SUMMARY")
 print("=" * 70)
-print(
-    """
+print("""
 CRITICAL ISSUES FOUND:
   1. Pagination buttons in callback_pengaturan.py missing answer_callback_query
      - mb_edit_page_* handlers
@@ -83,6 +82,5 @@ NEXT STEPS:
   2. Replace silent failures with proper logging
   3. Add try-catch blocks around critical operations
   4. Test all button interactions
-"""
-)
+""")
 print("=" * 70)

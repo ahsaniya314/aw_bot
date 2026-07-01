@@ -3,6 +3,7 @@
 Contoh Sederhana: Alur OCR → NLP → Perhitungan Total
 Tanpa merubah konfigurasi NLP apapun!
 """
+
 import os
 import sys
 
@@ -49,7 +50,7 @@ print()
 gambar_path = os.path.join(os.path.dirname(__file__), "budis.jpg")
 print(f"3. Memproses gambar: {gambar_path}")
 if not os.path.exists(gambar_path):
-    print(f"   ⚠️ File tidak ditemukan! Menggunakan contoh teks OCR...")
+    print("   ⚠️ File tidak ditemukan! Menggunakan contoh teks OCR...")
     teks_ocr = """Nota Penjualan
 Tanggal: 29-06-2025
 Kepada: Pak Budi
@@ -61,7 +62,7 @@ else:
     teks_ocr = ocr_service.extract_text(gambar_path)
     if teks_ocr.startswith("Error OCR:"):
         print(f"   ❌ {teks_ocr}")
-        print(f"   ⚠️ Menggunakan contoh teks OCR...")
+        print("   ⚠️ Menggunakan contoh teks OCR...")
         teks_ocr = """Nota Penjualan
 Tanggal: 29-06-2025
 Kepada: Pak Budi
@@ -105,7 +106,7 @@ print()
 import re
 
 # 5. Hitung total harga
-from core.master_data import cari_harga_default, format_rupiah, parse_rupiah
+from core.master_data import cari_harga_default, format_rupiah
 
 print("=" * 80)
 print("HASIL AKHIR:")

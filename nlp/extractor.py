@@ -16,7 +16,6 @@ from nlp.intent_matcher import (
     DATASET_TO_SYSTEM_INTENT,
     fuzzy_intent_fallback,
     match_intent_from_dataset,
-    tentukan_intent_manual,
 )
 
 logger = logging.getLogger(__name__)

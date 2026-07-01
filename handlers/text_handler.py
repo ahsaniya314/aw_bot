@@ -1,12 +1,11 @@
 """
 Text Handler — Router utama untuk pesan teks natural language
 """
+
 import logging
 import re
 from datetime import datetime
 from time import perf_counter
-
-from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from core.bot_context import ctx
 from core.master_data import (
@@ -25,11 +24,9 @@ from handlers.command_handler import (
     cmd_dashboard,
     cmd_foto,
     cmd_hutang,
-    cmd_master_barang,
     cmd_menu,
     cmd_panduan,
     cmd_riwayat,
-    get_dashboard_web_url,
     send_welcome,
 )
 from handlers.handler_dashboard import (
@@ -40,12 +37,10 @@ from handlers.handler_dashboard import (
 from nlp.normalizer import koreksi_teks
 from nlp.processor import proses_nlp
 from services.cache_manager import get_cached_barang, get_cached_metode
-from services.ui_transaksi import susun_balasan_resume
 from utils.security import (
     authorized_only,
     log_exception,
     notify_admins,
-    safe_delete_message,
     safe_edit_message,
     sanitize_input,
 )
@@ -1626,7 +1621,9 @@ def handle_text_message(message):
         notify_admins(
             f"❌ <b>Error Text Handler</b>\nUser: <code>{user_id}</code>\nChat: <code>{chat_id}</code>\nPesan: <code>{str(e)[:200]}</code>"
         )
-        bot.reply_to(message, "❌ Terjadi error saat memproses pesan. Coba ketik ulang perintahnya.")
+        bot.reply_to(
+            message, "❌ Terjadi error saat memproses pesan. Coba ketik ulang perintahnya."
+        )
 
 
 def register_handlers(bot):

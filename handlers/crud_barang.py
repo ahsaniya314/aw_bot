@@ -1,6 +1,7 @@
 """
 CRUD Master Barang — Handler untuk tambah, cek harga, set harga, hapus barang via chat
 """
+
 import logging
 import re
 
@@ -9,7 +10,6 @@ from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 from core.bot_context import ctx
 from core.master_data import (
     cari_harga_default,
-    format_daftar_master_barang_grouped,
     format_rupiah,
     get_all_barang,
     parse_rupiah,
@@ -17,7 +17,7 @@ from core.master_data import (
     update_barang,
 )
 from services.cache_manager import get_cached_barang
-from services.ui_pengaturan import render_daftar_master_barang, tampilkan_pilihan_barang
+from services.ui_pengaturan import render_daftar_master_barang
 from utils.security import safe_edit_message
 
 logger = logging.getLogger("bot_logger")
@@ -380,7 +380,7 @@ def _mb_terima_harga_edit(message):
             parse_mode="HTML",
             reply_markup=markup,
         )
-        logger.info(f"[HARGA DEBUG] Confirmation dialog sent")
+        logger.info("[HARGA DEBUG] Confirmation dialog sent")
     except Exception as e:
         logger.error(f"[HARGA DEBUG] Exception: {e}", exc_info=True)
         bot.send_message(chat_id, f"❌ Input tidak valid: {e}")

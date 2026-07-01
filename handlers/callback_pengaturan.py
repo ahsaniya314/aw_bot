@@ -2,9 +2,9 @@
 Callback Handler — handle_semua_tombol (mega-callback router)
 Handles all inline keyboard button presses.
 """
+
 import logging
 import math
-import os
 import re
 import traceback
 
@@ -12,8 +12,6 @@ from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from core.bot_context import ctx
 from core.master_data import (
-    cari_harga_default,
-    format_daftar_master_barang_grouped,
     format_rupiah,
     get_all_barang,
     get_all_metode,
@@ -23,59 +21,34 @@ from core.master_data import (
     hapus_satuan,
     hapus_semua_barang,
     normalisasi_tanggal_gs,
-    parse_rupiah,
     tambah_barang,
-    tambah_metode,
     tambah_satuan,
     update_barang,
-    update_metode,
     update_satuan,
 )
 from database import db_client
 from handlers.crud_barang import (
-    _mb_terima_harga_edit,
     _mb_terima_harga_edit_single,
-    _mb_terima_harga_edit_wizard,
     _mb_terima_nama,
     _mb_terima_nama_edit_single,
     _mb_terima_nama_edit_wizard,
     _mb_terima_satuan,
     _mb_terima_satuan_edit_single,
-    _mb_terima_satuan_edit_wizard,
 )
 from handlers.crud_metode import _mm_terima_keyword_edit, _mm_terima_nama
 from handlers.crud_satuan import _ms_terima_nama, _ms_terima_nama_edit
 from handlers.crud_transaksi import (
     _tampilkan_konfirmasi_pelunasan,
-    kirim_halaman_read,
-    siapkan_konfirmasi_delete,
-    siapkan_konfirmasi_delete_masal,
-    siapkan_konfirmasi_update,
-    tangani_catat_pelunasan,
-    tangani_delete_data,
     tangani_read_data,
-    tangani_revisi_manual,
-    tangani_revisi_manual_multi,
     tangani_simpan_multi,
-    tangani_update_status,
 )
-from handlers.handler_dashboard import handle_dashboard_callbacks
-from services.cache_manager import get_cached_barang
-from services.debt_tracker import hitung_sisa_tagihan, proses_bayar_tambahan
-from services.ui_pengaturan import render_daftar_master_barang, tampilkan_pilihan_barang
+from services.debt_tracker import proses_bayar_tambahan
+from services.ui_pengaturan import render_daftar_master_barang
 from services.ui_transaksi import (
-    susun_balasan_conversational,
     susun_balasan_multi_resume,
-    susun_balasan_resume,
-    susun_balasan_update,
     tampilkan_menu_kriteria_edit,
-    tampilkan_menu_kriteria_edit_multi,
 )
-from utils.helpers import hitung_ulang_total_dinamis
 from utils.security import (
-    authorized_only,
-    log_exception,
-    notify_admins,
     safe_answer_callback_query,
     safe_edit_message,
 )
@@ -387,13 +360,17 @@ def handle_bulk_price_callback(call):
         # 1. Update di Master Barang (Selalu dilakukan)
         update_barang(ctx.db_barang, info["row"], harga=info["harga"], satuan=info["satuan"])
 
-        msg = f"✅ Harga <b>{info['barang']}</b> berhasil diubah menjadi <code>{format_rupiah(info['harga'])}</code> di Master Data."
+        msg = (
+            f"✅ Harga <b>{info['barang']}</b> berhasil diubah menjadi "
+            f"<code>{format_rupiah(info['harga'])}</code> di Master Data."
+        )
 
-        # 2. Jika bulk, update semua transaksi di ctx.db_transaksi yang barangnya sama dan belum lunas
+        # 2. Jika bulk, update semua transaksi di ctx.db_transaksi
+        # yang barangnya sama dan belum lunas
         if is_bulk:
             safe_edit_message(
                 ctx.bot,
-                f"⏳ Sedang memperbarui semua transaksi {info['barang']}...",
+                (f"⏳ Sedang memperbarui semua transaksi " f"{info['barang']}..."),
                 chat_id=chat_id,
                 message_id=call.message.message_id,
             )
@@ -411,7 +388,7 @@ def handle_bulk_price_callback(call):
                         if jml_match:
                             jml = int(jml_match.group())
                             data_update["total"] = jml * info["harga"]
-                    except:
+                    except Exception:
                         pass
                     db_client.update_transaksi_db(row_idx, data_update)
                     count += 1
@@ -431,7 +408,10 @@ def handle_pengaturan_callbacks(call):
     msg_idx = call.message.message_id
     cmd = call.data
     logger.info(
-        f"[PENGATURAN DEBUG] handle_pengaturan_callbacks called: cmd='{cmd}', chat_id={chat_id}, msg_idx={msg_idx}"
+        "[PENGATURAN DEBUG] handle_pengaturan_callbacks called: cmd='%s', chat_id=%s, msg_idx=%s",
+        cmd,
+        chat_id,
+        msg_idx,
     )
 
     # Handle master barang, metode, satuan callbacks FIRST (mb_batal, mb_do_update_price, etc.)
@@ -483,7 +463,7 @@ def handle_pengaturan_callbacks(call):
             try:
                 if chat_id in ctx.user_sessions:
                     del ctx.user_sessions[chat_id]
-            except:
+            except Exception:
                 pass
             return
 
@@ -516,7 +496,7 @@ def handle_pengaturan_callbacks(call):
         try:
             if chat_id in ctx.user_sessions:
                 del ctx.user_sessions[chat_id]
-        except:
+        except Exception:
             pass
         return
 
@@ -723,165 +703,6 @@ def handle_pengaturan_callbacks(call):
                 ctx.bot, teks, chat_id, msg_idx, parse_mode="HTML", reply_markup=markup
             )
             return
-
-        if chat_id not in ctx.user_sessions:
-            return
-        if "multi_results" not in sess or sess.get("multi_edit_index") is None:
-            ctx.bot.answer_callback_query(call.id, "Sesi batch kedaluwarsa.")
-            return
-        if sess.get("multi_edit_mode") == "missing_only":
-            idx = sess.get("multi_edit_index")
-            try:
-                idx = int(idx)
-            except Exception:
-                idx = None
-            results = sess.get("multi_results") or []
-            if idx is not None and 0 <= idx < len(results):
-                miss = results[idx].get("missing_fields") or []
-                if field_target not in set(miss):
-                    try:
-                        ctx.bot.answer_callback_query(
-                            call.id,
-                            "⚠️ Mode Lengkapi: hanya bisa isi field yang kosong.",
-                            show_alert=True,
-                        )
-                    except Exception:
-                        pass
-                    return
-        sess["state"] = "awaiting_edit_teks_multi"
-        sess["field_target"] = field_target
-        sess["summary_msg_id"] = msg_idx
-        pesan_panduan = f"✏️ Silakan ketik nilai <b>{field_target}</b> yang benar lalu kirim:"
-        msg = safe_edit_message(ctx.bot, pesan_panduan, chat_id, msg_idx, parse_mode="HTML")
-        ctx.bot.register_next_step_handler(msg, tangani_revisi_manual_multi)
-        return
-
-        if chat_id not in ctx.user_sessions or "temp_matches" not in ctx.user_sessions[chat_id]:
-            ctx.bot.answer_callback_query(call.id, "❌ Sesi kedaluwarsa. Silakan ulangi perintah.")
-            return
-
-        matches = ctx.user_sessions[chat_id]["temp_matches"]
-        safe_answer_callback_query(ctx.bot, call)  # Menghilangkan icon loading di button
-
-        if data.startswith("multi_pick_brg_"):
-            parts = data.split("_")
-            if len(parts) < 5:
-                ctx.bot.answer_callback_query(call.id, "Format tidak valid.")
-                return
-            item_idx = int(parts[3])
-            choice_idx = int(parts[4])
-            m = matches[choice_idx]
-
-            sess = ctx.user_sessions[chat_id]
-            results = sess.get("multi_results") or []
-            if item_idx < 0 or item_idx >= len(results):
-                safe_edit_message(ctx.bot, "❌ Item batch tidak ditemukan.", chat_id, msg_id)
-                return
-
-            entitas = results[item_idx].get("entitas", {}) or {}
-            entitas["BARANG"] = m["nama"]
-            entitas["HARGA"] = format_rupiah(m["harga"])
-            entitas["SATUAN"] = m["satuan"]
-            hitung_ulang_total_dinamis(entitas)
-            results[item_idx]["entitas"] = entitas
-            sess["multi_results"] = results
-            sess["edit_notice"] = f"Item #{item_idx+1}: barang dipilih <b>{m['nama']}</b>"
-
-            susun_balasan_multi_resume(chat_id, msg_id)
-
-        elif data.startswith("pick_brg_"):
-            idx = int(data.replace("pick_brg_", ""))
-            m = matches[idx]
-            if "entitas" not in ctx.user_sessions[chat_id]:
-                # Jika entitas hilang, kita coba reconstruct dari text (jika ada)
-                safe_edit_message(ctx.bot, "❌ Sesi data hilang, silakan ulangi.", chat_id, msg_id)
-                return
-
-            entitas = ctx.user_sessions[chat_id]["entitas"]
-            entitas["BARANG"] = m["nama"]
-            entitas["HARGA"] = format_rupiah(m["harga"])
-            entitas["SATUAN"] = m["satuan"]
-            hitung_ulang_total_dinamis(entitas)
-            ctx.user_sessions[chat_id]["edit_notice"] = f"Barang dipilih: <b>{m['nama']}</b>"
-
-            if ctx.user_sessions[chat_id].get("is_update_mode"):
-                susun_balasan_update(chat_id, msg_id)
-            else:
-                susun_balasan_resume(chat_id, msg_id)
-
-        elif data.startswith("pick_edit_row_full_"):
-            idx = int(data.replace("pick_edit_row_full_", ""))
-            m = matches[idx]
-            entitas = ctx.user_sessions[chat_id].get("entitas", {})
-            # Find row_idx
-            row_idx = m["row_idx"]
-
-            # Lengkapi data
-            harga_baru = parse_rupiah(entitas.get("HARGA") or "0")
-            satuan_baru = entitas.get("SATUAN")
-
-            ctx.user_sessions[chat_id]["pending_price_update"] = {
-                "row": row_idx,
-                "barang": m["nama"],
-                "harga": harga_baru,
-                "satuan": satuan_baru,
-            }
-
-            markup = InlineKeyboardMarkup()
-            markup.add(
-                InlineKeyboardButton("✅ Ya, Terapkan ke Semua", callback_data="btn_bulk_price_yes"),
-                InlineKeyboardButton("❌ Tidak, Barang Ini Saja", callback_data="btn_bulk_price_no"),
-                InlineKeyboardButton("❌ Batal", callback_data="mb_batal"),
-            )
-            safe_edit_message(
-                ctx.bot,
-                f"🔄 <b>UPDATE HARGA: {m['nama']}</b>\n\n"
-                f"Ditemukan transaksi lain dengan barang yang sama.\n"
-                f"Apakah Anda ingin menerapkan harga <code>{format_rupiah(harga_baru)}</code> ke <b>SEMUA</b> transaksi <code>{m['nama']}</code> yang belum lunas?",
-                chat_id,
-                msg_id,
-                parse_mode="HTML",
-                reply_markup=markup,
-            )
-
-        elif data.startswith("pick_edit_row_"):
-            idx = int(data.replace("pick_edit_row_", ""))
-            m = matches[idx]
-            row_idx = m["row_idx"]
-            ctx.user_sessions[chat_id]["mb_edit_row"] = row_idx
-            ctx.user_sessions[chat_id]["mb_msg_id"] = msg_id
-            msg = safe_edit_message(
-                ctx.bot,
-                f"💰 Berapa harga baru untuk <b>{m['nama']}</b> ({m['satuan']})?\n(Harga saat ini: {format_rupiah(m['harga'])})",
-                chat_id,
-                msg_id,
-                parse_mode="HTML",
-            )
-            ctx.bot.register_next_step_handler(msg, _mb_terima_harga_edit)
-
-        elif data.startswith("pick_del_row_"):
-            idx = int(data.replace("pick_del_row_", ""))
-            m = matches[idx]
-            row_idx = m["row_idx"]
-
-            markup = InlineKeyboardMarkup()
-            markup.add(
-                InlineKeyboardButton("🗑️ Ya, Hapus", callback_data=f"mb_hapus_{row_idx}"),
-                InlineKeyboardButton("❌ Batal", callback_data="mb_batal"),
-            )
-            safe_edit_message(
-                ctx.bot,
-                f"🗑️ <b>KONFIRMASI HAPUS BARANG</b>\n"
-                f"━━━━━━━━━━━━━━━━━━━━━━\n"
-                f"Apakah Anda yakin ingin menghapus barang ini dari Master Data?\n\n"
-                f"📦 <b>Nama:</b> {m['nama']}\n"
-                f"💰 <b>Harga:</b> <code>{format_rupiah(m['harga'])}</code>\n"
-                f"📐 <b>Satuan:</b> {m['satuan']}\n",
-                chat_id,
-                msg_id,
-                parse_mode="HTML",
-                reply_markup=markup,
-            )
 
 
 def _handle_master_dan_pelunasan_impl(call):
@@ -1417,7 +1238,7 @@ def _handle_master_dan_pelunasan_impl(call):
             safe_answer_callback_query(ctx.bot, call, "❌ Gagal menghapus barang", show_alert=True)
 
     elif cmd == "mb_batal":
-        logger.info(f"[PENGATURAN DEBUG] Handling mb_batal")
+        logger.info("[PENGATURAN DEBUG] Handling mb_batal")
         if chat_id in ctx.user_sessions:
             ctx.user_sessions[chat_id]["state"] = "cancelled"
             ctx.user_sessions.pop(chat_id, None)
@@ -1425,7 +1246,7 @@ def _handle_master_dan_pelunasan_impl(call):
             ctx.bot.clear_step_handler_by_chat_id(chat_id)
         except Exception as e:
             logger.error(f"[PENGATURAN DEBUG] Error clearing step handler: {e}")
-        logger.info(f"[PENGATURAN DEBUG] Calling safe_edit_message with '❌ Aksi dibatalkan.'")
+        logger.info("[PENGATURAN DEBUG] Calling safe_edit_message with '❌ Aksi dibatalkan.'")
         safe_edit_message(ctx.bot, "❌ Aksi dibatalkan.", chat_id, msg_idx)
 
     elif cmd == "mb_konfirm_simpan":
@@ -1438,7 +1259,10 @@ def _handle_master_dan_pelunasan_impl(call):
             )
             safe_edit_message(
                 ctx.bot,
-                f"✅ <b>Barang berhasil ditambahkan!</b>\nID: <code>{id_baru}</code> | Nama: <b>{sess.get('mb_nama_baru')}</b>",
+                (
+                    f"✅ <b>Barang berhasil ditambahkan!</b>\n"
+                    f"ID: <code>{id_baru}</code> | Nama: <b>{sess.get('mb_nama_baru')}</b>"
+                ),
                 chat_id,
                 msg_idx,
                 parse_mode="HTML",
@@ -1467,7 +1291,7 @@ def _handle_master_dan_pelunasan_impl(call):
         if row_idx and harga_baru:
             try:
                 update_barang(ctx.db_barang, row_idx, harga=harga_baru)
-                logger.info(f"[PENGATURAN DEBUG] Barang updated successfully")
+                logger.info("[PENGATURAN DEBUG] Barang updated successfully")
                 safe_edit_message(
                     ctx.bot,
                     f"✅ Harga berhasil diperbarui menjadi <b>{format_rupiah(harga_baru)}</b>.",
@@ -1483,7 +1307,10 @@ def _handle_master_dan_pelunasan_impl(call):
                 safe_edit_message(ctx.bot, "❌ Gagal memperbarui harga barang.", chat_id, msg_idx)
         else:
             logger.warning(
-                f"[PENGATURAN DEBUG] Missing data for price update: row_idx={row_idx}, harga_baru={harga_baru}"
+                (
+                    "[PENGATURAN DEBUG] Missing data for price update: "
+                    f"row_idx={row_idx}, harga_baru={harga_baru}"
+                )
             )
             ctx.bot.answer_callback_query(
                 call.id, "❌ Data tidak lengkap. Ulangi perintah.", show_alert=True
@@ -1518,7 +1345,10 @@ def _handle_master_dan_pelunasan_impl(call):
                         update_barang(ctx.db_barang, row_idx, harga=harga_baru)
                 safe_edit_message(
                     ctx.bot,
-                    f"✅ Harga <b>{len(matches)}</b> barang berhasil diperbarui menjadi <b>{format_rupiah(harga_baru)}</b>.",
+                    (
+                        f"✅ Harga <b>{len(matches)}</b> barang berhasil diperbarui "
+                        f"menjadi <b>{format_rupiah(harga_baru)}</b>."
+                    ),
                     chat_id,
                     msg_idx,
                     parse_mode="HTML",
@@ -1540,7 +1370,10 @@ def _handle_master_dan_pelunasan_impl(call):
                     update_barang(ctx.db_barang, row_idx, harga=harga_baru)
                 safe_edit_message(
                     ctx.bot,
-                    f"✅ Harga <b>{m['nama']}</b> berhasil diperbarui menjadi <b>{format_rupiah(harga_baru)}</b>.",
+                    (
+                        f"✅ Harga <b>{m['nama']}</b> berhasil diperbarui "
+                        f"menjadi <b>{format_rupiah(harga_baru)}</b>."
+                    ),
                     chat_id,
                     msg_idx,
                     parse_mode="HTML",
@@ -1575,7 +1408,10 @@ def _handle_master_dan_pelunasan_impl(call):
         ctx.user_sessions.ensure(chat_id).update({"state": "mm_input_nama"})
         msg = safe_edit_message(
             ctx.bot,
-            "➕ <b>Tambah Metode Baru</b>\n\nKetik <b>nama metode</b> (mis: <code>Transfer BNI</code>):",
+            (
+                "➕ <b>Tambah Metode Baru</b>\n\n"
+                "Ketik <b>nama metode</b> (mis: <code>Transfer BNI</code>):"
+            ),
             chat_id,
             msg_idx,
             parse_mode="HTML",
@@ -1692,7 +1528,10 @@ def _handle_master_dan_pelunasan_impl(call):
         # Kirim pesan BARU untuk minta input (bukan edit pesan lama)
         msg = ctx.bot.send_message(
             chat_id,
-            "➕ <b>Tambah Satuan Baru</b>\n\nKetik <b>nama satuan</b> (misal: <code>bungkus</code> atau <code>karton</code>):",
+            (
+                "➕ <b>Tambah Satuan Baru</b>\n\n"
+                "Ketik <b>nama satuan</b> (misal: <code>bungkus</code> atau <code>karton</code>):"
+            ),
             parse_mode="HTML",
         )
         sess["ms_input_msg_id"] = msg.message_id  # Simpan ID pesan input ini untuk dihapus nanti
@@ -1738,7 +1577,12 @@ def _handle_master_dan_pelunasan_impl(call):
         # Kirim pesan BARU untuk edit
         msg = ctx.bot.send_message(
             chat_id,
-            f"✏️ Edit Satuan\n━━━━━━━━━━━━━━━━━━━━━━\nSatuan saat ini: <b>{target['nama_satuan']}</b>\n\nKetik nama satuan baru:",
+            (
+                "✏️ Edit Satuan\n"
+                "━━━━━━━━━━━━━━━━━━━━━━\n"
+                f"Satuan saat ini: <b>{target['nama_satuan']}</b>\n\n"
+                "Ketik nama satuan baru:"
+            ),
             parse_mode="HTML",
         )
         sess["ms_input_msg_id"] = msg.message_id  # Simpan ID pesan input ini untuk dihapus nanti
@@ -1842,7 +1686,11 @@ def _handle_master_dan_pelunasan_impl(call):
         )
         safe_edit_message(
             ctx.bot,
-            f"🗑️ <b>KONFIRMASI HAPUS SATUAN</b>\n━━━━━━━━━━━━━━━━━━━━━━\nApakah Anda yakin ingin menghapus satuan <b>{target['nama_satuan']}</b>?",
+            (
+                "🗑️ <b>KONFIRMASI HAPUS SATUAN</b>\n"
+                "━━━━━━━━━━━━━━━━━━━━━━\n"
+                f"Apakah Anda yakin ingin menghapus satuan <b>{target['nama_satuan']}</b>?"
+            ),
             chat_id,
             msg_idx,
             parse_mode="HTML",

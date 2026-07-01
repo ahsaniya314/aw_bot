@@ -1,6 +1,7 @@
 """
 Session Manager — Persistent User Sessions via Supabase
 """
+
 import logging
 import threading
 

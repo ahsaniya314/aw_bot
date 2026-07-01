@@ -1,6 +1,7 @@
 """
 UI Common - Utility functions yang dibagikan antar module UI
 """
+
 import logging
 
 logger = logging.getLogger("bot_logger")

@@ -2,6 +2,7 @@
 Script untuk mengevaluasi performa model NLP (fuzzy matching) Anda!
 Cara jalankan: python scripts/evaluate_nlp.py
 """
+
 import io
 import sys
 from collections import defaultdict

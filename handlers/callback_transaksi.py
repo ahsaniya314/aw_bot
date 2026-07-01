@@ -2,75 +2,41 @@
 Callback Handler — handle_semua_tombol (mega-callback router)
 Handles all inline keyboard button presses.
 """
+
 import html
 import logging
 import math
-import os
 import re
 
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from core.bot_context import ctx
 from core.master_data import (
-    cari_harga_default,
-    format_daftar_master_barang_grouped,
     format_rupiah,
     get_all_barang,
-    get_all_metode,
-    hapus_barang,
-    hapus_metode,
-    hapus_semua_barang,
     normalisasi_tanggal_gs,
     parse_rupiah,
-    tambah_barang,
-    tambah_metode,
-    update_barang,
-    update_metode,
 )
 from database import db_client
 from handlers.crud_barang import (
     _mb_terima_harga_edit,
-    _mb_terima_harga_edit_single,
-    _mb_terima_harga_edit_wizard,
-    _mb_terima_nama,
-    _mb_terima_nama_edit_single,
-    _mb_terima_nama_edit_wizard,
-    _mb_terima_satuan,
-    _mb_terima_satuan_edit_single,
-    _mb_terima_satuan_edit_wizard,
 )
-from handlers.crud_metode import _mm_terima_keyword_edit, _mm_terima_nama
 from handlers.crud_transaksi import (
-    _tampilkan_konfirmasi_pelunasan,
     kirim_halaman_read,
-    siapkan_konfirmasi_delete,
-    siapkan_konfirmasi_delete_masal,
-    siapkan_konfirmasi_update,
     tangani_catat_pelunasan,
-    tangani_delete_data,
     tangani_read_data,
-    tangani_revisi_manual,
-    tangani_revisi_manual_multi,
     tangani_simpan_multi,
     tangani_simpan_transaksi,
-    tangani_update_status,
 )
-from handlers.handler_dashboard import handle_dashboard_callbacks
-from services.cache_manager import get_cached_barang
-from services.debt_tracker import hitung_sisa_tagihan, proses_bayar_tambahan
-from services.ui_pengaturan import render_daftar_master_barang, tampilkan_pilihan_barang
+from services.debt_tracker import proses_bayar_tambahan
 from services.ui_transaksi import (
-    susun_balasan_conversational,
     susun_balasan_multi_resume,
     susun_balasan_resume,
     susun_balasan_update,
     tampilkan_menu_kriteria_edit,
-    tampilkan_menu_kriteria_edit_multi,
 )
 from utils.helpers import hitung_ulang_total_dinamis
 from utils.security import (
-    authorized_only,
-    log_exception,
     notify_admins,
     safe_answer_callback_query,
     safe_debug_event,
@@ -353,7 +319,6 @@ def _quick_read_by_date(message):
     if not raw:
         ctx.bot.reply_to(message, "❌ Tanggal kosong. Contoh: 07-11-2024")
         return
-    from core.master_data import normalisasi_tanggal_gs
 
     tgl = normalisasi_tanggal_gs(raw)
     if not tgl:
@@ -896,7 +861,9 @@ Kelola database barang, metode pembayaran, serta lacak hutang dengan menekan tom
                 safe_edit_message(ctx.bot, "❌ Data tidak ditemukan.", chat_id, msg_idx)
         except Exception as e:
             logger.error(f"Error handling delres_: {e}")
-            ctx.bot.answer_callback_query(call.id, "❌ Gagal memproses permintaan.", show_alert=True)
+            ctx.bot.answer_callback_query(
+                call.id, "❌ Gagal memproses permintaan.", show_alert=True
+            )
         return
 
     # ─ Handle edit callbacks (resolve_)
@@ -914,7 +881,9 @@ Kelola database barang, metode pembayaran, serta lacak hutang dengan menekan tom
                 safe_edit_message(ctx.bot, "❌ Data tidak ditemukan.", chat_id, msg_idx)
         except Exception as e:
             logger.error(f"Error handling resolve_: {e}")
-            ctx.bot.answer_callback_query(call.id, "❌ Gagal memproses permintaan.", show_alert=True)
+            ctx.bot.answer_callback_query(
+                call.id, "❌ Gagal memproses permintaan.", show_alert=True
+            )
         return
 
     if cmd == "btn_delete_bulk_trigger":
@@ -929,7 +898,9 @@ Kelola database barang, metode pembayaran, serta lacak hutang dengan menekan tom
                 safe_edit_message(ctx.bot, "❌ Data tidak ditemukan.", chat_id, msg_idx)
         except Exception as e:
             logger.error(f"Error handling btn_delete_bulk_trigger: {e}")
-            ctx.bot.answer_callback_query(call.id, "❌ Gagal memproses permintaan.", show_alert=True)
+            ctx.bot.answer_callback_query(
+                call.id, "❌ Gagal memproses permintaan.", show_alert=True
+            )
         return
 
     if cmd == "btn_delete_yes":
@@ -1397,7 +1368,7 @@ Kelola database barang, metode pembayaran, serta lacak hutang dengan menekan tom
 
                 if data_update:
                     db_client.update_transaksi_db(row_idx, data_update)
-                msg_final = f"✅ <b>Data Diperbarui!</b>\n\nPerubahan berhasil disimpan ke database."
+                msg_final = "✅ <b>Data Diperbarui!</b>\n\nPerubahan berhasil disimpan ke database."
 
             safe_edit_message(ctx.bot, msg_final, chat_id, msg_idx, parse_mode="HTML")
             if chat_id in ctx.user_sessions:
@@ -1420,9 +1391,9 @@ Kelola database barang, metode pembayaran, serta lacak hutang dengan menekan tom
                     "chat_id": chat_id,
                     "msg_idx": msg_idx,
                     "missing_fields": sess.get("missing_fields") if sess else None,
-                    "entitas_keys": sorted(list((sess.get("entitas") or {}).keys()))
-                    if sess
-                    else [],
+                    "entitas_keys": (
+                        sorted(list((sess.get("entitas") or {}).keys())) if sess else []
+                    ),
                 },
             }
         )
@@ -1444,9 +1415,9 @@ Kelola database barang, metode pembayaran, serta lacak hutang dengan menekan tom
                 "data": {
                     "chat_id": chat_id,
                     "msg_idx": msg_idx,
-                    "entitas_keys": sorted(list((sess.get("entitas") or {}).keys()))
-                    if sess
-                    else [],
+                    "entitas_keys": (
+                        sorted(list((sess.get("entitas") or {}).keys())) if sess else []
+                    ),
                 },
             }
         )
@@ -1659,8 +1630,12 @@ def handle_pick_barang_callback(call):
 
             markup = InlineKeyboardMarkup()
             markup.add(
-                InlineKeyboardButton("✅ Ya, Terapkan ke Semua", callback_data="btn_bulk_price_yes"),
-                InlineKeyboardButton("❌ Tidak, Barang Ini Saja", callback_data="btn_bulk_price_no"),
+                InlineKeyboardButton(
+                    "✅ Ya, Terapkan ke Semua", callback_data="btn_bulk_price_yes"
+                ),
+                InlineKeyboardButton(
+                    "❌ Tidak, Barang Ini Saja", callback_data="btn_bulk_price_no"
+                ),
             )
             safe_edit_message(
                 ctx.bot,

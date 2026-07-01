@@ -14,6 +14,7 @@ Logika Bisnis:
   Belum Lunas → Tagihan = Total, Uang Masuk = 0
   Pelunasan   → Tagihan baru = Tagihan lama - Nominal,  Uang Masuk baru = Uang Masuk lama + Nominal
 """
+
 from datetime import datetime
 
 from core.master_data import format_rupiah, parse_rupiah
@@ -92,7 +93,7 @@ def cari_hutang_aktif(db_transaksi, nama_target, cocokkan_nama_fn):
             f"[DEBUG] Checking transaction: id={row.get('id')}, nama_pelanggan={repr(nama_db)}, nama_target={repr(nama_target)}"
         )
         if not cocokkan_nama_fn(nama_target, nama_db):
-            logger.info(f"[DEBUG] cocokkan_nama_fn returned False, skipping")
+            logger.info("[DEBUG] cocokkan_nama_fn returned False, skipping")
             continue
 
         status = row.get("status", "").lower()
@@ -109,7 +110,7 @@ def cari_hutang_aktif(db_transaksi, nama_target, cocokkan_nama_fn):
             logger.info(f"[DEBUG] Recalculated tagihan: {tagihan}")
 
         if tagihan <= 0:
-            logger.info(f"[DEBUG] tagihan <=0, skipping")
+            logger.info("[DEBUG] tagihan <=0, skipping")
             continue
 
         hasil.append(

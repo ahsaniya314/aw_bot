@@ -2,7 +2,7 @@
 handler_dashboard.py
 Handler untuk fitur dashboard harian di Telegram Bot
 """
-import io
+
 import ipaddress
 import logging
 import os
@@ -10,7 +10,6 @@ from urllib.parse import urlparse
 
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from core.bot_context import ctx
 from services.daily_dashboard import (
     get_dashboard_custom_date,
     get_dashboard_harian,
@@ -188,7 +187,7 @@ def handle_dashboard_callbacks(bot, call, db_transaksi, user_sessions):
             return
 
         # Render detail transaksi
-        detail_text = f"📝 <b>DETAIL TRANSAKSI HARI INI</b>\n"
+        detail_text = "📝 <b>DETAIL TRANSAKSI HARI INI</b>\n"
         detail_text += f"📅 {dashboard_data['tanggal_display']}\n"
         detail_text += "━━━━━━━━━━━━━━━━━━━━━━\n\n"
 
@@ -199,9 +198,11 @@ def handle_dashboard_callbacks(bot, call, db_transaksi, user_sessions):
                 status_emoji = (
                     "✅"
                     if "lunas" in trx["status"].lower()
-                    else "⏳"
-                    if any(k in trx["status"].lower() for k in ["cicil", "dicicil", "dp"])
-                    else "🔴"
+                    else (
+                        "⏳"
+                        if any(k in trx["status"].lower() for k in ["cicil", "dicicil", "dp"])
+                        else "🔴"
+                    )
                 )
                 detail_text += f"{i}. {status_emoji} <b>{trx['nama']}</b>\n"
                 detail_text += f"   📦 {trx['jumlah']} {trx['barang']}\n"

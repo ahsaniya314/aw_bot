@@ -1,13 +1,13 @@
 """
 UI Pengaturan - Fungsi render untuk menu pengaturan master data (barang, metode)
 """
+
 import logging
-import math
 
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from core.bot_context import ctx
-from core.master_data import format_rupiah, get_all_barang
+from core.master_data import format_rupiah
 from utils.security import safe_edit_message
 
 logger = logging.getLogger("bot_logger")

@@ -2,6 +2,7 @@
 Regenerate nlp/embedded_data.py from files/ (opsional, hanya untuk development).
 Jalankan: python scripts/embed_nlp_data.py
 """
+
 import csv
 import json
 from pathlib import Path

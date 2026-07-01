@@ -12,12 +12,12 @@ if sys.platform == "win32":
 def run_migrations():
     load_dotenv()
     supabase = db_client.get_supabase()
-    
+
     try:
         # Check if master_satuan table exists
         response = supabase.table("master_satuan").select("id").limit(1).execute()
         print("✓ master_satuan table already exists!")
-    except Exception as e:
+    except Exception:
         print("[WARNING] master_satuan table does not exist!")
         print("Please run the following SQL in Supabase SQL Editor:")
         print("-" * 50)

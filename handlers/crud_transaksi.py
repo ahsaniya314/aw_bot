@@ -1,6 +1,7 @@
 """
 CRUD Transaksi — read, delete, update, pelunasan, revisi manual, simpan multi
 """
+
 import logging
 import math
 import re
@@ -12,12 +13,11 @@ from core.bot_context import ctx
 from core.master_data import (
     cari_harga_default,
     format_rupiah,
-    get_all_barang,
     normalisasi_tanggal_gs,
     parse_rupiah,
 )
 from database import db_client
-from services.cache_manager import get_cached_barang, get_cached_metode
+from services.cache_manager import get_cached_barang
 from services.debt_tracker import cari_hutang_aktif, hitung_sisa_tagihan, proses_bayar_tambahan
 from services.ui_pengaturan import tampilkan_pilihan_barang
 from services.ui_transaksi import (
@@ -26,9 +26,8 @@ from services.ui_transaksi import (
     susun_balasan_multi_resume,
     susun_balasan_resume,
     susun_balasan_update,
-    tampilkan_menu_kriteria_edit,
 )
-from utils.helpers import bersihkan_nama, cocokkan_nama, hitung_ulang_total_dinamis
+from utils.helpers import cocokkan_nama, hitung_ulang_total_dinamis
 from utils.security import safe_debug_event, safe_edit_message
 
 logger = logging.getLogger("bot_logger")
@@ -356,7 +355,9 @@ def tangani_read_data(chat_id, message_id_target):
                 ringkasan_teks += "━━━━━━━━━━━━━━━━━━━━━━\n"
 
                 if stats["tagihan"] > 0:
-                    ringkasan_teks += "💡 <i>Gunakan tombol di bawah untuk mencatat pelunasan.</i>\n"
+                    ringkasan_teks += (
+                        "💡 <i>Gunakan tombol di bawah untuk mencatat pelunasan.</i>\n"
+                    )
                 else:
                     ringkasan_teks += "✅ <b>STATUS: SEMUA LUNAS</b>\n"
             else:
@@ -396,19 +397,19 @@ def tangani_read_data(chat_id, message_id_target):
                 ringkasan_teks += "━━━━━━━━━━━━━━━━━━━━━━\n"
 
                 # Tampilkan TOP Pelanggan jika ada
-                ringkasan_teks += f"👤 <b>TOP PELANGGAN (Berdasarkan Nominal)</b>\n"
+                ringkasan_teks += "👤 <b>TOP PELANGGAN (Berdasarkan Nominal)</b>\n"
                 for i, (nama, stats) in enumerate(list(pelanggan_stats.items())[:5], 1):
                     medali = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else "👤"
                     ringkasan_teks += f"{medali} <b>{nama}</b>: <code>{format_rupiah(stats['total'])}</code> ({stats['count']} trx)\n"
 
-                ringkasan_teks += f"\n📈 <b>Total Akumulasi Filter</b>\n"
+                ringkasan_teks += "\n📈 <b>Total Akumulasi Filter</b>\n"
                 ringkasan_teks += (
                     f"💰 <b>Total Uang:</b> <code>{format_rupiah(total_omzet)}</code>\n"
                 )
                 ringkasan_teks += f"📦 <b>Total Item:</b> {total_item}\n"
 
         if konteks_agregasi in ["Total Tunggakan", "Tunggakan Terbanyak"]:
-            ringkasan_teks += f"\n🏦 <b>LAPORAN PIUTANG / TAGIHAN</b>\n"
+            ringkasan_teks += "\n🏦 <b>LAPORAN PIUTANG / TAGIHAN</b>\n"
             ringkasan_teks += (
                 f"⚠️ <b>Total Sisa Tagihan:</b> <code>{format_rupiah(total_tagihan)}</code>\n"
             )
@@ -430,7 +431,7 @@ def tangani_read_data(chat_id, message_id_target):
                         f"{i}. <b>{nama}</b>: <code>{format_rupiah(stats['tagihan'])}</code>\n"
                     )
         elif konteks_agregasi == "Summary Uang Masuk" or konteks_agregasi == "Uang Masuk":
-            ringkasan_teks += f"📥 <b>LAPORAN UANG MASUK (KAS)</b>\n"
+            ringkasan_teks += "📥 <b>LAPORAN UANG MASUK (KAS)</b>\n"
             ringkasan_teks += (
                 f"💰 <b>Total Uang Masuk:</b> <code>{format_rupiah(total_uang_msk)}</code>\n"
             )
@@ -439,7 +440,7 @@ def tangani_read_data(chat_id, message_id_target):
             )
             ringkasan_teks += f"📑 <b>Total Nota Terproses:</b> {len(match_list)}\n"
         elif konteks_agregasi == "Summary Omzet" or konteks_agregasi == "Total Transaksi":
-            ringkasan_teks += f"📈 <b>LAPORAN HASIL PENJUALAN</b>\n"
+            ringkasan_teks += "📈 <b>LAPORAN HASIL PENJUALAN</b>\n"
             ringkasan_teks += (
                 f"💰 <b>Total Omzet (Kotor):</b> <code>{format_rupiah(total_omzet)}</code>\n"
             )
@@ -448,23 +449,23 @@ def tangani_read_data(chat_id, message_id_target):
             )
             ringkasan_teks += f"📦 <b>Total Item Terjual:</b> {total_item}\n"
         elif konteks_agregasi == "Summary Barang":
-            ringkasan_teks += f"📦 <b>LAPORAN PESANAN BARANG</b>\n"
+            ringkasan_teks += "📦 <b>LAPORAN PESANAN BARANG</b>\n"
             ringkasan_teks += f"🛒 <b>Total Volume:</b> {total_item} Item\n"
             ringkasan_teks += f"💰 <b>Nilai Barang:</b> <code>{format_rupiah(total_omzet)}</code>\n"
             ringkasan_teks += f"📑 <b>Jumlah Baris:</b> {len(match_list)}\n"
         elif konteks_agregasi == "Summary Total Barang":
-            ringkasan_teks += f"📦 <b>TOTAL BARANG TERJUAL</b>\n"
+            ringkasan_teks += "📦 <b>TOTAL BARANG TERJUAL</b>\n"
             ringkasan_teks += f"🛒 <b>Volume Keluar:</b> {total_item} Item\n"
             ringkasan_teks += f"📅 <b>Periode:</b> {f_tanggal or 'Semua Waktu'}\n"
         elif konteks_agregasi == "Summary Lunas":
-            ringkasan_teks += f"✅ <b>LAPORAN TRANSAKSI LUNAS</b>\n"
+            ringkasan_teks += "✅ <b>LAPORAN TRANSAKSI LUNAS</b>\n"
             ringkasan_teks += (
                 f"💰 <b>Total Uang Masuk:</b> <code>{format_rupiah(total_uang_msk)}</code>\n"
             )
             ringkasan_teks += f"📑 <b>Jumlah Nota Lunas:</b> {len(match_list)}\n"
             ringkasan_teks += f"📦 <b>Total Volume:</b> {total_item} Item\n"
         elif konteks_agregasi == "Summary Jatuh Tempo":
-            ringkasan_teks += f"⏰ <b>PENGINGAT JATUH TEMPO</b>\n"
+            ringkasan_teks += "⏰ <b>PENGINGAT JATUH TEMPO</b>\n"
             ringkasan_teks += (
                 f"⚠️ <b>Total Tagihan:</b> <code>{format_rupiah(total_tagihan)}</code>\n"
             )
@@ -636,7 +637,7 @@ def tangani_delete_data(chat_id, message_id_target):
     if len(match_list) == 0:
         safe_edit_message(
             ctx.bot,
-            f"❌ Tidak ditemukan data penjualan yang sesuai dengan kriteria penghapusan tersebut.",
+            "❌ Tidak ditemukan data penjualan yang sesuai dengan kriteria penghapusan tersebut.",
             chat_id=chat_id,
             message_id=message_id_target,
         )
@@ -671,9 +672,11 @@ def tangani_delete_data(chat_id, message_id_target):
                 status_emoji = (
                     "✅"
                     if "lunas" in str(status).lower()
-                    else "⏳"
-                    if any(k in str(status).lower() for k in ["cicil", "dicicil", "dp"])
-                    else "🔴"
+                    else (
+                        "⏳"
+                        if any(k in str(status).lower() for k in ["cicil", "dicicil", "dp"])
+                        else "🔴"
+                    )
                 )
 
                 teks_konflik += (
@@ -1053,7 +1056,9 @@ def _tampilkan_konfirmasi_pelunasan(chat_id, message_id_target, info_hutang, nom
     if nom_val > 0:
         tagihan_baru = max(0, tagihan_lama - nom_val)
         status_ket = (
-            "Lunas ✅" if tagihan_baru == 0 else f"Nyicil ⏳ (tagihan {format_rupiah(tagihan_baru)})"
+            "Lunas ✅"
+            if tagihan_baru == 0
+            else f"Nyicil ⏳ (tagihan {format_rupiah(tagihan_baru)})"
         )
         ket_bayar = format_rupiah(nom_val)
         sess["pel_nominal"] = nom_val
@@ -1161,13 +1166,13 @@ def tangani_revisi_manual(message):
                 h_m = matches[0]
                 entitas["HARGA"] = format_rupiah(h_m["harga"])
                 entitas["SATUAN"] = h_m["satuan"]
-                sess[
-                    "edit_notice"
-                ] = f"Harga otomatis berubah ke <code>{entitas['HARGA']}</code> ({h_m['satuan']})."
+                sess["edit_notice"] = (
+                    f"Harga otomatis berubah ke <code>{entitas['HARGA']}</code> ({h_m['satuan']})."
+                )
             else:
-                sess[
-                    "edit_notice"
-                ] = f"Satuan <b>{new_sat}</b> untuk <b>{brg_ref}</b> tidak ditemukan di Master Data."
+                sess["edit_notice"] = (
+                    f"Satuan <b>{new_sat}</b> untuk <b>{brg_ref}</b> tidak ditemukan di Master Data."
+                )
 
     if target_field in ["JUMLAH", "HARGA", "SATUAN"]:
         hitung_ulang_total_dinamis(entitas)
@@ -1234,9 +1239,9 @@ def tangani_revisi_manual_multi(message):
             entitas["HARGA"] = format_rupiah(h_m["harga"])
             entitas["SATUAN"] = h_m["satuan"]
             hitung_ulang_total_dinamis(entitas)
-            sess[
-                "edit_notice"
-            ] = f"Item #{idx+1}: harga disesuaikan ke <code>{entitas['HARGA']}</code>."
+            sess["edit_notice"] = (
+                f"Item #{idx+1}: harga disesuaikan ke <code>{entitas['HARGA']}</code>."
+            )
         elif len(matches) > 1 and msg_lama_id:
             sess["multi_edit_index"] = idx
             tampilkan_pilihan_barang(
@@ -1244,9 +1249,9 @@ def tangani_revisi_manual_multi(message):
             )
             return
         else:
-            sess[
-                "edit_notice"
-            ] = f"Item #{idx+1}: barang <b>{input_text}</b> tidak ditemukan di Master."
+            sess["edit_notice"] = (
+                f"Item #{idx+1}: barang <b>{input_text}</b> tidak ditemukan di Master."
+            )
 
     elif target_field == "SATUAN":
         brg_ref = entitas.get("BARANG")
@@ -1257,13 +1262,13 @@ def tangani_revisi_manual_multi(message):
                 entitas["HARGA"] = format_rupiah(h_m["harga"])
                 entitas["SATUAN"] = h_m["satuan"]
                 hitung_ulang_total_dinamis(entitas)
-                sess[
-                    "edit_notice"
-                ] = f"Item #{idx+1}: harga berubah ke <code>{entitas['HARGA']}</code> ({h_m['satuan']})."
+                sess["edit_notice"] = (
+                    f"Item #{idx+1}: harga berubah ke <code>{entitas['HARGA']}</code> ({h_m['satuan']})."
+                )
             else:
-                sess[
-                    "edit_notice"
-                ] = f"Item #{idx+1}: satuan <b>{input_text}</b> tidak ada untuk <b>{brg_ref}</b>."
+                sess["edit_notice"] = (
+                    f"Item #{idx+1}: satuan <b>{input_text}</b> tidak ada untuk <b>{brg_ref}</b>."
+                )
 
     elif target_field in ["JUMLAH", "HARGA", "TOTAL"]:
         hitung_ulang_total_dinamis(entitas)
@@ -1509,7 +1514,7 @@ def tangani_update_status(chat_id, message_id_target):
     if len(match_list) == 0:
         safe_edit_message(
             ctx.bot,
-            f"❌ Tidak ditemukan pesanan yang sesuai kriteria tersebut untuk diubah.",
+            "❌ Tidak ditemukan pesanan yang sesuai kriteria tersebut untuk diubah.",
             chat_id=chat_id,
             message_id=message_id_target,
         )
@@ -1550,9 +1555,11 @@ def tangani_update_status(chat_id, message_id_target):
             status_emoji = (
                 "✅"
                 if "lunas" in str(status).lower()
-                else "⏳"
-                if any(k in str(status).lower() for k in ["cicil", "dicicil", "dp"])
-                else "🔴"
+                else (
+                    "⏳"
+                    if any(k in str(status).lower() for k in ["cicil", "dicicil", "dp"])
+                    else "🔴"
+                )
             )
 
             teks_konflik += (
@@ -2172,7 +2179,9 @@ def _tampilkan_konfirmasi_pelunasan(chat_id, message_id_target, info_hutang, nom
     if nom_val > 0:
         tagihan_baru = max(0, tagihan_lama - nom_val)
         status_ket = (
-            "Lunas ✅" if tagihan_baru == 0 else f"Nyicil ⏳ (tagihan {format_rupiah(tagihan_baru)})"
+            "Lunas ✅"
+            if tagihan_baru == 0
+            else f"Nyicil ⏳ (tagihan {format_rupiah(tagihan_baru)})"
         )
         ket_bayar = format_rupiah(nom_val)
         sess["pel_nominal"] = nom_val

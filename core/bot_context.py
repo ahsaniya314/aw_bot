@@ -6,7 +6,7 @@ Diinisialisasi sekali di main.py, lalu diakses oleh semua modul via:
     from core.bot_context import ctx
 """
 
-from typing import Any, List, Optional
+from typing import Any, List
 
 
 class BotContext:

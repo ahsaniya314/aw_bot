@@ -1,8 +1,7 @@
 import re
 from datetime import datetime, timedelta
 
-from core.master_data import format_rupiah
-from nlp.dictionaries import KAMUS_ALIAS, parse_price_shorthand
+from nlp.dictionaries import KAMUS_ALIAS
 from nlp.extractor import ekstrak_entitas, tentukan_intent
 from nlp.normalizer import koreksi_teks
 
@@ -846,9 +845,11 @@ def proses_nlp(
                 "NAMA": multi_parsed.get("nama"),
                 "AKSI": "Tambah Penjualan",
                 "BARANG": item["barang"],
-                "JUMLAH": f"{item['jumlah']} {item['satuan']}"
-                if item.get("jumlah") and item.get("satuan")
-                else item.get("jumlah"),
+                "JUMLAH": (
+                    f"{item['jumlah']} {item['satuan']}"
+                    if item.get("jumlah") and item.get("satuan")
+                    else item.get("jumlah")
+                ),
                 "HARGA": None,
                 "SATUAN": item.get("satuan"),
                 "TOTAL": None,

@@ -2,10 +2,8 @@ import base64
 import hashlib
 import logging
 import os
-import tempfile
 from collections import OrderedDict
 
-import numpy as np
 import requests
 
 from config.settings import get_settings
@@ -310,7 +308,7 @@ class OCRService:
                     logger.error(f"[OCR] Mistral OCR Error: {mistral_error}")
                     return f"Error OCR: Mistral gagal - {str(mistral_error)}"
             else:
-                return f"Error OCR: Hanya mendukung Mistral OCR! Setting OCR_ENGINE='mistralocr'!"
+                return "Error OCR: Hanya mendukung Mistral OCR! Setting OCR_ENGINE='mistralocr'!"
         except Exception as e:
             logger.error(f"[OCR] Extraction Error: {e}")
             return f"Error OCR: {str(e)}"

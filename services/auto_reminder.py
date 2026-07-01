@@ -1,5 +1,4 @@
 import logging
-import os
 import re
 import urllib.parse
 from datetime import date, datetime

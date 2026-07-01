@@ -105,7 +105,9 @@ def _build_read_page_markup(sess, ringkasan_teks, page, total_pages):
         markup = InlineKeyboardMarkup(row_width=1)
 
     if sess.get("entitas", {}).get("NAMA") and "LAPORAN TAGIHAN" in ringkasan_teks:
-        markup.row(InlineKeyboardButton("💳 Bayar Tagihan Ini", callback_data="btn_masuk_pelunasan"))
+        markup.row(
+            InlineKeyboardButton("💳 Bayar Tagihan Ini", callback_data="btn_masuk_pelunasan")
+        )
 
     if total_pages > 1:
         markup.row(InlineKeyboardButton("🔎 Cari Riwayat Lain", callback_data="riwayat_cari_lain"))
@@ -145,9 +147,13 @@ def kirim_halaman_read(chat_id, page=1, message_id_to_edit=None, call_id=None):
             emo_bayar = (
                 "✅"
                 if "lunas" in item["Status"].lower()
-                else "⏳"
-                if any(k in item["Status"].lower() for k in ["cicil", "dicicil", "nyicil", "dp"])
-                else "🔴"
+                else (
+                    "⏳"
+                    if any(
+                        k in item["Status"].lower() for k in ["cicil", "dicicil", "nyicil", "dp"]
+                    )
+                    else "🔴"
+                )
             )
             # Tampilkan Jumlah Tagihan jika ada piutang
             _tagihan_val = item.get("Tagihan", "")
@@ -860,7 +866,7 @@ def susun_balasan_multi_resume(chat_id, message_id_target):
             if any_missing
             else ""
         )
-        + f"<i>Klik tombol di bawah untuk menyimpan semua data secara bersamaan ke Database.</i>"
+        + "<i>Klik tombol di bawah untuk menyimpan semua data secara bersamaan ke Database.</i>"
     )
 
     markup = InlineKeyboardMarkup(row_width=2)

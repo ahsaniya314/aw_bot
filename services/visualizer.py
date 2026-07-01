@@ -1,10 +1,6 @@
 import io
-import os
-from datetime import datetime
 
 import matplotlib.pyplot as plt
-
-from core.master_data import format_rupiah
 
 
 def generate_dashboard_chart(dashboard_data):

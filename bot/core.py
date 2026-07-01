@@ -9,9 +9,6 @@ Last Updated: May 9, 2026
 
 import logging
 import os
-import threading
-import time
-import traceback
 from datetime import datetime
 from pathlib import Path
 
@@ -19,7 +16,6 @@ os.environ.setdefault("FLAGS_use_mkldnn", "0")
 os.environ.setdefault("FLAGS_use_onednn", "0")
 os.environ.setdefault("FLAGS_use_oneDNN", "0")
 
-import schedule
 import telebot
 from dotenv import load_dotenv
 
@@ -68,7 +64,6 @@ if not TELEGRAM_BOT_TOKEN:
 
 from requests.exceptions import ConnectionError as RequestsConnectionError
 from requests.exceptions import RequestException
-from telebot.apihelper import ApiTelegramException
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 

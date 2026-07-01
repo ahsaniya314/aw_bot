@@ -390,7 +390,7 @@ def load_session_db(chat_id):
     except Exception as e:
         if "bot_sessions" in str(e):
             logger.warning(
-                f"[NOTICE] Menggunakan sesi RAM lokal karena tabel 'bot_sessions' belum dibuat di Supabase."
+                "[NOTICE] Menggunakan sesi RAM lokal karena tabel 'bot_sessions' belum dibuat di Supabase."
             )
         else:
             logger.error(f"Gagal memuat sesi chat {chat_id}: {e}")

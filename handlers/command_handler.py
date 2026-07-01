@@ -1,6 +1,7 @@
 """
 Command Handlers — /start, /help, /dashboard, /master_barang, /master_metode
 """
+
 import ipaddress
 import logging
 import os
@@ -10,8 +11,7 @@ from urllib.parse import urlparse
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from core.bot_context import ctx
-from handlers.handler_dashboard import tangani_dashboard_harian
-from utils.security import authorized_only, safe_edit_message
+from utils.security import authorized_only
 
 logger = logging.getLogger("bot_logger")
 

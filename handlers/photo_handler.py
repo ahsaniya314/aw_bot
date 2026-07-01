@@ -1,6 +1,7 @@
 """
 Photo Handler — OCR processing (simplified: only show extracted text)
 """
+
 import html
 import logging
 import os

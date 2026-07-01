@@ -1,9 +1,10 @@
 """
 Callback Handler - Settings (Pengaturan)
 """
+
 import logging
 
-from telebot.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
+from telebot.types import CallbackQuery
 
 from core.bot_context import ctx
 from core.master_data import get_all_barang

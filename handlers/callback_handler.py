@@ -2,6 +2,7 @@
 Callback Handler - Dispatcher (Router)
 Mengalihkan callback ke handler yang sesuai (Transaksi, Pengaturan, Dashboard)
 """
+
 import logging
 
 # Import sub-handlers
@@ -32,11 +33,11 @@ def handle_semua_tombol(call):
     # Logika Dispatching berdasarkan Prefix Callback
     if cmd.startswith(("mb_", "mm_", "ms_", "pick_metode")):
         # Master Barang, Master Metode, dan Master Satuan handlers
-        logger.info(f"[CALLBACK DEBUG] Routing to handle_pengaturan_callbacks")
+        logger.info("[CALLBACK DEBUG] Routing to handle_pengaturan_callbacks")
         handle_pengaturan_callbacks(call)
     elif cmd.startswith("dashboard_"):
         # Dashboard handlers
-        logger.info(f"[CALLBACK DEBUG] Routing to handle_dashboard_callbacks")
+        logger.info("[CALLBACK DEBUG] Routing to handle_dashboard_callbacks")
         handle_dashboard_callbacks(ctx.bot, call, ctx.db_transaksi, ctx.user_sessions)
     else:
         # Default fallback untuk transaksi, pick_*, dan lainnya

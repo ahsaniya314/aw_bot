@@ -10,7 +10,6 @@ Usage:
 
 import logging
 import os
-from pathlib import Path
 from typing import List, Optional
 
 from dotenv import load_dotenv

@@ -1,14 +1,14 @@
 """
 Callback Handler - Product (Barang) Management
 """
+
 import logging
 
-from telebot.types import CallbackQuery
+from telebot.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 
 from core.bot_context import ctx
 from core.master_data import get_all_barang
 from handlers.crud_barang import (
-    tangani_cek_harga_chat,
     tangani_hapus_barang_chat,
     tangani_set_harga_chat,
     tangani_tambah_barang_chat,
@@ -165,7 +165,10 @@ def register(bot):
 
             safe_edit_message(
                 bot,
-                f"💰 Berapa harga baru untuk <b>{target['nama']}</b> ({target['satuan']})?\n(Harga saat ini: <code>{format_rupiah(target['harga'])}</code>)",
+                (
+                    f"💰 Berapa harga baru untuk <b>{target['nama']}</b> ({target['satuan']})?\n"
+                    f"(Harga saat ini: <code>{format_rupiah(target['harga'])}</code>)"
+                ),
                 chat_id,
                 message_id,
                 parse_mode="HTML",
@@ -229,7 +232,10 @@ def register(bot):
 
             safe_edit_message(
                 bot,
-                f"💰 Berapa harga baru untuk <b>{h['nama']}</b> ({h['satuan']})?\n(Harga saat ini: <code>{format_rupiah(h['harga'])}</code>)",
+                (
+                    f"💰 Berapa harga baru untuk <b>{h['nama']}</b> ({h['satuan']})?\n"
+                    f"(Harga saat ini: <code>{format_rupiah(h['harga'])}</code>)"
+                ),
                 chat_id,
                 message_id,
                 parse_mode="HTML",
@@ -289,7 +295,12 @@ def register(bot):
 
                 safe_edit_message(
                     bot,
-                    f"✅ <b>HARGA BERHASIL DIUPDATE</b>\n━━━━━━━━━━━━━━━━━━━━━━\nHarga baru: {format_rupiah(harga_baru)}\nBarang yang diupdate: {count}",
+                    (
+                        "✅ <b>HARGA BERHASIL DIUPDATE</b>\n"
+                        "━━━━━━━━━━━━━━━━━━━━━━\n"
+                        f"Harga baru: {format_rupiah(harga_baru)}\n"
+                        f"Barang yang diupdate: {count}"
+                    ),
                     chat_id,
                     message_id,
                     parse_mode="HTML",
@@ -386,10 +397,14 @@ def register(bot):
             )
             safe_edit_message(
                 bot,
-                f"🗑️ <b>KONFIRMASI HAPUS BARANG</b>\n━━━━━━━━━━━━━━━━━━━━━━\n"
-                f"Apakah Anda yakin ingin menghapus barang ini dari Master Data?\n\n"
-                f"📦 <b>Nama:</b> {target['nama']}\n💰 <b>Harga:</b> <code>{format_rupiah(target['harga'])}</code>\n"
-                f"📐 <b>Satuan:</b> {target['satuan']}\n",
+                (
+                    "🗑️ <b>KONFIRMASI HAPUS BARANG</b>\n"
+                    "━━━━━━━━━━━━━━━━━━━━━━\n"
+                    "Apakah Anda yakin ingin menghapus barang ini dari Master Data?\n\n"
+                    f"📦 <b>Nama:</b> {target['nama']}\n"
+                    f"💰 <b>Harga:</b> <code>{format_rupiah(target['harga'])}</code>\n"
+                    f"📐 <b>Satuan:</b> {target['satuan']}\n"
+                ),
                 chat_id,
                 message_id,
                 parse_mode="HTML",
@@ -421,7 +436,7 @@ def register(bot):
 
             row_idx = int(row_idx_str)
 
-            from core.master_data import format_rupiah, get_all_barang, hapus_barang
+            from core.master_data import get_all_barang, hapus_barang
 
             # Get barang details before deleting
             semua = get_all_barang(ctx.db_barang)
@@ -482,10 +497,14 @@ def register(bot):
             )
             safe_edit_message(
                 bot,
-                f"🗑️ <b>KONFIRMASI HAPUS BARANG</b>\n━━━━━━━━━━━━━━━━━━━━━━\n"
-                f"Apakah Anda yakin ingin menghapus barang ini dari Master Data?\n\n"
-                f"📦 <b>Nama:</b> {hasil['nama']}\n💰 <b>Harga:</b> <code>{format_rupiah(hasil['harga'])}</code>\n"
-                f"📐 <b>Satuan:</b> {hasil['satuan']}\n",
+                (
+                    "🗑️ <b>KONFIRMASI HAPUS BARANG</b>\n"
+                    "━━━━━━━━━━━━━━━━━━━━━━\n"
+                    "Apakah Anda yakin ingin menghapus barang ini dari Master Data?\n\n"
+                    f"📦 <b>Nama:</b> {hasil['nama']}\n"
+                    f"💰 <b>Harga:</b> <code>{format_rupiah(hasil['harga'])}</code>\n"
+                    f"📐 <b>Satuan:</b> {hasil['satuan']}\n"
+                ),
                 chat_id,
                 message_id,
                 parse_mode="HTML",
