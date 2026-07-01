@@ -52,6 +52,7 @@ dependencies = [
     "SQLAlchemy>=1.4.31,<2.0.0",
     
     # Image Processing & OCR (Mistral only)
+    "numpy<2",
     "Pillow==10.1.0",
     
     # Scheduler
