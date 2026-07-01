@@ -2,6 +2,7 @@ import logging
 import re
 
 from core.master_data import MASTER_BARANG_CATALOG, get_all_barang, get_all_satuan
+from nlp.embedded_data import NORMALIZATION_DICT
 
 logger = logging.getLogger(__name__)
 
