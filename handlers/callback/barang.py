@@ -543,7 +543,9 @@ def register(bot):
             target = next((b for b in semua if b["row_idx"] == row_idx), None)
 
             if not target:
-                bot.answer_callback_query(call.id, "❌ Data barang tidak ditemukan", show_alert=True)
+                bot.answer_callback_query(
+                    call.id, "❌ Data barang tidak ditemukan", show_alert=True
+                )
                 return
 
             # Update price
