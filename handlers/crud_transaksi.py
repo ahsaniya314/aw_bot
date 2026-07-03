@@ -56,6 +56,12 @@ def tangani_read_data(chat_id, message_id_target):
 
     f_nama = entitas.get("NAMA")
     f_tanggal = entitas.get("TANGGAL")
+    # Handle special keywords for current date
+    if isinstance(f_tanggal, str):
+        lowered = f_tanggal.strip().lower()
+        if lowered in ["hari ini", "today"]:
+            f_tanggal = datetime.now().strftime("%d-%m-%Y")
+            entitas["TANGGAL"] = f_tanggal
     f_status = entitas.get("STATUS")
     f_barang = entitas.get("BARANG")
     f_harga = entitas.get("HARGA")  # Ambil filter harga
