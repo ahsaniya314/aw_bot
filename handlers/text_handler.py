@@ -12,6 +12,8 @@ from core.master_data import (
     cari_harga_default,
     format_rupiah,
     get_all_barang,
+    get_current_date_wib,
+    get_current_datetime_wib,
     normalisasi_tanggal_gs,
     parse_rupiah,
     tambah_barang,
@@ -148,12 +150,12 @@ def _extract_fast_date(text):
     if not raw:
         return None
     if "hari ini" in raw:
-        return datetime.now().strftime("%d-%m-%Y")
+        return get_current_date_wib()
     if "kemarin" in raw or "kemaren" in raw:
         try:
             from datetime import timedelta
 
-            return (datetime.now() - timedelta(days=1)).strftime("%d-%m-%Y")
+            return (get_current_datetime_wib() - timedelta(days=1)).strftime("%d-%m-%Y")
         except Exception:
             return None
     m = _BATCH_DATE_RE.search(raw)

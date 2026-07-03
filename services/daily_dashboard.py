@@ -5,7 +5,7 @@ Module untuk menampilkan dashboard harian: total uang masuk dan tunggakan hari i
 
 from datetime import datetime
 
-from core.master_data import format_rupiah, normalisasi_tanggal_gs, parse_rupiah
+from core.master_data import format_rupiah, get_current_date_wib, normalisasi_tanggal_gs, parse_rupiah
 from database import db_client
 
 
@@ -176,7 +176,7 @@ def get_dashboard_harian(db_transaksi, target_date=None):
     Mengambil data dashboard untuk hari ini.
     """
     if not target_date:
-        target_date = datetime.now().strftime("%d-%m-%Y")
+        target_date = get_current_date_wib()
     return get_dashboard_data_core(db_transaksi, target_date)
 
 

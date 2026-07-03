@@ -13,6 +13,8 @@ from core.bot_context import ctx
 from core.master_data import (
     cari_harga_default,
     format_rupiah,
+    get_current_date_wib,
+    get_current_datetime_wib,
     normalisasi_tanggal_gs,
     parse_rupiah,
 )
@@ -60,7 +62,7 @@ def tangani_read_data(chat_id, message_id_target):
     if isinstance(f_tanggal, str):
         lowered = f_tanggal.strip().lower()
         if lowered in ["hari ini", "today"]:
-            f_tanggal = datetime.now().strftime("%d-%m-%Y")
+            f_tanggal = get_current_date_wib()
             entitas["TANGGAL"] = f_tanggal
     f_status = entitas.get("STATUS")
     f_barang = entitas.get("BARANG")
@@ -1689,7 +1691,7 @@ def tangani_simpan_transaksi(chat_id, message_id_target):
     ent = sess["entitas"]
     safe_edit_message(ctx.bot, "⏳ Sedang menyimpan transaksi...", chat_id, message_id_target)
 
-    hari_ini_str = datetime.now().strftime("%d-%m-%Y")
+    hari_ini_str = get_current_date_wib()
 
     try:
         nama_pelanggan = ent.get("NAMA") or "Tanpa Nama"
@@ -1896,7 +1898,7 @@ def tangani_simpan_multi(chat_id, message_id_target):
         message_id_target,
     )
 
-    hari_ini_str = datetime.now().strftime("%d-%m-%Y")
+    hari_ini_str = get_current_date_wib()
 
     try:
         # Asumsikan bulk ini adalah pesanan dari 1 pelanggan yang sama (berdasarkan item pertama)

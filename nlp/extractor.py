@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 from rapidfuzz import fuzz, process
 
-from core.master_data import MASTER_BARANG_CATALOG, format_rupiah
+from core.master_data import MASTER_BARANG_CATALOG, format_rupiah, get_current_datetime_wib
 from nlp.dictionaries import (
     DAFTAR_KATA_KUNCI,
     KAMUS_ALIAS,
@@ -196,7 +196,7 @@ def ekstrak_entitas(
     Mendeteksi entitas dari kalimat pengguna menggunakan rule-based dan Regex.
     Nantinya direplace oleh indobert token-classification.
     """
-    hari_ini = datetime.now()
+    hari_ini = get_current_datetime_wib()
 
     # TAHAP 0: Slang Preprocessor — Normalisasi singkatan gaul SEBELUM analisis apapun
     bulan_dict = {
@@ -421,7 +421,7 @@ def ekstrak_entitas(
     for pattern, replacement in slang_map.items():
         teks_prenorm = re.sub(pattern, replacement, teks_prenorm)
 
-    hari_ini = datetime.now()
+    hari_ini = get_current_datetime_wib()
     teks_lower = teks_prenorm  # Untuk deteksi BARANG (sudah dikoreksi typo + slang)
     teks_asli_lower = (
         teks_asli or teks_koreksi

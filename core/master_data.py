@@ -199,10 +199,35 @@ def format_daftar_master_barang_grouped(semua_barang):
     return teks
 
 
+def get_current_datetime_wib():
+    """
+    Mengembalikan datetime saat ini dengan timezone Asia/Jakarta (WIB).
+    """
+    try:
+        from zoneinfo import ZoneInfo
+        tz = ZoneInfo("Asia/Jakarta")
+        return datetime.now(tz)
+    except ImportError:
+        try:
+            import pytz
+            tz = pytz.timezone("Asia/Jakarta")
+            return datetime.now(tz)
+        except ImportError:
+            # Fallback to system time
+            return datetime.now()
+
+def get_current_date_wib():
+    """
+    Mengembalikan tanggal saat ini dalam format DD-MM-YYYY dengan timezone Asia/Jakarta (WIB).
+    """
+    return get_current_datetime_wib().strftime("%d-%m-%Y")
+
+
 def normalisasi_tanggal_gs(tgl_str):
     """
     Normalisasi tanggal dari berbagai format (teks, slash, titik) ke format standar DD-MM-YYYY.
     Mendukung input: '21 april 2026', '21/04/2026', '21.04.26', 'kemarin', 'besok', dll.
+    Menggunakan timezone Asia/Jakarta (WIB).
     """
     if not tgl_str:
         return ""
@@ -210,7 +235,7 @@ def normalisasi_tanggal_gs(tgl_str):
     if not tgl_norm:
         return ""
 
-    hari_ini = datetime.now()
+    hari_ini = get_current_datetime_wib()
 
     teks_clean = re.sub(r"\s+", " ", tgl_norm).strip()
     if any(k in teks_clean for k in ["hari ini", "hariini", "hr ini", "hri ini", "today"]):

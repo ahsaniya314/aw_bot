@@ -17,7 +17,7 @@ Logika Bisnis:
 
 from datetime import datetime
 
-from core.master_data import format_rupiah, parse_rupiah
+from core.master_data import format_rupiah, get_current_date_wib, parse_rupiah
 from database import db_client
 
 
@@ -170,7 +170,7 @@ def proses_bayar_tambahan(
 
         # Catat ke Histori Pelunasan (only if db_histori or db_client available)
         try:
-            tgl_bayar = datetime.now().strftime("%d-%m-%Y")
+            tgl_bayar = get_current_date_wib()
             keterangan = catatan or f"Cicilan {format_rupiah(nominal_bayar)}"
 
             histori_data = {

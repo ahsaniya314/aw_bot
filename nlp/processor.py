@@ -1,6 +1,7 @@
 import re
 from datetime import datetime, timedelta
 
+from core.master_data import get_current_datetime_wib
 from nlp.dictionaries import KAMUS_ALIAS
 from nlp.extractor import ekstrak_entitas, tentukan_intent
 from nlp.normalizer import koreksi_teks
@@ -676,11 +677,11 @@ def parse_multi_item_with_status(teks_user, daftar_barang=None):
     # Cari tanggal
     tanggal = None
     if "hari ini" in order_section or "hari ni" in order_section:
-        tanggal = datetime.now().strftime("%d-%m-%Y")
+        tanggal = get_current_datetime_wib().strftime("%d-%m-%Y")
     elif "kemarin" in order_section:
-        tanggal = (datetime.now() - timedelta(days=1)).strftime("%d-%m-%Y")
+        tanggal = (get_current_datetime_wib() - timedelta(days=1)).strftime("%d-%m-%Y")
     elif "besok" in order_section:
-        tanggal = (datetime.now() + timedelta(days=1)).strftime("%d-%m-%Y")
+        tanggal = (get_current_datetime_wib() + timedelta(days=1)).strftime("%d-%m-%Y")
 
     # Step 3: Parse daftar barang dari order_section
     # Hapus konteks (tanggal, nama, kata kerja) dari order_section untuk mendapat list barang

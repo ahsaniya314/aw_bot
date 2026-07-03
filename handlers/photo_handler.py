@@ -12,7 +12,7 @@ from time import perf_counter
 from rapidfuzz import fuzz, process
 
 from core.bot_context import ctx
-from core.master_data import cari_harga_default, format_rupiah, parse_rupiah
+from core.master_data import cari_harga_default, format_rupiah, get_current_date_wib, parse_rupiah
 from handlers.command_handler import build_reply_keyboard
 from nlp.normalizer import koreksi_teks
 from nlp.processor import proses_nlp
@@ -702,7 +702,7 @@ def _extract_payment_entries(blocks, daftar_b=None):
                 continue
             entries.append(
                 {
-                    "date": date_disp or datetime.now().strftime("%d-%m-%Y"),
+                    "date": date_disp or get_current_date_wib(),
                     "name": name,
                     "amount": amount,
                     "method": metode,
@@ -723,7 +723,7 @@ def _build_structured_nlp_input(ocr_text, daftar_b=None):
     sales_entries = []
 
     for block in blocks:
-        date_disp = _to_display_date(block.get("date")) or datetime.now().strftime("%d-%m-%Y")
+        date_disp = _to_display_date(block.get("date")) or get_current_date_wib()
         lines = block.get("lines") or []
         name = _extract_block_name(lines, daftar_b=daftar_b)
         metode = _extract_block_method(lines)
@@ -916,7 +916,7 @@ def _build_pelunasan_results_from_payment_entries(payment_entries):
         if amount <= 0:
             continue
         ent = {
-            "TANGGAL": payload.get("date") or datetime.now().strftime("%d-%m-%Y"),
+            "TANGGAL": payload.get("date") or get_current_date_wib(),
             "NAMA": name,
             "AKSI": "Catat Pelunasan",
             "STATUS": "Dicicil",
@@ -1093,7 +1093,7 @@ def _proses_hasil_ocr_ke_nlp(chat_id, message_id_target, ocr_text):
                             pass
 
             if not gabungan.get("TANGGAL") and not gabungan.get("SEMUA"):
-                gabungan["TANGGAL"] = datetime.now().strftime("%d-%m-%Y")
+                gabungan["TANGGAL"] = get_current_date_wib()
             if _is_placeholder_name(gabungan.get("NAMA")):
                 gabungan["NAMA"] = fallback_name
 
