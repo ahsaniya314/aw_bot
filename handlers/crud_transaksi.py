@@ -146,6 +146,9 @@ def tangani_read_data(chat_id, message_id_target):
         if f_tanggal:
             if len(f_tanggal) == 7 and "-" in f_tanggal:
                 filters.append({"kolom": "tanggal", "nilai": f_tanggal, "operator": "ilike"})
+            elif len(f_tanggal) == 10 and "-" in f_tanggal:  # Full DD-MM-YYYY date
+                date_exact = True
+                filters.append({"kolom": "tanggal", "nilai": f_tanggal, "operator": "ilike"})
             else:
                 date_exact = True
                 ddmm = str(f_tanggal)[:5]
@@ -538,6 +541,9 @@ def tangani_delete_data(chat_id, message_id_target):
             filters_no_date.append(f)
         if f_tanggal:
             if len(f_tanggal) == 7 and "-" in f_tanggal:
+                filters.append({"kolom": "tanggal", "nilai": f_tanggal, "operator": "ilike"})
+            elif len(f_tanggal) == 10 and "-" in f_tanggal:  # Full DD-MM-YYYY date
+                date_exact = True
                 filters.append({"kolom": "tanggal", "nilai": f_tanggal, "operator": "ilike"})
             else:
                 date_exact = True
