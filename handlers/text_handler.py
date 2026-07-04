@@ -491,8 +491,13 @@ def handle_text_message(message):
     ]
     tombol_panduan = ["📘 Panduan", "PANDUAN", "GUIDE", "BUKU PANDUAN"]
     tombol_bantuan = ["❓ Bantuan", "BANTUAN", "HELP"]
+    tombol_restart = ["🔄 Restart", "RESTART", "MULAI ULANG"]
 
-    if teks_clean in tombol_menu or teks_upper in [t.upper() for t in tombol_menu]:
+    if teks_clean in tombol_restart or teks_upper in [t.upper() for t in tombol_restart]:
+        from handlers.command_handler import send_welcome
+        send_welcome(message)
+        return
+    elif teks_clean in tombol_menu or teks_upper in [t.upper() for t in tombol_menu]:
         cmd_menu(message)
         return
     elif teks_clean in tombol_catat or teks_upper in [t.upper() for t in tombol_catat]:

@@ -244,7 +244,7 @@ def build_reply_keyboard():
     markup.add(KeyboardButton("📘 Panduan"), KeyboardButton("🔎 Cari Pesanan"))
     markup.add(KeyboardButton("📑 Riwayat"), KeyboardButton("🌐 Dasbor Web"))
     markup.add(KeyboardButton("💰 Cek Hutang"), KeyboardButton("📐 Kelola Satuan"))
-    markup.add(KeyboardButton("📦 Kelola Barang"))
+    markup.add(KeyboardButton("📦 Kelola Barang"), KeyboardButton("🔄 Restart"))
     return markup
 
 
