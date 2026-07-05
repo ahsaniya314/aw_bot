@@ -1,5 +1,6 @@
 import logging
 import re
+import html
 from time import perf_counter
 
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
@@ -19,7 +20,37 @@ _TELEGRAM_MSG_LIMIT = 4096
 def _truncate_telegram_html(text, max_len=_TELEGRAM_MSG_LIMIT - 120):
     if not text or len(text) <= max_len:
         return text
-    return text[:max_len].rstrip() + "\n\n<i>... (pesan dipotong — gunakan tombol halaman)</i>"
+
+    truncated = text[:max_len]
+    tag_regex = re.compile(r'</?([a-zA-Z0-9]+)\b[^>]*>')
+    open_tags = []
+
+    for match in tag_regex.finditer(truncated):
+        full_tag = match.group(0)
+        tag_name = match.group(1).lower()
+        if full_tag.startswith('</'):
+            if open_tags and open_tags[-1] == tag_name:
+                open_tags.pop()
+        elif not full_tag.endswith('/>'):
+            open_tags.append(tag_name)
+
+    last_lt = truncated.rfind('<')
+    last_gt = truncated.rfind('>')
+    if last_lt > last_gt:
+        truncated = truncated[:last_lt]
+        open_tags = []
+        for match in tag_regex.finditer(truncated):
+            full_tag = match.group(0)
+            tag_name = match.group(1).lower()
+            if full_tag.startswith('</'):
+                if open_tags and open_tags[-1] == tag_name:
+                    open_tags.pop()
+            elif not full_tag.endswith('/>'):
+                open_tags.append(tag_name)
+
+    close_tags = ''.join(f'</{tag}>' for tag in reversed(open_tags))
+    return truncated.rstrip() + close_tags + "\n\n<i>... (pesan dipotong — gunakan tombol halaman)</i>"
+
 
 
 def apply_batch_financials(results, batch_payment_total=None):
@@ -181,12 +212,12 @@ def kirim_halaman_read(chat_id, page=1, message_id_to_edit=None, call_id=None):
                 else ""
             )
             layout = (
-                f"👤 <b>Pelanggan:</b> {item['Nama']}\n"
-                f"📅 <b>Tanggal:</b> {item['Tgl']}\n"
-                f"🛒 <b>Item:</b> {item['Jml']} {item['Brg']}\n"
+                f"👤 <b>Pelanggan:</b> {html.escape(str(item['Nama'] or ''))}\n"
+                f"📅 <b>Tanggal:</b> {html.escape(str(item['Tgl'] or ''))}\n"
+                f"🛒 <b>Item:</b> {html.escape(str(item['Jml'] or ''))} {html.escape(str(item['Brg'] or ''))}\n"
                 f"{baris_harga_read}"
                 f"💵 <b>Total:</b> <code>{item['Total']}</code>\n"
-                f"📊 <b>Status:</b> {emo_bayar} {item['Status']}\n"
+                f"📊 <b>Status:</b> {emo_bayar} {html.escape(str(item['Status'] or ''))}\n"
                 f"{baris_metode_read}"
                 f"{baris_tagihan_read}"
                 f"{baris_uang_masuk_read}"

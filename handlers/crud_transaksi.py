@@ -3,6 +3,7 @@ CRUD Transaksi — read, delete, update, pelunasan, revisi manual, simpan multi
 """
 
 import logging
+import html
 import math
 import re
 from datetime import datetime
@@ -346,7 +347,7 @@ def tangani_read_data(chat_id, message_id_target):
 
         # --- LOGIKA KHUSUS: TAGIHAN PER ORANG (Spesifik) ---
         if f_nama and konteks_agregasi in ["Total Tunggakan", "Total Transaksi"] and not f_semua:
-            ringkasan_teks = f"👤 <b>LAPORAN TAGIHAN: {f_nama.upper()}</b>\n"
+            ringkasan_teks = f"👤 <b>LAPORAN TAGIHAN: {html.escape(f_nama.upper())}</b>\n"
             ringkasan_teks += "━━━━━━━━━━━━━━━━━━━━━━\n"
 
             # Gunakan pencocokan nama yang lebih fleksibel daripada dictionary key lookup langsung
@@ -405,7 +406,7 @@ def tangani_read_data(chat_id, message_id_target):
                     )
 
                 if top_name:
-                    ringkasan_teks += f"🏆 <b>Top Buyer:</b> {top_name}\n"
+                    ringkasan_teks += f"🏆 <b>Top Buyer:</b> {html.escape(top_name)}\n"
 
                 ringkasan_teks += "━━━━━━━━━━━━━━━━━━━━━━\n"
 
@@ -413,7 +414,7 @@ def tangani_read_data(chat_id, message_id_target):
                 ringkasan_teks += "👤 <b>TOP PELANGGAN (Berdasarkan Nominal)</b>\n"
                 for i, (nama, stats) in enumerate(list(pelanggan_stats.items())[:5], 1):
                     medali = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else "👤"
-                    ringkasan_teks += f"{medali} <b>{nama}</b>: <code>{format_rupiah(stats['total'])}</code> ({stats['count']} trx)\n"
+                    ringkasan_teks += f"{medali} <b>{html.escape(nama)}</b>: <code>{format_rupiah(stats['total'])}</code> ({stats['count']} trx)\n"
 
                 ringkasan_teks += "\n📈 <b>Total Akumulasi Filter</b>\n"
                 ringkasan_teks += (
@@ -441,7 +442,7 @@ def tangani_read_data(chat_id, message_id_target):
                 )
                 for i, (nama, stats) in enumerate(top_debitors[:10], 1):
                     ringkasan_teks += (
-                        f"{i}. <b>{nama}</b>: <code>{format_rupiah(stats['tagihan'])}</code>\n"
+                        f"{i}. <b>{html.escape(nama)}</b>: <code>{format_rupiah(stats['tagihan'])}</code>\n"
                     )
         elif konteks_agregasi == "Summary Uang Masuk" or konteks_agregasi == "Uang Masuk":
             ringkasan_teks += "📥 <b>LAPORAN UANG MASUK (KAS)</b>\n"
@@ -486,7 +487,7 @@ def tangani_read_data(chat_id, message_id_target):
             ringkasan_teks += "━━━━━━━━━━━━━━━━━━━━━━\n"
             for nama, stats in pelanggan_stats.items():
                 ringkasan_teks += (
-                    f"👤 <b>{nama}</b>: <code>{format_rupiah(stats['tagihan'])}</code>\n"
+                    f"👤 <b>{html.escape(nama)}</b>: <code>{format_rupiah(stats['tagihan'])}</code>\n"
                 )
 
     ringkasan_teks += "━━━━━━━━━━━━━━━━━━━━━━\n\n"
