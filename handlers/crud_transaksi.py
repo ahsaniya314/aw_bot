@@ -206,7 +206,8 @@ def tangani_read_data(chat_id, message_id_target):
                     continue
             match_list.append(_build_read_match_item(r))
             # Tetap simpan mapping untuk kompatibilitas jika masih ada fungsi lama
-            ctx.db_transaksi.row_mapping[len(match_list)] = r["id"]
+            if ctx.db_transaksi:
+                ctx.db_transaksi.row_mapping[len(match_list)] = r["id"]
 
         if date_exact and f_tanggal and len(match_list) == 0:
             raw_data = (
@@ -219,7 +220,8 @@ def tangani_read_data(chat_id, message_id_target):
                 if not tgl_db or (f_tanggal != tgl_db):
                     continue
                 match_list.append(_build_read_match_item(r))
-                ctx.db_transaksi.row_mapping[len(match_list)] = r["id"]
+                if ctx.db_transaksi:
+                    ctx.db_transaksi.row_mapping[len(match_list)] = r["id"]
 
     except Exception as e:
         safe_edit_message(
@@ -599,7 +601,8 @@ def tangani_delete_data(chat_id, message_id_target):
                 }
             )
             # Simpan mapping ID untuk operasi delete
-            ctx.db_transaksi.row_mapping[r["id"]] = r["id"]
+            if ctx.db_transaksi:
+                ctx.db_transaksi.row_mapping[r["id"]] = r["id"]
 
         if date_exact and f_tanggal and len(match_list) == 0:
             raw_data = (
@@ -634,8 +637,9 @@ def tangani_delete_data(chat_id, message_id_target):
                         "barang": barang_gs,
                         "tanggal": tgl_gs,
                         "row_full": row,
-                    }
-                )
+                }
+            )
+            if ctx.db_transaksi:
                 ctx.db_transaksi.row_mapping[r["id"]] = r["id"]
 
     except Exception as e:

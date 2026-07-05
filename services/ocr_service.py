@@ -103,10 +103,7 @@ class OCRService:
         # Step 2: Fix missing slash: ".contoh" → "./contoh"
         sanitized = re.sub(r"^\.([^\./\\])", r"./\1", sanitized)
 
-        # Step 3: Remove any extra spaces
-        sanitized = sanitized.replace(" ", "")
-
-        # Step 4: Normalize the path
+        # Step 3: Normalize the path
         sanitized = os.path.normpath(sanitized)
 
         return sanitized
