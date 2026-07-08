@@ -1342,11 +1342,11 @@ def ekstrak_entitas(
         nb = str(nama_barang or "").strip().lower()
         if "generik" in nb:
             return True
-        return nb in {"permen", "serbuk", "roti pia", "roti/pia", "roti", "pia"}
+        return nb in {"permen", "serbuk", "roti pia", "roti/pia", "roti", "pia", "lolipop"}
 
     def _is_generic_barang_keyword(keyword):
         kk = str(keyword or "").strip().lower()
-        return kk in {"permen", "roti", "pia", "serbuk"}
+        return kk in {"permen", "roti", "pia", "serbuk", "lolipop"}
 
     # 1. PRIORITAS: Cek dari Master Data (Daftar Barang resmi)
     if daftar_barang:
@@ -1468,39 +1468,40 @@ def ekstrak_entitas(
 
     # Hindari menafsirkan angka tanggal seperti '04 april' sebagai jumlah.
     date_like_pattern = re.compile(
-        r"\b(?:0?[1-9]|[12][0-9]|3[01])\s+(?:januari|jan|februari|feb|maret|mar|april|apr|mei|juni|jun|juli|jul|agustus|agu|agus|september|sep|oktober|okt|november|nov|nop|desember|des)\b",
+        r"\b(?:0?[1-9]|[12][0-9]|3[01])\s+(?:januari|jan|februari|feb|maret|mar|april|apr|mei|juni|jun|juli|jul|agustus|agu|agus|september|sep|oktober|okt|november|nov|nop|desember|des)(?:\s+\d{2,4})?\b",
         re.IGNORECASE,
     )
     teks_qty_for_quantity = teks_qty
     if date_like_pattern.search(teks_qty):
-        teks_qty_for_quantity = re.sub(
-            r"\b(?:0?[1-9]|[12][0-9]|3[01])\s+(?:januari|jan|februari|feb|maret|mar|april|apr|mei|juni|jun|juli|jul|agustus|agu|agus|september|sep|oktober|okt|november|nov|nop|desember|des)\b",
-            "",
-            teks_qty,
-            flags=re.IGNORECASE,
-        )
+        teks_qty_for_quantity = date_like_pattern.sub("", teks_qty)
 
     # Cari angka + kata apapun (kemudian kita cek fuzzy match satuan)
-    match_jumlah_satuan = re.search(
-        r"(\d+)\s*([a-zA-Z]+)\b",
-        teks_qty_for_quantity,
-    )
-    if match_jumlah_satuan:
-        jumlah = match_jumlah_satuan.group(1)
-        satuan_candidate = match_jumlah_satuan.group(2)
-
-        # Coba fuzzy match satuan candidate dengan VALID_UNITS
+    jumlah_satuan_match = None
+    for m in re.finditer(r"(\d+)\s*([a-zA-Z]+)\b", teks_qty_for_quantity):
+        jumlah_candidate = m.group(1)
+        satuan_candidate = m.group(2)
+        if len(jumlah_candidate) == 4 and jumlah_candidate.isdigit():
+            year_val = int(jumlah_candidate)
+            if 1900 <= year_val <= 2100:
+                continue
         satuan_fuzzy = fuzzy_match_satuan(satuan_candidate)
-
         if satuan_fuzzy:
-            satuan_detected = satuan_fuzzy
-            # Standardize units for consistency
+            jumlah_satuan_match = (jumlah_candidate, satuan_fuzzy)
+            break
+        # Jika tidak ada satuan yang valid, jangan gunakan angka tahun/tanggal sebagai jumlah.
+        if int(jumlah_candidate) < 1000:
+            jumlah_satuan_match = (jumlah_candidate, None)
+            break
+
+    if jumlah_satuan_match:
+        jumlah, satuan_candidate = jumlah_satuan_match
+        if satuan_candidate:
+            satuan_detected = satuan_candidate
             if satuan_detected == "bks":
                 satuan_detected = "bungkus"
             entitas["JUMLAH"] = f"{jumlah} {satuan_detected}"
             entitas["SATUAN"] = satuan_detected
         else:
-            # Jika fuzzy match gagal, hanya tetapkan jumlah tanpa satuan
             entitas["JUMLAH"] = jumlah
     else:
         # Deteksi satuan tanpa angka di depannya (hanya untuk CRUD barang/aksi set harga/tambah barang)
@@ -1546,6 +1547,9 @@ def ekstrak_entitas(
                 for num in angka_murni:
                     # Abaikan jika itu tahun sekarang atau tahun depan/lalu
                     if num in [str(hari_ini.year), str(hari_ini.year - 1), str(hari_ini.year + 1)]:
+                        continue
+                        # Abaikan angka tahun apa pun (misalnya 2026) agar tidak menjadi jumlah.
+                    if len(num) == 4 and num.isdigit() and 1900 <= int(num) <= 2100:
                         continue
                     # Abaikan jika angka tersebut sudah terdeteksi di tanggal (DD-MM-YYYY)
                     if entitas["TANGGAL"] and num in entitas["TANGGAL"]:
