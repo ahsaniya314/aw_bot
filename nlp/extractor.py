@@ -1571,8 +1571,9 @@ def ekstrak_entitas(
 
     # E. HARGA & TOTAL
     # Lebih fleksibel: Cari angka setelah kata kunci harga/total, meskipun ada kata barang di antaranya
+    # PERBAIKAN: Gunakan word boundary \b di depan kata kunci agar tidak match substring (misal: "per" dalam "siper")
     match_harga = re.search(
-        r"(?:harga|satuan|per)\b.*?\b(?:rp\s*)?([\d\.,]+(?:\s*(?:k|jt|juta|rb|ribu|jutaan))?)\b",
+        r"\b(?:harga|satuan|per)\b.*?\b(?:rp\s*)?([\d\.,]+(?:\s*(?:k|jt|juta|rb|ribu|jutaan))?)\b",
         teks_asli_lower,
     )
     if match_harga:
