@@ -164,6 +164,8 @@ class OCRService:
         if not base64_image:
             raise RuntimeError("Gagal encode gambar!")
 
+        logger.info(f"[OCR] Base64 image size: {len(base64_image)} chars")
+
         # Determine image type from extension
         ext = os.path.splitext(image_path)[1].lower()
         mime_type = "image/jpeg"
@@ -174,6 +176,8 @@ class OCRService:
         elif ext in [".webp"]:
             mime_type = "image/webp"
 
+        logger.info(f"[OCR] Using mime type: {mime_type}")
+
         image_url = f"data:{mime_type};base64,{base64_image}"
 
         url = "https://api.mistral.ai/v1/chat/completions"
@@ -182,7 +186,7 @@ class OCRService:
             "Content-Type": "application/json",
         }
         payload = {
-            "model": "pixtral-large-latest",
+            "model": "mistral-large-2512",
             "messages": [
                 {
                     "role": "user",
@@ -198,6 +202,10 @@ class OCRService:
             "temperature": 0,
             "max_tokens": 2048,
         }
+
+        logger.info(f"[OCR] Payload model: {payload['model']}")
+        logger.info(f"[OCR] Payload messages count: {len(payload['messages'])}")
+        logger.info(f"[OCR] Payload content items: {len(payload['messages'][0]['content'])}")
 
         import urllib3
 
@@ -227,10 +235,20 @@ class OCRService:
             except requests.exceptions.HTTPError as e:
                 last_error = e
                 logger.error(f"[OCR] Mistral HTTP Error: {e}")
-                # Coba cek response.text
+                # Coba cek response.text untuk detail error
                 try:
-                    error_detail = response.json() if response else str(e)
-                    raise RuntimeError(f"Mistral API Error: {error_detail}") from e
+                    if response:
+                        try:
+                            error_detail = response.json()
+                            logger.error(f"[OCR] Mistral error response: {error_detail}")
+                        except:
+                            error_detail = response.text
+                            logger.error(f"[OCR] Mistral error text: {error_detail}")
+                        raise RuntimeError(f"Mistral API Error: {response.status_code} - {error_detail}") from e
+                    else:
+                        raise RuntimeError(f"Mistral API Error: {str(e)}") from e
+                except RuntimeError:
+                    raise
                 except:
                     raise RuntimeError(f"Mistral API Error: {str(e)}") from e
             except Exception as e:
