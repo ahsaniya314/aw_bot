@@ -191,7 +191,7 @@ class OCRService:
                             "type": "text",
                             "text": "Extract all text from this receipt or document. Return only the extracted text, no explanations.",
                         },
-                        {"type": "image_url", "image_url": image_url},
+                        {"type": "image_url", "image_url": {"url": image_url}},
                     ],
                 }
             ],
