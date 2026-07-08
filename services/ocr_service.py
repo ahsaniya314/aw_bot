@@ -18,7 +18,7 @@ class OCRService:
         self.mistral_client = None
         self._disabled_reason = None
         self._last_debug = None
-        # OCRPreprocessor tidak digunakan (preprocessing disabled untuk Mistral OCR)
+        # TIDAK ADA PREPROCESSING, GAMBAR DIKIRIM LANGSUNG ASLI KE MISTRAL OCR
         self.http = requests.Session()
         self._ocr_result_cache = OrderedDict()
         logger.info("[OCR] Initializing OCR Service...")
@@ -134,6 +134,7 @@ class OCRService:
 
     def _encode_image_to_base64(self, image_path):
         try:
+            # GAMBAR DIENCODE ASLI TANPA PREPROCESSING APAPUN
             final_path = self._find_image_path(image_path)
             with open(final_path, "rb") as image_file:
                 return base64.b64encode(image_file.read()).decode("utf-8")
@@ -254,9 +255,8 @@ class OCRService:
             return False
 
     def _prepare_image_for_runtime_ocr(self, image_path):
-        # OpenCV preprocessing disabled – directly use original image
+        # GAMBAR DIKIRIM LANGSUNG ASLI KE MISTRAL OCR, TIDAK ADA PREPROCESSING APAPUN
         final_path = self._find_image_path(image_path)
-        # No resizing or re‑encoding is performed; the image will be sent as‑is to Mistral OCR
         return final_path, None
 
     def extract_text(self, image_path):

@@ -30,14 +30,17 @@ def koreksi_teks(teks_kotor, daftar_barang=None):
     teks_kotor = re.sub(r"([a-zA-Z])1([a-zA-Z]*)", r"\1l\2", teks_kotor)
 
     # PASS 3: Replace 0 and 1 in words
+    # Preserve numeric/date-like tokens that contain digits, hyphens, or other separators
+    # so strings like 06-2026 remain unchanged.
     words_pre = teks_kotor.split()
     normalized_words = []
     for w in words_pre:
-        if not w.isdigit():
-            w_normalized = w.replace("0", "o").replace("1", "l")
-            normalized_words.append(w_normalized)
-        else:
+        if w.isdigit() or re.search(r"\d", w):
             normalized_words.append(w)
+            continue
+
+        w_normalized = w.replace("0", "o").replace("1", "l")
+        normalized_words.append(w_normalized)
     teks_kotor = " ".join(normalized_words)
 
     # Kata-kata yang harus diabaikan dari normalisasi typo/abbreviation

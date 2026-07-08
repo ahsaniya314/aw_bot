@@ -34,6 +34,7 @@ from services.ui_transaksi import (
     susun_balasan_resume,
     susun_balasan_update,
     tampilkan_menu_kriteria_edit,
+    tampilkan_menu_kriteria_edit_multi,
 )
 from utils.helpers import hitung_ulang_total_dinamis
 from utils.security import (
@@ -1082,6 +1083,31 @@ Kelola database barang, metode pembayaran, serta lacak hutang dengan menekan tom
         markup.add(InlineKeyboardButton("🔙 Kembali", callback_data="btn_multi_edit_back"))
         markup.add(InlineKeyboardButton("❌ Batalkan", callback_data="btn_buang"))
         safe_edit_message(ctx.bot, teks, chat_id, msg_idx, parse_mode="HTML", reply_markup=markup)
+        return
+
+    if cmd.startswith("multi_pick_"):
+        safe_answer_callback_query(ctx.bot, call)
+        if chat_id not in ctx.user_sessions:
+            ctx.bot.answer_callback_query(
+                call.id,
+                "❌ Sesi kedaluwarsa. Silakan ulangi perintah.",
+                show_alert=True,
+            )
+            return
+
+        results = sess.get("multi_results") or []
+        try:
+            item_index = int(cmd.replace("multi_pick_", ""))
+        except Exception:
+            ctx.bot.answer_callback_query(call.id, "❌ Pilihan tidak valid.")
+            return
+
+        if item_index < 0 or item_index >= len(results):
+            ctx.bot.answer_callback_query(call.id, "❌ Item batch tidak ditemukan.")
+            return
+
+        mode = sess.get("multi_edit_mode", "all")
+        tampilkan_menu_kriteria_edit_multi(chat_id, msg_idx, item_index, mode=mode)
         return
 
     if cmd == "btn_buang":

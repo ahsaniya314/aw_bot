@@ -70,20 +70,21 @@ MASTER_BARANG_CATALOG = [
             {"nama": "Adangrow", "units": ["karton", "toples", "pouch"]},
             {"nama": "Miksu", "units": ["karton", "toples", "pouch"]},
             {"nama": "Getbory", "units": ["karton", "toples", "pouch"]},
+            {"nama": "Siper Queen", "units": ["karton", "toples"]},
         ],
     },
     {
         "kategori": "Roti/Pia",
         "items": [
-            {"nama": "Bulus", "units": ["pack", "bungkus"]},
-            {"nama": "Roda", "units": ["pack", "bungkus"]},
-            {"nama": "Potong", "units": ["pack", "bungkus"]},
+            {"nama": "Roti Pia (Bulus)", "units": ["pack", "bungkus"]},
+            {"nama": "Roti Pia (Roda)", "units": ["pack", "bungkus"]},
+            {"nama": "Roti Pia (Potong)", "units": ["pack", "bungkus"]},
         ],
     },
     {
         "kategori": "Serbuk",
         "items": [
-            {"nama": "Serbuk Biasa", "units": ["karton"]},
+            {"nama": "Serbuk", "units": ["karton"]},
             {"nama": "Serbuk Jelly", "units": ["karton"]},
         ],
     },
@@ -91,7 +92,7 @@ MASTER_BARANG_CATALOG = [
         "kategori": "Lainnya",
         "items": [
             {"nama": "Meses", "units": ["karton", "bungkus"]},
-            {"nama": "Brownis", "units": ["keranjang"]},
+            {"nama": "Brownis", "units": ["keranjang", "bungkus"]},
         ],
     },
 ]
@@ -700,12 +701,30 @@ def muat_metode_keywords(db_metode=None):
     Build dict {keyword_lower: nama_metode} dari tabel Master Metode.
     Digunakan oleh NLP processor untuk deteksi metode pembayaran dinamis.
     """
-    mapping = {}
-    for m in get_all_metode(db_metode):
-        if not m["keyword"]:
-            continue
-        for kw in m["keyword"].split(","):
-            kw = kw.strip().lower()
-            if kw:
-                mapping[kw] = m["nama"]
+    # Static fallback untuk metode pembayaran jika DB tidak tersedia
+    static_mapping = {
+        "cash": "Tunai", "tunai": "Tunai",
+        "transfer": "Transfer", "tf": "Transfer", "trf": "Transfer",
+        "transfer bank": "Transfer",
+        "transfer": "Transfer",
+    }
+    mapping = static_mapping.copy()
+
+    try:
+        semua_metode = []
+        try:
+            semua_metode = get_all_metode(db_metode)
+        except Exception as db_err:
+            print(f"Warning: Database tidak tersedia, menggunakan static mapping: {db_err}")
+
+        for m in semua_metode:
+            if not m.get("keyword"):
+                continue
+            for kw in m["keyword"].split(","):
+                kw = kw.strip().lower()
+                if kw:
+                    mapping[kw] = m["nama"]
+    except Exception as e:
+        print(f"Error loading metode keywords: {e}")
+
     return mapping

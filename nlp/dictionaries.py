@@ -35,7 +35,14 @@ KAMUS_ALIAS_STATIS = {
     "cholatos": "Cholatos",
     "miksu": "Miksu",
     "getbory": "Getbory",
+    "getbori": "Getbory",
     "siiperquuen": "Getbory",
+    # === SIPER QUEEN ===
+    "siper queen": "Siper Queen",
+    "siperqueen": "Siper Queen",
+    "siiper quuen": "Siper Queen",
+    "siiperquuen": "Siper Queen",
+    "sipper queen": "Siper Queen",
     # === PERMEN GENERIK ===
     "permen": "Lolipop",
     "permen toples": "Lolipop",
@@ -177,6 +184,8 @@ VALID_UNITS_STATIS = frozenset(
         "sachet",
         "lusin",
         "paket",
+        "pouch",
+        "keranjang",
     ]
 )
 
@@ -184,7 +193,7 @@ VALID_UNITS_STATIS = frozenset(
 def muat_kamus_alias():
     """
     Build KAMUS_ALIAS secara dinamis:
-    1. Load nama barang dari database
+    1. Load nama barang dari database (jika bisa)
     2. Tambahkan variasi nama (lowercase, tanpa spasi, dll.)
     3. Gabung dengan KAMUS_ALIAS_STATIS (fallback)
     """
@@ -192,14 +201,18 @@ def muat_kamus_alias():
     kamus = KAMUS_ALIAS_STATIS.copy()
 
     try:
-        # Load semua barang dari database
-        semua_barang = get_all_barang()
+        # Load semua barang dari database (jika tersedia)
+        semua_barang = []
+        try:
+            semua_barang = get_all_barang()
+        except Exception as db_err:
+            logger.warning(f"Database tidak tersedia, menggunakan MASTER_BARANG_CATALOG saja: {db_err}")
 
         for barang in semua_barang:
             nama_barang = barang["nama"].strip()
             nama_lower = nama_barang.lower()
 
-            # Tambahkan mapping dasar (nama_lower → nama_barang)
+            # Tambahkan mapping dasar (nama_lower -> nama_barang)
             if nama_lower not in kamus:
                 kamus[nama_lower] = nama_barang
 
@@ -208,16 +221,19 @@ def muat_kamus_alias():
             if nama_tanpa_spasi not in kamus and nama_tanpa_spasi != nama_lower:
                 kamus[nama_tanpa_spasi] = nama_barang
 
-        # Tambahkan juga dari MASTER_BARANG_CATALOG
+    except Exception as e:
+        logger.error(f"Error loading KAMUS_ALIAS: {e}")
+
+    # Pastikan MASTER_BARANG_CATALOG ditambahkan meskipun DB gagal
+    try:
         for group in MASTER_BARANG_CATALOG:
             for item in group.get("items", []):
                 nama_item = item["nama"].strip()
                 nama_item_lower = nama_item.lower()
                 if nama_item_lower not in kamus:
                     kamus[nama_item_lower] = nama_item
-
     except Exception as e:
-        logger.error(f"Error loading KAMUS_ALIAS from database: {e}")
+        logger.error(f"Error loading from MASTER_BARANG_CATALOG: {e}")
 
     return kamus
 
@@ -225,15 +241,19 @@ def muat_kamus_alias():
 def muat_valid_units():
     """
     Build VALID_UNITS secara dinamis:
-    1. Load satuan dari database
+    1. Load satuan dari database (jika bisa)
     2. Gabung dengan VALID_UNITS_STATIS (fallback)
     """
     # Mulai dengan data statis
     units = set(VALID_UNITS_STATIS)
 
     try:
-        # Load semua satuan dari database
-        semua_satuan = get_all_satuan()
+        # Load semua satuan dari database (jika tersedia)
+        semua_satuan = []
+        try:
+            semua_satuan = get_all_satuan()
+        except Exception as db_err:
+            logger.warning(f"Database tidak tersedia, menggunakan VALID_UNITS_STATIS saja: {db_err}")
 
         for satuan in semua_satuan:
             nama_satuan = satuan["nama_satuan"].strip().lower()
@@ -241,7 +261,7 @@ def muat_valid_units():
                 units.add(nama_satuan)
 
     except Exception as e:
-        logger.error(f"Error loading VALID_UNITS from database: {e}")
+        logger.error(f"Error loading VALID_UNITS: {e}")
 
     return frozenset(units)
 

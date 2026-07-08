@@ -65,6 +65,64 @@ _TRANSAKSI_HINT_WORDS = {
     "qris",
 }
 
+# Daftar kata-kata terlarang yang tidak boleh dianggap sebagai satuan
+FORBIDDEN_UNIT_WORDS = {
+    "januari", "jan", "februari", "feb", "maret", "mar", "april", "apr",
+    "mei", "juni", "jun", "juli", "jul", "agustus", "agu", "agus",
+    "september", "sep", "oktober", "okt", "november", "nov", "nop",
+    "desember", "des", "lunas", "hutang", "utang", "dicicil", "cicil",
+    "nyicil", "dp", "uang muka", "tunai", "cash", "transfer", "qris",
+    "gopay", "shopeepay", "dana", "ovo", "bca", "bri", "mandiri",
+    "pembayaran", "bayar", "dibayar", "sudah", "belum", "telah",
+    "hari", "ini", "besok", "kemarin", "lusa", "minggu", "bulan",
+    "tahun", "tanggal", "tgl", "pagi", "siang", "sore", "malam",
+    "sekarang", "kemudian", "nanti", "barang", "produk", "item",
+    "permen", "coklat", "millo", "willo", "bembeng", "serbuk",
+    "roti", "pia", "brownis", "lolipop", "loli", "jelly", "jeli",
+    "meses", "keripik", "krupuk", "mie", "minuman", "kopi", "teh",
+    "susu", "kue", "bolu", "biskuit", "kecap", "saus", "sambal",
+    "minyak", "mentega", "margarin", "gula", "garam", "terigu",
+    "tepung", "air", "aqua", "snack", "jajanan", "ciki",
+    "total", "harga", "rp", "rupiah", "jumlah", "satuan",
+    "pak", "bu", "mas", "mbak", "kak", "ibu", "bapak",
+    "order", "pesan", "ambil", "beli", "catat", "tambah",
+    "semua", "seluruh", "data", "transaksi", "penjualan",
+    "laporan", "rekap", "ringkasan", "dashboard",
+}
+
+def fuzzy_match_satuan(satuan_input):
+    """
+    Mencari satuan yang cocok secara fuzzy dari VALID_UNITS.
+    Return satuan yang cocok atau None jika tidak ada yang cocok.
+    """
+    if not satuan_input:
+        return None
+
+    satuan_input_lower = satuan_input.lower()
+    
+    # Handle specific typo first
+    if satuan_input_lower == "puch":
+        return "pouch"
+
+    # Jika kata ada di daftar terlarang, langsung kembalikan None
+    if satuan_input_lower in FORBIDDEN_UNIT_WORDS:
+        return None
+
+    # Cari exact match terlebih dahulu (prioritas tinggi)
+    if satuan_input_lower in VALID_UNITS:
+        return satuan_input_lower
+
+    # Cari fuzzy match dengan skor minimal 80
+    best_match = process.extractOne(
+        satuan_input_lower, list(VALID_UNITS), scorer=fuzz.token_sort_ratio
+    )
+
+    if best_match and best_match[1] >= 80:
+        # Pastikan hasil match juga tidak ada di daftar terlarang (untuk keamanan)
+        if best_match[0].lower() not in FORBIDDEN_UNIT_WORDS:
+            return best_match[0]
+
+    return None
 
 def _clean_text_for_match(s):
     return re.sub(r"[^a-z0-9\s]", " ", (s or "").lower())
@@ -115,9 +173,13 @@ def _detect_short_set_harga(teks_lower, daftar_barang):
         r"\b(" + "|".join(sorted(_MASTER_BARANG_UNITS, key=len, reverse=True)) + r")\b", teks_lower
     )
     if m_unit:
-        unit_match = m_unit.group(1).lower()
-        if unit_match == "bks":
-            unit_match = "bungkus"
+        unit_candidate = m_unit.group(1).lower()
+        # Coba fuzzy match satuan candidate dengan VALID_UNITS dan cek kata terlarang
+        unit_fuzzy = fuzzy_match_satuan(unit_candidate)
+        if unit_fuzzy:
+            unit_match = unit_fuzzy
+            if unit_match == "bks":
+                unit_match = "bungkus"
 
     harga_candidates = []
     for m in re.finditer(
@@ -165,27 +227,6 @@ def _detect_short_set_harga(teks_lower, daftar_barang):
         "harga": str(harga_val),
         "exists_in_master": exists_in_master,
     }
-
-
-def fuzzy_match_satuan(satuan_input):
-    """
-    Mencari satuan yang cocok secara fuzzy dari VALID_UNITS.
-    Return satuan yang cocok atau None jika tidak ada yang cocok.
-    """
-    if not satuan_input:
-        return None
-
-    satuan_input_lower = satuan_input.lower()
-
-    # Cari fuzzy match dengan skor minimal 80
-    best_match = process.extractOne(
-        satuan_input_lower, list(VALID_UNITS), scorer=fuzz.token_sort_ratio
-    )
-
-    if best_match and best_match[1] >= 80:
-        return best_match[0]
-
-    return None
 
 
 # TODO: Ganti dengan HuggingFace Pipeline IndoBERT nanti di bagian ini.
@@ -718,8 +759,24 @@ def ekstrak_entitas(
         if "penjualan" in teks_lower or "transaksi" in teks_lower:
             entitas["KONTEKS_AGREGASI"] = "Total Transaksi"
 
-    # 2. CRUD Master Data & Pelunasan & Analitik
+    # 2. CRUD Master Data & Pelunasan & Analitik (Prioritas: Pelunasan dulu!)
     if any(
+        k in teks_koreksi.lower()
+        for k in [
+            "bayar hutang",
+            "bayar utang",
+            "bayar tagihan",
+            "bayar sisa",
+            "pelunasan",
+            "lunasi",
+            "bayar lunas tagihan",
+            "sudah bayar lunas",
+            "nutup utang",
+            "lunasin",
+        ]
+    ):
+        entitas["AKSI"] = "Catat Pelunasan"
+    elif any(
         k in teks_lower
         for k in ["set harga", "ubah harga", "ganti harga", "edit harga", "naikin jd"]
     ):
@@ -767,22 +824,6 @@ def ekstrak_entitas(
         ]
     ):
         entitas["AKSI"] = "Cek Harga Barang"
-    elif any(
-        k in teks_koreksi.lower()
-        for k in [
-            "bayar hutang",
-            "bayar utang",
-            "bayar tagihan",
-            "bayar sisa",
-            "pelunasan",
-            "lunasi",
-            "bayar lunas tagihan",
-            "sudah bayar lunas",
-            "nutup utang",
-            "lunasin",
-        ]
-    ):
-        entitas["AKSI"] = "Catat Pelunasan"
     elif any(
         k in teks_lower
         for k in ["update", "edit", "perbaharui", "perbarui", "ubah", "revisi", "ganti", "ralat"]
@@ -1035,9 +1076,9 @@ def ekstrak_entitas(
         "coba",
         "dong",
         "ya",
+"deh",
         "lah",
         "pun",
-        "naha",
         "secara",
         "langsung",
         "segera",
@@ -1135,6 +1176,38 @@ def ekstrak_entitas(
     }
 
     entitas["NAMA"] = None
+
+    non_name_words = {
+        "keranjang",
+        "pouch",
+        "siper",
+        "quen",
+        "queen",
+        "karton",
+        "toples",
+        "pack",
+        "bungkus",
+        "dus",
+        "pcs",
+        "pak",
+        "box",
+        "kg",
+        "lusin",
+        "sachet",
+        "kantong",
+        "buah",
+        "botol",
+        "bal",
+        "koli",
+        "lembar",
+        "meter",
+        "ikat",
+        "gelas",
+        "cup",
+    }
+    ignore_for_name.update(non_name_words)
+    ignore_for_name.update(_MASTER_BARANG_UNITS)
+    ignore_for_name.update({u.lower() for u in VALID_UNITS if isinstance(u, str)})
 
     # 1. Deteksi Nama dengan Prefix (Prioritas Tinggi)
     match_prefix = re.search(
@@ -1299,9 +1372,9 @@ def ekstrak_entitas(
                 daftar_nama_barang = [b.lower() for b in set(daftar_barang)]
                 for kata in kata_teks:
                     match = process.extractOne(
-                        kata, daftar_nama_barang, scorer=fuzz.token_sort_ratio
+                        kata, daftar_nama_barang, scorer=fuzz.ratio
                     )
-                    if match and match[1] >= 80:  # Skor minimal 80
+                    if match and match[1] >= 90:  # Skor minimal 90 untuk menghindari false positive
                         # Cari nama barang asli dari daftar_barang
                         nama_barang_asli = next(
                             (b for b in set(daftar_barang) if b.lower() == match[0]), None
@@ -1361,8 +1434,9 @@ def ekstrak_entitas(
         if kata_teks:
             daftar_kata_kunci = list(KAMUS_ALIAS.keys())
             for kata in kata_teks:
-                match = process.extractOne(kata, daftar_kata_kunci, scorer=fuzz.token_sort_ratio)
-                if match and match[1] >= 80:  # Skor minimal 80
+                # Gunakan fuzz.ratio (match keseluruhan kata) dengan skor minimal 90
+                match = process.extractOne(kata, daftar_kata_kunci, scorer=fuzz.ratio)
+                if match and match[1] >= 90:  # Skor minimal 90 untuk menghindari false positive
                     kata_kunci = match[0]
                     mapped = KAMUS_ALIAS.get(kata_kunci)
                     if mapped:
@@ -1392,10 +1466,24 @@ def ekstrak_entitas(
     teks_qty = teks_lower
     teks_qty = re.sub(r"\b(19\d{2}|20\d{2})\s+(pak|bu|mas|mbak|kak|ibu|bapak)\b", r"\2", teks_qty)
 
+    # Hindari menafsirkan angka tanggal seperti '04 april' sebagai jumlah.
+    date_like_pattern = re.compile(
+        r"\b(?:0?[1-9]|[12][0-9]|3[01])\s+(?:januari|jan|februari|feb|maret|mar|april|apr|mei|juni|jun|juli|jul|agustus|agu|agus|september|sep|oktober|okt|november|nov|nop|desember|des)\b",
+        re.IGNORECASE,
+    )
+    teks_qty_for_quantity = teks_qty
+    if date_like_pattern.search(teks_qty):
+        teks_qty_for_quantity = re.sub(
+            r"\b(?:0?[1-9]|[12][0-9]|3[01])\s+(?:januari|jan|februari|feb|maret|mar|april|apr|mei|juni|jun|juli|jul|agustus|agu|agus|september|sep|oktober|okt|november|nov|nop|desember|des)\b",
+            "",
+            teks_qty,
+            flags=re.IGNORECASE,
+        )
+
     # Cari angka + kata apapun (kemudian kita cek fuzzy match satuan)
     match_jumlah_satuan = re.search(
         r"(\d+)\s*([a-zA-Z]+)\b",
-        teks_qty,
+        teks_qty_for_quantity,
     )
     if match_jumlah_satuan:
         jumlah = match_jumlah_satuan.group(1)
@@ -1406,15 +1494,14 @@ def ekstrak_entitas(
 
         if satuan_fuzzy:
             satuan_detected = satuan_fuzzy
+            # Standardize units for consistency
+            if satuan_detected == "bks":
+                satuan_detected = "bungkus"
+            entitas["JUMLAH"] = f"{jumlah} {satuan_detected}"
+            entitas["SATUAN"] = satuan_detected
         else:
-            satuan_detected = satuan_candidate
-
-        # Standardize units for consistency
-        if satuan_detected == "bks":
-            satuan_detected = "bungkus"
-
-        entitas["JUMLAH"] = f"{jumlah} {satuan_detected}"
-        entitas["SATUAN"] = satuan_detected
+            # Jika fuzzy match gagal, hanya tetapkan jumlah tanpa satuan
+            entitas["JUMLAH"] = jumlah
     else:
         # Deteksi satuan tanpa angka di depannya (hanya untuk CRUD barang/aksi set harga/tambah barang)
         if entitas["AKSI"] in ["Tambah Barang", "Set Harga Barang"]:
@@ -1427,16 +1514,12 @@ def ekstrak_entitas(
 
                 if satuan_fuzzy:
                     satuan_detected = satuan_fuzzy
-                else:
-                    satuan_detected = satuan_candidate
-
-                if satuan_detected == "bks":
-                    satuan_detected = "bungkus"
-
-                entitas["SATUAN"] = satuan_detected
+                    if satuan_detected == "bks":
+                        satuan_detected = "bungkus"
+                    entitas["SATUAN"] = satuan_detected
 
         # 2. Deteksi Jumlah dengan Awalan (misal: jumlah 10)
-        match_jml_prefix = re.search(r"(?:sebanyak|jumlah|jml)\s*(\d+)", teks_qty)
+        match_jml_prefix = re.search(r"(?:sebanyak|jumlah|jml)\s*(\d+)", teks_qty_for_quantity)
         if match_jml_prefix:
             entitas["JUMLAH"] = match_jml_prefix.group(1)
         else:
@@ -1454,7 +1537,7 @@ def ekstrak_entitas(
             if not entitas["JUMLAH"]:
                 # Ambil semua angka murni (bisa leet speak 5O -> 50)
                 teks_jml = (
-                    teks_qty.replace("5o", "50")
+                    teks_qty_for_quantity.replace("5o", "50")
                     .replace("1lo", "110")
                     .replace("3o", "30")
                     .replace("10o", "100")
