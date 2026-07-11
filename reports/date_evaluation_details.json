@@ -1,0 +1,499 @@
+[
+  {
+    "text": "1 minggu lagi pak ardi ambil barang 100 buah brownis udah dibayar tunai",
+    "waktu": "1 minggu lagi",
+    "expected": "19-07-2026",
+    "predicted": "18-07-2026",
+    "match": false
+  },
+  {
+    "text": "berapa banyak transaksi hari ini",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "berapa pemasukan hari ini",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "berapa pendapatan hari ini",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "berapa piutang hari ini",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "berapa tagihan hari ini",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "berapa total tagihan hari ini",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "berapa total tagihan kemarin",
+    "waktu": "kemarin",
+    "expected": "10-07-2026",
+    "predicted": "10-07-2026",
+    "match": true
+  },
+  {
+    "text": "berapa total transaksi bulan ini",
+    "waktu": "bulan ini",
+    "expected": "01-07-2026",
+    "predicted": "01-07-2026",
+    "match": true
+  },
+  {
+    "text": "berapa total transaksi hari ini",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "berapa total tunggakan hari ini",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "berapa total uang masuk hari ini",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "berapa total uang tagihan hari ini",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "berapa total uang tagihan kemarin",
+    "waktu": "kemarin",
+    "expected": "10-07-2026",
+    "predicted": "10-07-2026",
+    "match": true
+  },
+  {
+    "text": "berapa transaksi hari ini",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "berapa transaksi kemarin",
+    "waktu": "kemarin",
+    "expected": "10-07-2026",
+    "predicted": "10-07-2026",
+    "match": true
+  },
+  {
+    "text": "berapa tunggakan hari ini",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "berapa uang masuk hari ini",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "berapa uang masuk kemarin",
+    "waktu": "kemarin",
+    "expected": "10-07-2026",
+    "predicted": "10-07-2026",
+    "match": true
+  },
+  {
+    "text": "besok pak ardi ambil barang 100 buah brownis sudah dibayar",
+    "waktu": "besok",
+    "expected": "12-07-2026",
+    "predicted": "12-07-2026",
+    "match": true
+  },
+  {
+    "text": "cek pemasukan hari ini",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "cek penjualan kemarin",
+    "waktu": "kemarin",
+    "expected": "10-07-2026",
+    "predicted": "10-07-2026",
+    "match": true
+  },
+  {
+    "text": "cek tagihan hari ini",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "cek transaksi kemarin",
+    "waktu": "kemarin",
+    "expected": "10-07-2026",
+    "predicted": "10-07-2026",
+    "match": true
+  },
+  {
+    "text": "daftar penjualan kemarin",
+    "waktu": "kemarin",
+    "expected": "10-07-2026",
+    "predicted": "10-07-2026",
+    "match": true
+  },
+  {
+    "text": "hari minggu pak ardi ambil barang 100 buah brownis udah dibayar tunai",
+    "waktu": "hari minggu",
+    "expected": "12-07-2026",
+    "predicted": "12-07-2026",
+    "match": true
+  },
+  {
+    "text": "jumlah transaksi hari ini",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "kemarin ada order apa",
+    "waktu": "kemarin",
+    "expected": "10-07-2026",
+    "predicted": "10-07-2026",
+    "match": true
+  },
+  {
+    "text": "kemarin pak ardi ambil barang 100 buah brownis sudah dibayar tunai",
+    "waktu": "kemarin",
+    "expected": "10-07-2026",
+    "predicted": "10-07-2026",
+    "match": true
+  },
+  {
+    "text": "kemarin siapa yang beli",
+    "waktu": "kemarin",
+    "expected": "10-07-2026",
+    "predicted": "10-07-2026",
+    "match": true
+  },
+  {
+    "text": "laporan kemarin",
+    "waktu": "kemarin",
+    "expected": "10-07-2026",
+    "predicted": "10-07-2026",
+    "match": true
+  },
+  {
+    "text": "lihat transaksi kemarin",
+    "waktu": "kemarin",
+    "expected": "10-07-2026",
+    "predicted": "10-07-2026",
+    "match": true
+  },
+  {
+    "text": "lusa pak ardi ambil barang 100 buah brownis sudah dibayar tunai",
+    "waktu": "lusa",
+    "expected": "13-07-2026",
+    "predicted": "13-07-2026",
+    "match": true
+  },
+  {
+    "text": "minggu depan pak ardi ambil barang 100 buah brownis udah dibayar tunai",
+    "waktu": "minggu depan",
+    "expected": "19-07-2026",
+    "predicted": "18-07-2026",
+    "match": false
+  },
+  {
+    "text": "minggu depang pak ardi ambil barang 100 buah brownis udah dibayar tunai",
+    "waktu": "minggu depan",
+    "expected": "19-07-2026",
+    "predicted": "18-07-2026",
+    "match": false
+  },
+  {
+    "text": "order kemarin ada apa aja",
+    "waktu": "kemarin",
+    "expected": "10-07-2026",
+    "predicted": "10-07-2026",
+    "match": true
+  },
+  {
+    "text": "pemasukan kemarin",
+    "waktu": "kemarin",
+    "expected": "10-07-2026",
+    "predicted": "10-07-2026",
+    "match": true
+  },
+  {
+    "text": "pembeli paling banyak hari ini",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "pembelian kemarin",
+    "waktu": "kemarin",
+    "expected": "10-07-2026",
+    "predicted": "10-07-2026",
+    "match": true
+  },
+  {
+    "text": "pendapatan hari ini",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "penjualan kemarin",
+    "waktu": "kemarin",
+    "expected": "10-07-2026",
+    "predicted": "10-07-2026",
+    "match": true
+  },
+  {
+    "text": "rekap kemarin",
+    "waktu": "kemarin",
+    "expected": "10-07-2026",
+    "predicted": "10-07-2026",
+    "match": true
+  },
+  {
+    "text": "siapa pembeli paling banyak hari ini",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "siapa pembeli terbanyak hari ini",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "siapa pembeli terbanyak kemarin",
+    "waktu": "kemarin",
+    "expected": "10-07-2026",
+    "predicted": "10-07-2026",
+    "match": true
+  },
+  {
+    "text": "siapa transaksi terbanyak hari ini",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "siapa yang beli kemarin",
+    "waktu": "kemarin",
+    "expected": "10-07-2026",
+    "predicted": "10-07-2026",
+    "match": true
+  },
+  {
+    "text": "siapa yang order kemarin",
+    "waktu": "kemarin",
+    "expected": "10-07-2026",
+    "predicted": "10-07-2026",
+    "match": true
+  },
+  {
+    "text": "tagihan hari ini berapa",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "tampilan data penjualan kemarin",
+    "waktu": "kemarin",
+    "expected": "10-07-2026",
+    "predicted": "10-07-2026",
+    "match": true
+  },
+  {
+    "text": "tampilkan data penjualan kemarin",
+    "waktu": "kemarin",
+    "expected": "10-07-2026",
+    "predicted": "10-07-2026",
+    "match": true
+  },
+  {
+    "text": "tampilkan pemasukan hari ini",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "tampilkan total transaksi hari ini",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "tampilkan uang masuk kemarin",
+    "waktu": "kemarin",
+    "expected": "10-07-2026",
+    "predicted": "10-07-2026",
+    "match": true
+  },
+  {
+    "text": "total cash masuk hari ini",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "total cicilan penjualan hari ini",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "total order hari ini",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "total pembelian hari ini",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "total pendapatan hari ini",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "total tagihan hari ini",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "total transaksi hari ini",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "total transaksi kemarin",
+    "waktu": "kemarin",
+    "expected": "10-07-2026",
+    "predicted": "10-07-2026",
+    "match": true
+  },
+  {
+    "text": "total transaksi minggu ini",
+    "waktu": "minggu ini",
+    "expected": "12-07-2026",
+    "predicted": "12-07-2026",
+    "match": true
+  },
+  {
+    "text": "total transfer masuk hari ini",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "total tunggakan hari ini",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "transaksi kemarin",
+    "waktu": "kemarin",
+    "expected": "10-07-2026",
+    "predicted": "10-07-2026",
+    "match": true
+  },
+  {
+    "text": "tunggakan hari ini",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "uang masuk hari ini berapa",
+    "waktu": "hari ini",
+    "expected": "11-07-2026",
+    "predicted": "11-07-2026",
+    "match": true
+  },
+  {
+    "text": "uang masuk kemarin",
+    "waktu": "kemarin",
+    "expected": "10-07-2026",
+    "predicted": "10-07-2026",
+    "match": true
+  },
+  {
+    "text": "tanggal 19-06-2026 budi ambil bembeng 40 ctn dicicil 200000 tunai",
+    "waktu": "tanggal 19-06-2026",
+    "expected": "19-06-2026",
+    "predicted": "19-06-2026",
+    "match": true
+  },
+  {
+    "text": "21 april 2026 udin ambil meses 20 ctn dicicil 150000 cash",
+    "waktu": "21 april 2026",
+    "expected": "21-04-2026",
+    "predicted": "21-04-2026",
+    "match": true
+  }
+]

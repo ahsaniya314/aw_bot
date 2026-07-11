@@ -166,7 +166,31 @@ def koreksi_teks(teks_kotor, daftar_barang=None):
                 i += 1
                 continue
 
-        # 1. Cek kombinasi 2 kata (Bigram) — HANYA jika kedua kata adalah teks (bukan angka)
+        # 1. Cek kombinasi 3 kata (Trigram) — khusus untuk frasa seperti "roti pia potong"
+        if i < len(words) - 2 and not words[i + 1].isdigit() and not words[i + 2].isdigit():
+            phrase_3 = f"{words[i]} {words[i+1]} {words[i+2]}"
+            if (
+                w_lower not in ignore_words
+                and words[i + 1].lower() not in ignore_words
+                and words[i + 2].lower() not in ignore_words
+            ):
+                res_3 = process.extractOne(phrase_3, keywords_target, scorer=fuzz.ratio)
+                if res_3:
+                    terbaik_3, skor_3 = res_3[0], res_3[1]
+                    if skor_3 >= 90:
+                        if terbaik_3 in KAMUS_ALIAS:
+                            corrected_words.append(
+                                terbaik_3
+                                if _preserve_generic_alias(terbaik_3)
+                                else KAMUS_ALIAS[terbaik_3]
+                            )
+                        else:
+                            corrected_words.append(terbaik_3)
+                        i += 3
+                        match_found = True
+                        continue
+
+        # 2. Cek kombinasi 2 kata (Bigram) — HANYA jika kedua kata adalah teks (bukan angka)
         if i < len(words) - 1 and not words[i + 1].isdigit():
             phrase_2 = f"{words[i]} {words[i+1]}"
             if w_lower not in ignore_words and words[i + 1].lower() not in ignore_words:
@@ -187,7 +211,7 @@ def koreksi_teks(teks_kotor, daftar_barang=None):
                         match_found = True
                         continue
 
-        # 2. Cek kombinasi 1 kata (Unigram)
+        # 3. Cek kombinasi 1 kata (Unigram)
         if not match_found:
             phrase_1 = words[i]
             # Mencegah kata pendek, angka murni, dan stop words salah diprediksi

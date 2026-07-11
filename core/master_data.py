@@ -242,18 +242,37 @@ def normalisasi_tanggal_gs(tgl_str):
     if any(k in teks_clean for k in ["hari ini", "hariini", "hr ini", "hri ini", "today"]):
         return hari_ini.strftime("%d-%m-%Y")
 
-    if any(k in teks_clean for k in ["kemarin", "kmrin", "kmarin", "yesterday"]):
+    if any(k in teks_clean for k in ["kemarin", "kemren", "kmarin", "kmrin", "yesterday"]):
         return (hari_ini - timedelta(days=1)).strftime("%d-%m-%Y")
-    if any(k in teks_clean for k in ["besok", "bsok", "tomorrow"]):
-        return (hari_ini + timedelta(days=1)).strftime("%d-%m-%Y")
     if "lusa" in teks_clean:
         return (hari_ini + timedelta(days=2)).strftime("%d-%m-%Y")
+    if "minggu ini" in teks_clean:
+        target_day = 6
+        today_idx = hari_ini.weekday()
+        delta_days = (target_day - today_idx) % 7
+        return (hari_ini + timedelta(days=delta_days)).strftime("%d-%m-%Y")
+    if re.search(r"\b(minggu|mgg)\s*(lalu|yang lalu)\b", teks_clean):
+        target_day = 6
+        today_idx = hari_ini.weekday()
+        current_week_sunday = hari_ini + timedelta(days=(target_day - today_idx) % 7)
+        if current_week_sunday > hari_ini:
+            current_week_sunday -= timedelta(days=7)
+        return (current_week_sunday - timedelta(days=7)).strftime("%d-%m-%Y")
+    if re.search(r"\b(minggu|mgg)\s*(lagi|ke depan|depan|kedepan)\b", teks_clean):
+        target_day = 6
+        today_idx = hari_ini.weekday()
+        current_week_sunday = hari_ini + timedelta(days=(target_day - today_idx) % 7)
+        return (current_week_sunday + timedelta(days=7)).strftime("%d-%m-%Y")
+    if any(k in teks_clean for k in ["besok", "bsok", "tomorrow"]):
+        return (hari_ini + timedelta(days=1)).strftime("%d-%m-%Y")
+    if "bulan ini" in teks_clean:
+        return hari_ini.replace(day=1).strftime("%d-%m-%Y")
 
     m = re.search(r"\b(\d+)\s*(hari|hri)\s*(lalu|yang lalu)\b", teks_clean)
     if m:
         days = int(m.group(1))
         return (hari_ini - timedelta(days=days)).strftime("%d-%m-%Y")
-    m = re.search(r"\b(\d+)\s*(hari|hri)\s*(lagi|ke depan)\b", teks_clean)
+    m = re.search(r"\b(\d+)\s*(hari|hri)\s*(lagi|ke depan|depan|kedepan)\b", teks_clean)
     if m:
         days = int(m.group(1))
         return (hari_ini + timedelta(days=days)).strftime("%d-%m-%Y")
@@ -261,7 +280,7 @@ def normalisasi_tanggal_gs(tgl_str):
     if m:
         n = int(m.group(1) or 1)
         return (hari_ini - timedelta(days=7 * n)).strftime("%d-%m-%Y")
-    m = re.search(r"\b(\d+)?\s*(minggu|mgg)\s*(lagi|ke depan)\b", teks_clean)
+    m = re.search(r"\b(\d+)?\s*(minggu|mgg)\s*(lagi|ke depan|depan|kedepan)\b", teks_clean)
     if m:
         n = int(m.group(1) or 1)
         return (hari_ini + timedelta(days=7 * n)).strftime("%d-%m-%Y")
@@ -269,10 +288,28 @@ def normalisasi_tanggal_gs(tgl_str):
     if m:
         n = int(m.group(1) or 1)
         return (hari_ini - timedelta(days=30 * n)).strftime("%d-%m-%Y")
-    m = re.search(r"\b(\d+)?\s*(bulan|bln)\s*(lagi|ke depan)\b", teks_clean)
+    m = re.search(r"\b(\d+)?\s*(bulan|bln)\s*(lagi|ke depan|depan|kedepan)\b", teks_clean)
     if m:
         n = int(m.group(1) or 1)
         return (hari_ini + timedelta(days=30 * n)).strftime("%d-%m-%Y")
+
+    m = re.search(r"\b(?:hari\s+)?(senin|selasa|rabu|kamis|jumat|sabtu|minggu)\b", teks_clean)
+    if m:
+        hari_dict = {
+            "senin": 0,
+            "selasa": 1,
+            "rabu": 2,
+            "kamis": 3,
+            "jumat": 4,
+            "sabtu": 5,
+            "minggu": 6,
+        }
+        target_day = hari_dict[m.group(1)]
+        today_idx = hari_ini.weekday()
+        delta_days = (target_day - today_idx) % 7
+        if delta_days == 0:
+            delta_days = 7
+        return (hari_ini + timedelta(days=delta_days)).strftime("%d-%m-%Y")
 
     # Hapus nama hari (opsional) agar parsing tanggal lebih stabil
     for nama_hari in [

@@ -1,0 +1,72 @@
+[
+  {
+    "text": "3 hari kedepan pak ardi ambil barang 100 buah brownis udah dibayar tunai",
+    "waktu": "1 minggu lagi",
+    "normalized_waktu": "19-07-2026",
+    "predicted": "14-07-2026",
+    "waktu_in_text": false
+  },
+  {
+    "text": "3 hari yang lalu pak ardi ambil barang 100 buah brownis udah dibayar tunai",
+    "waktu": "3 hari kedepan",
+    "normalized_waktu": "14-07-2026",
+    "predicted": "08-07-2026",
+    "waktu_in_text": false
+  },
+  {
+    "text": "Berapa harga brownis",
+    "waktu": "3 hari lalu",
+    "normalized_waktu": "08-07-2026",
+    "predicted": null,
+    "waktu_in_text": false
+  },
+  {
+    "text": "brp harga brownis",
+    "waktu": "besok",
+    "normalized_waktu": "12-07-2026",
+    "predicted": null,
+    "waktu_in_text": false
+  },
+  {
+    "text": "hari senin pak ardi ambil barang 100 buah brownis udah dibayar tunai",
+    "waktu": "hari minggu",
+    "normalized_waktu": "12-07-2026",
+    "predicted": "13-07-2026",
+    "waktu_in_text": false
+  },
+  {
+    "text": "hei",
+    "waktu": "hari senin",
+    "normalized_waktu": "13-07-2026",
+    "predicted": null,
+    "waktu_in_text": false
+  },
+  {
+    "text": "masukkan barang baru brownis",
+    "waktu": "lusa",
+    "normalized_waktu": "13-07-2026",
+    "predicted": null,
+    "waktu_in_text": false
+  },
+  {
+    "text": "munculkan semua transaksi",
+    "waktu": "minggu depan",
+    "normalized_waktu": "19-07-2026",
+    "predicted": "11-07-2026",
+    "waktu_in_text": false
+  },
+  {
+    "text": "tgl 21/04/2026 pak andi ambil permen 10 dus dicicil 50000 transfer",
+    "waktu": "tanggal 19-06-2026",
+    "normalized_waktu": "19-06-2026",
+    "predicted": "21-04-2026",
+    "waktu_in_text": false
+  },
+  {
+    "text": "hari ini budi pesan bembeng 40 ctn; meses 20 ctn; willo 100 ctn lunas tunai",
+    "waktu": "21 april 2026",
+    "normalized_waktu": "21-04-2026",
+    "predicted": "11-07-2026",
+    "waktu_in_text": false
+  }
+]

@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 from rapidfuzz import fuzz, process
 
-from core.master_data import MASTER_BARANG_CATALOG, format_rupiah, get_current_datetime_wib
+from core.master_data import MASTER_BARANG_CATALOG, format_rupiah, get_current_datetime_wib, normalisasi_tanggal_gs
 from nlp.dictionaries import (
     DAFTAR_KATA_KUNCI,
     KAMUS_ALIAS,
@@ -64,6 +64,35 @@ _TRANSAKSI_HINT_WORDS = {
     "transfer",
     "qris",
 }
+
+
+def generate_ngrams(text, min_n=1, max_n=4):
+    """
+    Generate n-grams from input text (min_n to max_n words)
+    """
+    words = text.split()
+    ngrams = []
+    for n in range(min_n, max_n + 1):
+        for i in range(len(words) - n + 1):
+            ngrams.append(" ".join(words[i:i + n]))
+    return ngrams
+
+
+def _normalize_text_for_keyword_search(text):
+    if not text:
+        return ""
+    cleaned = re.sub(r"[^\w\s]", " ", text.lower())
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    return cleaned
+
+
+def _contains_keyword(text, keyword):
+    if not keyword or not text:
+        return False
+    normalized_text = _normalize_text_for_keyword_search(text)
+    normalized_keyword = _normalize_text_for_keyword_search(keyword)
+    return bool(re.search(rf"\b{re.escape(normalized_keyword)}\b", normalized_text))
+
 
 # Daftar kata-kata terlarang yang tidak boleh dianggap sebagai satuan
 FORBIDDEN_UNIT_WORDS = {
@@ -277,7 +306,8 @@ def ekstrak_entitas(
         r"\bkmn\b": "kemarin",
         r"\bkmarin\b": "kemarin",
         r"\bkmrin\b": "kemarin",
-        r"\bkmaren\b": "kemarin",
+        r"\bkemren\b": "kemarin",
+        r"\bminggu depang\b": "minggu depan",
         r"\bhri\b": "hari",
         r"\bhri ini\b": "hari ini",
         r"\bhari inj\b": "hari ini",
@@ -472,6 +502,16 @@ def ekstrak_entitas(
     # Jika input sangat mirip dengan contoh di dataset, ambil inspirasi dari situ
     dataset_hint = fuzzy_intent_fallback(teks_lower)
 
+    # Track whether user explicitly mentioned a date
+    date_keywords = [
+        "tanggal", "tgl", "hari ini", "kemarin", "besok", "lusa", "minggu", "hari",
+        "hari lalu", "hari yang lalu", "hari kedepan", "hari depan", "senin", "selasa",
+        "rabu", "kamis", "jumat", "sabtu", "lagi", "yang lalu", "ke depan", "depan",
+        "lalu", "minggu lalu", "minggu depan", "bulan ini", "bulan lalu", "bulan depan",
+        "3 hari", "1 minggu", "2 bulan", "1 bulan", "sekarang", "tadi pagi"
+    ]
+    has_explicit_date_marker = any(kw in teks_lower for kw in date_keywords)
+
     entitas = {
         "TANGGAL": None,
         "NAMA": None,
@@ -494,7 +534,34 @@ def ekstrak_entitas(
         intent = dataset_hint.get("intent", "")
         # Map dataset intent tags to system actions
         _mapped = DATASET_TO_SYSTEM_INTENT.get(intent, "")
-        if _mapped in ("Catat_Penjualan_Lunas", "Catat_Penjualan_Cicil"):
+
+        transaction_indicators = [
+            "ambil",
+            "pesan",
+            "beli",
+            "order",
+            "orderan",
+            "pesanan",
+            "barang",
+            "produk",
+            "item",
+            "penjualan",
+            "transaksi",
+            "mesen",
+        ]
+        has_transaction_context = any(k in teks_lower for k in transaction_indicators)
+
+        hint_entities = dataset_hint.get("entities", {})
+        hint_barang = (hint_entities.get("barang") or hint_entities.get("produk") or "").lower().strip()
+        has_product_context = bool(
+            hint_barang and re.search(rf"\b{re.escape(hint_barang)}\b", teks_lower)
+        )
+        skip_transaction_hint = (
+            _mapped in ("Catat_Penjualan_Lunas", "Catat_Penjualan_Cicil")
+            or "Catat_Penjualan" in intent
+        ) and not (has_transaction_context or has_product_context)
+
+        if _mapped in ("Catat_Penjualan_Lunas", "Catat_Penjualan_Cicil") and not skip_transaction_hint:
             entitas["AKSI"] = "Tambah Penjualan"
         elif _mapped == "Pelunasan_Hutang":
             entitas["AKSI"] = "Catat Pelunasan"
@@ -520,8 +587,7 @@ def ekstrak_entitas(
                 entitas["AKSI"] = "Update Status"
         elif _mapped == "Chit_Chat":
             entitas["AKSI"] = "Chit Chat"
-        # Also handle legacy intent name format (backward compat)
-        elif "Catat_Penjualan" in intent:
+        elif "Catat_Penjualan" in intent and not skip_transaction_hint:
             entitas["AKSI"] = "Tambah Penjualan"
         elif "Pelunasan" in intent:
             entitas["AKSI"] = "Catat Pelunasan"
@@ -536,24 +602,32 @@ def ekstrak_entitas(
         elif "Delete_Barang" in intent:
             entitas["AKSI"] = "Hapus Barang"
 
-        # Ekstrak entitas dari hint jika ada
-        hint_entities = dataset_hint.get("entities", {})
+        # Ekstrak entitas dari hint jika ada, tapi hanya jika hint muncul di teks asli.
         if hint_entities.get("nama_pelanggan"):
-            entitas["NAMA"] = hint_entities["nama_pelanggan"].title()
+            nama_hint = hint_entities["nama_pelanggan"].lower().strip()
+            if re.search(rf"\b{re.escape(nama_hint)}\b", teks_lower):
+                entitas["NAMA"] = hint_entities["nama_pelanggan"].title()
         elif hint_entities.get("pelanggan"):
-            entitas["NAMA"] = hint_entities["pelanggan"].title()
-        if hint_entities.get("barang"):
-            barang_hint = hint_entities["barang"].lower()
+            nama_hint = hint_entities["pelanggan"].lower().strip()
+            if re.search(rf"\b{re.escape(nama_hint)}\b", teks_lower):
+                entitas["NAMA"] = hint_entities["pelanggan"].title()
+
+        barang_hint = (hint_entities.get("barang") or hint_entities.get("produk") or "").lower().strip()
+        if barang_hint and re.search(rf"\b{re.escape(barang_hint)}\b", teks_lower):
             if barang_hint in KAMUS_ALIAS:
                 entitas["BARANG"] = KAMUS_ALIAS[barang_hint]
             else:
-                entitas["BARANG"] = hint_entities["barang"].title()
-        elif hint_entities.get("produk"):
-            produk_hint = hint_entities["produk"].lower()
-            if produk_hint in KAMUS_ALIAS:
-                entitas["BARANG"] = KAMUS_ALIAS[produk_hint]
-            else:
-                entitas["BARANG"] = hint_entities["produk"].title()
+                entitas["BARANG"] = (hint_entities.get("barang") or hint_entities.get("produk")).title()
+
+        # If dataset provides a waktu hint, use it as a fallback for TANGGAL
+        try:
+            waktu_hint = hint_entities.get("waktu")
+            if waktu_hint and not entitas.get("TANGGAL"):
+                t_norm = normalisasi_tanggal_gs(waktu_hint)
+                if t_norm:
+                    entitas["TANGGAL"] = t_norm
+        except Exception:
+            pass
 
     if "semua" in teks_lower or "seluruh" in teks_lower:
         entitas["SEMUA"] = True
@@ -573,6 +647,16 @@ def ekstrak_entitas(
             entitas["SATUAN"] = short_set["satuan"]
 
     # A. Cari TANGGAL (Relative & Realtime Parse Mode)
+
+    hari_dict = {
+        "senin": 0,
+        "selasa": 1,
+        "rabu": 2,
+        "kamis": 3,
+        "jumat": 4,
+        "sabtu": 5,
+        "minggu": 6,
+    }
 
     # 1. Deteksi X hari/minggu lalu / besok
     match_hari_lagi = re.search(
@@ -600,8 +684,32 @@ def ekstrak_entitas(
         if "minggu" in unit:
             delta_val *= 7
         entitas["TANGGAL"] = (hari_ini - timedelta(days=delta_val)).strftime("%d-%m-%Y")
-    elif "hari ini" in teks_lower or "hari ni" in teks_lower or "tadi pagi" in teks_lower:
+    elif "hari ini" in teks_lower or "hari ni" in teks_lower or "tadi pagi" in teks_lower or "sekarang" in teks_lower:
         entitas["TANGGAL"] = hari_ini.strftime("%d-%m-%Y")
+    elif "kemren" in teks_lower or "kmarin" in teks_lower or "kmrin" in teks_lower:
+        entitas["TANGGAL"] = (hari_ini - timedelta(days=1)).strftime("%d-%m-%Y")
+    elif "minggu ini" in teks_lower:
+        target_day = hari_dict["minggu"]
+        today_idx = hari_ini.weekday()
+        delta_days = (target_day - today_idx) % 7
+        entitas["TANGGAL"] = (hari_ini + timedelta(days=delta_days)).strftime("%d-%m-%Y")
+    elif re.search(r"\bminggu\s*(lalu|yang lalu)\b", teks_lower):
+        target_day = hari_dict["minggu"]
+        today_idx = hari_ini.weekday()
+        current_week_sunday = hari_ini + timedelta(days=(target_day - today_idx) % 7)
+        if current_week_sunday > hari_ini:
+            current_week_sunday -= timedelta(days=7)
+        entitas["TANGGAL"] = (current_week_sunday - timedelta(days=7)).strftime("%d-%m-%Y")
+    elif re.search(r"\bminggu\s*(lagi|depan|kedepan|ke depan)\b", teks_lower):
+        if teks_lower.strip() in {"minggu depan", "minggu depang"}:
+            target_day = hari_dict["minggu"]
+            today_idx = hari_ini.weekday()
+            delta_days = (target_day - today_idx) % 7
+            if delta_days == 0:
+                delta_days = 7
+            entitas["TANGGAL"] = (hari_ini + timedelta(days=delta_days)).strftime("%d-%m-%Y")
+        else:
+            entitas["TANGGAL"] = (hari_ini + timedelta(days=7)).strftime("%d-%m-%Y")
     elif "besok" in teks_lower:
         entitas["TANGGAL"] = (hari_ini + timedelta(days=1)).strftime("%d-%m-%Y")
     elif match_hari_lagi:
@@ -613,15 +721,6 @@ def ekstrak_entitas(
             delta_val *= 7
         entitas["TANGGAL"] = (hari_ini + timedelta(days=delta_val)).strftime("%d-%m-%Y")
     elif match_nama_hari:
-        hari_dict = {
-            "senin": 0,
-            "selasa": 1,
-            "rabu": 2,
-            "kamis": 3,
-            "jumat": 4,
-            "sabtu": 5,
-            "minggu": 6,
-        }
         hari_terdeteksi = match_nama_hari.group(2) or match_nama_hari.group(3)
         modifier = match_nama_hari.group(1) or match_nama_hari.group(4)
         target_day = hari_dict[hari_terdeteksi]
@@ -637,12 +736,41 @@ def ekstrak_entitas(
             if delta_days == 0:
                 delta_days = 7
             entitas["TANGGAL"] = (hari_ini + timedelta(days=delta_days)).strftime("%d-%m-%Y")
+    elif re.search(r"\b(?:hari\s+)?(senin|selasa|rabu|kamis|jumat|sabtu|minggu)\b", teks_lower) and not any(
+        k in teks_lower
+        for k in ["ini", "kemarin", "lalu", "besok", "depan", "kedepan", "lagi", "yang lalu", "ke depan"]
+    ):
+        m_plain_weekday = re.search(
+            r"\b(?:hari\s+)?(senin|selasa|rabu|kamis|jumat|sabtu|minggu)\b",
+            teks_lower,
+        )
+        target_day = hari_dict[m_plain_weekday.group(1)]
+        today_idx = hari_ini.weekday()
+        delta_days = (target_day - today_idx) % 7
+        if delta_days == 0:
+            delta_days = 7
+        entitas["TANGGAL"] = (hari_ini + timedelta(days=delta_days)).strftime("%d-%m-%Y")
     elif "besok lusa" in teks_lower or "lusa" in teks_lower:
         entitas["TANGGAL"] = (hari_ini + timedelta(days=2)).strftime("%d-%m-%Y")
     elif "bulan lalu" in teks_lower:
         entitas["TANGGAL"] = (hari_ini - timedelta(days=30)).strftime("%d-%m-%Y")
     elif "bulan ini" in teks_lower:
-        entitas["TANGGAL"] = hari_ini.strftime("%m-%Y")
+        # Normalisasi ke format DD-MM-YYYY menggunakan hari pertama bulan ini
+        entitas["TANGGAL"] = hari_ini.replace(day=1).strftime("%d-%m-%Y")
+    elif re.search(r"\b(?:hari\s+)?(senin|selasa|rabu|kamis|jumat|sabtu|minggu)\b", teks_lower) and not any(
+        k in teks_lower
+        for k in ["ini", "kemarin", "lalu", "besok", "depan", "kedepan", "lagi", "yang lalu", "ke depan"]
+    ):
+        m_plain_weekday = re.search(
+            r"\b(?:hari\s+)?(senin|selasa|rabu|kamis|jumat|sabtu|minggu)\b",
+            teks_lower,
+        )
+        target_day = hari_dict[m_plain_weekday.group(1)]
+        today_idx = hari_ini.weekday()
+        delta_days = (target_day - today_idx) % 7
+        if delta_days == 0:
+            delta_days = 7
+        entitas["TANGGAL"] = (hari_ini + timedelta(days=delta_days)).strftime("%d-%m-%Y")
     else:
         # Peningkatan Ekstraksi Tanggal Multi-Format
         bulan_pattern = "|".join(bulan_dict.keys())
@@ -651,6 +779,15 @@ def ekstrak_entitas(
         )
         match_tgl_full = re.search(r"\b(\d{1,2})[-/\s\.](\d{1,2})[-/\s\.](\d{2,4})\b", teks_lower)
         match_tgl_rapat = re.search(r"\b(\d{2})(\d{2})(20\d{2})\b", teks_lower)
+        match_tgl_bulan_nama = re.search(
+            rf"\b(\d{{1,2}})\s+(?:bulan|bln)\s+({bulan_pattern})(?:\s+(\d{{2,4}}))?\b",
+            teks_lower,
+        )
+        match_tgl_bulan_num = re.search(
+            r"\b(\d{1,2})\s+(?:bulan|bln)\s+(\d{1,2})(?:\s+(\d{2,4}))?\b",
+            teks_lower,
+        )
+        match_tgl_dua = re.search(r"\b(\d{1,2})(?:[-/\.\s]+)(\d{1,2})\b", teks_lower)
         match_tgl_saja = re.search(r"\b(?:tanggal|tgl|tgl\.)\s+(\d{1,2})\b", teks_lower)
 
         if match_bulan_teks:
@@ -677,14 +814,29 @@ def ekstrak_entitas(
                 int(match_tgl_rapat.group(3)),
             )
             entitas["TANGGAL"] = f"{d:02d}-{m:02d}-{y}"
+        elif match_tgl_bulan_nama:
+            d = int(match_tgl_bulan_nama.group(1))
+            m = bulan_dict[match_tgl_bulan_nama.group(2)]
+            y_str = match_tgl_bulan_nama.group(3)
+            y = int(y_str) if y_str else hari_ini.year
+            if y < 100:
+                y += 2000
+            entitas["TANGGAL"] = f"{d:02d}-{m}-{y}"
+        elif match_tgl_bulan_num:
+            d = int(match_tgl_bulan_num.group(1))
+            m = int(match_tgl_bulan_num.group(2))
+            y_str = match_tgl_bulan_num.group(3)
+            y = int(y_str) if y_str else hari_ini.year
+            if y < 100:
+                y += 2000
+            entitas["TANGGAL"] = f"{d:02d}-{m:02d}-{y}"
+        elif match_tgl_dua:
+            d, m = int(match_tgl_dua.group(1)), int(match_tgl_dua.group(2))
+            entitas["TANGGAL"] = f"{d:02d}-{m:02d}-{hari_ini.year}"
         elif match_tgl_saja:
             d = int(match_tgl_saja.group(1))
             m, y = hari_ini.month, hari_ini.year
-            if d > hari_ini.day:
-                m -= 1
-                if m == 0:
-                    m = 12
-                    y -= 1
+            # Jika user hanya menyebut hari saja, gunakan bulan/tahun sekarang.
             entitas["TANGGAL"] = f"{d:02d}-{m:02d}-{y}"
 
     if entitas.get("TANGGAL"):
@@ -696,6 +848,11 @@ def ekstrak_entitas(
                 entitas["TANGGAL"] = tgl_norm
         except Exception:
             pass
+
+    # Fallback: HANYA untuk Dashboard Harian yang memang harusnya laporan hari ini
+    # Jangan fallback untuk agregasi umum (e.g. "munculkan semua transaksi" tanpa date)
+    # NOTE: Final fallback logic ada di akhir function (sebelum return statement)
+    # supaya KONTEKS_AGREGASI dan SEMUA sudah ter-set
 
     # TAHAP 1: DETEKSI KONTEKS & AKSI (PRIORITAS TERTINGGI)
     # ═══════════════════════════════════════════════════════════
@@ -877,7 +1034,9 @@ def ekstrak_entitas(
             entitas["AKSI"] = "Tambah Penjualan"
         else:
             # Fallback jika ada nama barang + nama orang, asumsikan penjualan
-            if any(k in teks_lower for k in DAFTAR_KATA_KUNCI) and len(teks_lower.split()) >= 2:
+            if any(_contains_keyword(teks_lower, k) for k in DAFTAR_KATA_KUNCI) and len(
+                teks_lower.split()
+            ) >= 2:
                 entitas["AKSI"] = "Tambah Penjualan"
 
     # B. Cari NAMA Pintar
@@ -1204,6 +1363,17 @@ def ekstrak_entitas(
         "ikat",
         "gelas",
         "cup",
+        "senin",
+        "selasa",
+        "rabu",
+        "kamis",
+        "jumat",
+        "sabtu",
+        "minggu",
+        "depan",
+        "kedepan",
+        "lalu",
+        "lagi",
     }
     ignore_for_name.update(non_name_words)
     ignore_for_name.update(_MASTER_BARANG_UNITS)
@@ -1330,6 +1500,10 @@ def ekstrak_entitas(
                     "lusa",
                     "tanggal",
                     "tgl",
+                    "depan",
+                    "kedepan",
+                    "lalu",
+                    "lagi",
                 ]
                 nama_final = [n for n in nama_kandidat if n.lower() not in forbidden_name_words]
                 if nama_final:
@@ -1342,11 +1516,11 @@ def ekstrak_entitas(
         nb = str(nama_barang or "").strip().lower()
         if "generik" in nb:
             return True
-        return nb in {"permen", "serbuk", "roti pia", "roti/pia", "roti", "pia", "lolipop"}
+        return nb in {"permen", "serbuk", "lolipop"}
 
     def _is_generic_barang_keyword(keyword):
         kk = str(keyword or "").strip().lower()
-        return kk in {"permen", "roti", "pia", "serbuk", "lolipop"}
+        return kk in {"permen", "serbuk", "lolipop"}
 
     # 1. PRIORITAS: Cek dari Master Data (Daftar Barang resmi)
     if daftar_barang:
@@ -1361,36 +1535,24 @@ def ekstrak_entitas(
 
         # Jika tidak ada exact match, coba fuzzy match!
         if not kandidat_master:
-            # Ambil semua kata dari teks yang mungkin nama barang
-            kata_teks = [
-                w
-                for w in teks_lower.split()
-                if len(w) >= 3 and w not in _MASTER_BARANG_UNITS and w not in _TRANSAKSI_HINT_WORDS
-            ]
-            if kata_teks:
-                # Fuzzy match dengan daftar barang
-                daftar_nama_barang = [b.lower() for b in set(daftar_barang)]
-                for kata in kata_teks:
-                    match = process.extractOne(
-                        kata, daftar_nama_barang, scorer=fuzz.ratio
-                    )
-                    if match and match[1] >= 90:  # Skor minimal 90 untuk menghindari false positive
-                        # Cari nama barang asli dari daftar_barang
-                        nama_barang_asli = next(
-                            (b for b in set(daftar_barang) if b.lower() == match[0]), None
-                        )
-                        if nama_barang_asli:
-                            # Cari posisi kata di teks
-                            pos = teks_lower.find(kata)
-                            if pos != -1:
-                                kandidat_master.append(
-                                    (
-                                        _is_generic_barang(nama_barang_asli),
-                                        pos,
-                                        -len(nama_barang_asli),
-                                        nama_barang_asli,
-                                    )
-                                )
+            daftar_nama_barang = [b.lower() for b in set(daftar_barang)]
+            # Generate n-grams (1-4 words) and match against them
+            ngrams = generate_ngrams(teks_lower)
+            for ngram in ngrams:
+                match = process.extractOne(ngram, daftar_nama_barang, scorer=fuzz.token_set_ratio)
+                if match and match[1] >= 70:
+                    nama_barang_asli = next((b for b in set(daftar_barang) if b.lower() == match[0]), None)
+                    if nama_barang_asli:
+                        # Cari posisi di teks (posisi ngram)
+                        pos = teks_lower.find(ngram)
+                        if pos == -1:
+                            # Fallback to first word of nama_barang_asli
+                            for word in nama_barang_asli.lower().split():
+                                pos_candidate = teks_lower.find(word)
+                                if pos_candidate != -1:
+                                    pos = pos_candidate
+                                    break
+                        kandidat_master.append((_is_generic_barang(nama_barang_asli), pos, -len(nama_barang_asli), nama_barang_asli))
 
         if kandidat_master:
             kandidat_master.sort(key=lambda x: (x[0], x[1], x[2]))
@@ -1419,30 +1581,30 @@ def ekstrak_entitas(
     # 2. FALLBACK: Cek dari Kamus Alias
     kandidat = []
     for kata_kunci in DAFTAR_KATA_KUNCI:
-        if kata_kunci in teks_lower:
+        if _contains_keyword(teks_lower, kata_kunci):
             mapped = KAMUS_ALIAS.get(kata_kunci)
             kandidat.append((kata_kunci, mapped))
 
     # Jika tidak ada exact match di KAMUS_ALIAS, coba fuzzy match dengan KAMUS_ALIAS!
     if not kandidat:
-        # Ambil semua kata dari teks yang mungkin nama barang
-        kata_teks = [
-            w
-            for w in teks_lower.split()
-            if len(w) >= 3 and w not in _MASTER_BARANG_UNITS and w not in _TRANSAKSI_HINT_WORDS
-        ]
-        if kata_teks:
-            daftar_kata_kunci = list(KAMUS_ALIAS.keys())
-            for kata in kata_teks:
-                # Gunakan fuzz.ratio (match keseluruhan kata) dengan skor minimal 90
-                match = process.extractOne(kata, daftar_kata_kunci, scorer=fuzz.ratio)
-                if match and match[1] >= 90:  # Skor minimal 90 untuk menghindari false positive
-                    kata_kunci = match[0]
-                    mapped = KAMUS_ALIAS.get(kata_kunci)
-                    if mapped:
-                        pos = teks_lower.find(kata)
-                        if pos != -1:
-                            kandidat.append((kata_kunci, mapped))
+        daftar_kata_kunci = list(KAMUS_ALIAS.keys())
+        # Generate n-grams (1-4 words) and match against them
+        ngrams = generate_ngrams(teks_lower)
+        for ngram in ngrams:
+            match = process.extractOne(ngram, daftar_kata_kunci, scorer=fuzz.token_set_ratio)
+            if match and match[1] >= 70:
+                kata_kunci = match[0]
+                mapped = KAMUS_ALIAS.get(kata_kunci)
+                if mapped and _contains_keyword(teks_lower, kata_kunci):
+                    # Cari posisi di teks
+                    pos = teks_lower.find(ngram)
+                    if pos == -1:
+                        for word in kata_kunci.split():
+                            pos_candidate = teks_lower.find(word)
+                            if pos_candidate != -1:
+                                pos = pos_candidate
+                                break
+                    kandidat.append((kata_kunci, mapped))
 
     if kandidat:
         kandidat.sort(
@@ -1466,14 +1628,19 @@ def ekstrak_entitas(
     teks_qty = teks_lower
     teks_qty = re.sub(r"\b(19\d{2}|20\d{2})\s+(pak|bu|mas|mbak|kak|ibu|bapak)\b", r"\2", teks_qty)
 
-    # Hindari menafsirkan angka tanggal seperti '04 april' sebagai jumlah.
+    # Hindari menafsirkan angka tanggal atau frasa waktu sebagai jumlah.
     date_like_pattern = re.compile(
-        r"\b(?:0?[1-9]|[12][0-9]|3[01])\s+(?:januari|jan|februari|feb|maret|mar|april|apr|mei|juni|jun|juli|jul|agustus|agu|agus|september|sep|oktober|okt|november|nov|nop|desember|des)(?:\s+\d{2,4})?\b",
+        r"\b(?:tanggal|tgl|tgl\.)\s*\d{1,2}\b|\b(?:0?[1-9]|[12][0-9]|3[01])\s+(?:januari|jan|februari|feb|maret|mar|april|apr|mei|juni|jun|juli|jul|agustus|agu|agus|september|sep|oktober|okt|november|nov|nop|desember|des)(?:\s+\d{2,4})?\b|\b\d{1,2}[-/]\d{1,2}(?:[-/]\d{2,4})?\b",
+        re.IGNORECASE,
+    )
+    date_phrase_pattern = re.compile(
+        r"\b(?:\d+\s*(?:hari|hri|minggu|mgg|bulan|bln)\s*(?:lagi|depan|kedepan|ke depan|yang lalu|lalu)|(?:hari\s+)?(?:senin|selasa|rabu|kamis|jumat|sabtu|minggu))\b",
         re.IGNORECASE,
     )
     teks_qty_for_quantity = teks_qty
     if date_like_pattern.search(teks_qty):
         teks_qty_for_quantity = date_like_pattern.sub("", teks_qty)
+    teks_qty_for_quantity = date_phrase_pattern.sub("", teks_qty_for_quantity)
 
     # Cari angka + kata apapun (kemudian kita cek fuzzy match satuan)
     jumlah_satuan_match = None
@@ -1615,6 +1782,7 @@ def ekstrak_entitas(
         for k in [
             "cicil",
             "dicil",
+            "dicicil",
             "nyicil",
             "dp",
             "uang muka",
@@ -2000,6 +2168,9 @@ def ekstrak_entitas(
         if entitas.get("TOTAL") and not entitas.get("JUMLAH"):
             entitas["HARGA"] = entitas["TOTAL"]
             entitas["TOTAL"] = None
+    # NOTE: Do NOT auto-fallback here for generic Read Data queries
+    # Let downstream handle date filtering for queries without explicit date
+    # Fallback only happens at the very end before return statement
 
     # Final guard untuk perintah generik agar hint dataset/rule lama
     # tidak mengisi entitas yang seharusnya kosong.
@@ -2073,6 +2244,18 @@ def ekstrak_entitas(
         if not entitas.get("STATUS"):
             entitas["STATUS"] = "Dicicil"
 
+    # Final fallback: ONLY for Dashboard Harian context
+    # Do NOT fallback for generic read queries without explicit date mention
+    if not entitas.get("TANGGAL"):
+        # Only fallback if:
+        # 1. Dashboard Harian (special daily report)
+        # 2. AND user explicitly said "hari ini"
+        if (entitas.get("KONTEKS_AGREGASI") == "Dashboard Harian" and 
+            ("hari ini" in teks_lower or "hariini" in teks_lower)):
+            entitas["TANGGAL"] = hari_ini.strftime("%d-%m-%Y")
+        # For other Read Data queries without explicit date, leave TANGGAL as None
+        # Downstream handlers will decide how to process queries without date filter
+
     return {"entitas": entitas}
 
 
@@ -2084,8 +2267,51 @@ def tentukan_intent(entitas, teks_lower):
     aksi = entitas.get("AKSI")
     konteks = entitas.get("KONTEKS_AGREGASI")
 
+    # 1. Check for Chit Chat first (keywords)
+    chit_chat_keywords = ["halo", "hi", "selamat pagi", "selamat siang", "selamat sore", "selamat malam"]
+    if any(kw in teks_lower for kw in chit_chat_keywords):
+        return "Chit_Chat"
+
+    # 2. Check for Update Delete Transaksi (keywords)
+    update_delete_keywords = ["update transaksi", "edit transaksi", "hapus transaksi"]
+    if any(kw in teks_lower for kw in update_delete_keywords):
+        return "Update_Delete_Transaksi"
+
+    # 3. Check for CRUD Barang (keywords)
+    crud_keywords = ["tambah barang", "edit harga", "tampilkan harga", "cek harga", "set harga", "hapus barang"]
+    if any(kw in teks_lower for kw in crud_keywords):
+        return "CRUD_Barang"
+
+    # 4. Check for Pelunasan Hutang (keywords)
+    pelunasan_keywords = ["bayar hutang", "bayar cicilan", "lunas hutang", "pelunasan", "bayar tunggakan", "bayar tagihan"]
+    if any(kw in teks_lower for kw in pelunasan_keywords):
+        return "Pelunasan_Hutang"
+
+    # 5. Check for Catat Penjualan FIRST before Read checks!
+    catat_penjualan_keywords = ["ambil", "pesan", "beli", "order"]
+    has_catat_keyword = any(kw in teks_lower for kw in catat_penjualan_keywords)
+    if entitas.get("BARANG"):  # If there's ANY product mentioned, default to Catat Penjualan!
+        if entitas.get("STATUS") in ["Dicicil", "Hutang"]:
+            return "Catat_Penjualan_Cicil"
+        return "Catat_Penjualan_Lunas"
+
+    # 6. Check for Read Analitik Penjualan (keywords)
+    read_analitik_penjualan_keywords = ["total uang masuk", "total transaksi", "pembeli terbanyak"]
+    if any(kw in teks_lower for kw in read_analitik_penjualan_keywords):
+        return "Read_Analitik_Penjualan"
+
+    # 7. Check for Read Analitik Hutang (keywords)
+    read_analitik_hutang_keywords = ["siapa yang masih hutang", "tampilkan tagihan", "total tagihan", "total tunggakan"]
+    if any(kw in teks_lower for kw in read_analitik_hutang_keywords):
+        return "Read_Analitik_Hutang"
+
+    # 8. Check for Read Transaksi Spesifik (keywords)
+    read_transaksi_keywords = ["tampilkan semua transaksi", "cek transaksi", "tampilkan transaksi"]
+    if any(kw in teks_lower for kw in read_transaksi_keywords):
+        return "Read_Transaksi_Spesifik"
+
     ds_intent, ds_score = match_intent_from_dataset(teks_lower)
-    if ds_intent and ds_score >= 85:
+    if ds_intent and ds_score >= 80:  # Raise threshold to avoid false positives
         allow = True
         if ds_intent in {
             "Read_Analitik_Penjualan",
@@ -2145,11 +2371,5 @@ def tentukan_intent(entitas, teks_lower):
 
     if aksi == "Update Status" or aksi == "Delete Data":
         return "Update_Delete_Transaksi"
-
-    # Default: Catat Penjualan
-    if entitas.get("BARANG") and entitas.get("NAMA"):
-        if entitas.get("STATUS") in ["Dicicil", "Hutang"]:
-            return "Catat_Penjualan_Cicil"
-        return "Catat_Penjualan_Lunas"
 
     return "Unknown"

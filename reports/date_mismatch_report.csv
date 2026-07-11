@@ -1,0 +1,12 @@
+text,waktu,expected,predicted,reason
+"3 hari kedepan pak ardi ambil barang 100 buah brownis udah dibayar tunai","1 minggu lagi","19-07-2026","14-07-2026","pred_differs"
+"3 hari yang lalu pak ardi ambil barang 100 buah brownis udah dibayar tunai","3 hari kedepan","14-07-2026","08-07-2026","pred_differs"
+"Berapa harga brownis","3 hari lalu","08-07-2026","","parser_missed"
+"brp harga brownis","besok","12-07-2026","","parser_missed"
+"hari senin pak ardi ambil barang 100 buah brownis udah dibayar tunai","hari minggu","12-07-2026","13-07-2026","pred_differs"
+"hei","hari senin","13-07-2026","","parser_missed"
+"masukkan barang baru brownis","lusa","13-07-2026","","parser_missed"
+"minggu depang pak ardi ambil barang 100 buah brownis udah dibayar tunai","minggu depan","19-07-2026","18-07-2026","pred_differs_literal"
+"munculkan semua transaksi","minggu depan","19-07-2026","11-07-2026","pred_differs"
+"tgl 21/04/2026 pak andi ambil permen 10 dus dicicil 50000 transfer","tanggal 19-06-2026","19-06-2026","21-04-2026","pred_differs"
+"hari ini budi pesan bembeng 40 ctn; meses 20 ctn; willo 100 ctn lunas tunai","21 april 2026","21-04-2026","11-07-2026","pred_differs"
