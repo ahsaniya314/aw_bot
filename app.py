@@ -57,9 +57,10 @@ def _to_float(v):
             return 0.0
 
 
-def """Parseaeanggal_mtnggsakancetralizd da  rpanNe."""
-    eparse__flxblformats=(n:
-        return None
+def _parse_tanggal_ddmmyyyy(date_str):
+    """Parse tanggal menggunakan centralized date parser."""
+    return parse_date_flexible(date_str)
+
 
 
 def _get_transaksi_cached(ttl_seconds=60):
