@@ -1433,7 +1433,7 @@ def ekstrak_entitas(
                 # - Bukan bagian dari KAMUS_ALIAS (barang)
                 if (
                     w not in ignore_for_name
-                    and not w.isdigit()
+                    and not re.search(r"\d", w)
                     and len(w) >= 3
                     and w not in bulan_dict
                     and not re.search(r"\d+[kjt]", w)
@@ -1647,6 +1647,11 @@ def ekstrak_entitas(
     for m in re.finditer(r"(\d+)\s*([a-zA-Z]+)\b", teks_qty_for_quantity):
         jumlah_candidate = m.group(1)
         satuan_candidate = m.group(2)
+        
+        # Skip nominal uang agar tidak dianggap sebagai jumlah barang
+        if satuan_candidate.lower() in ["juta", "jt", "ribu", "rb", "rupiah", "rp"]:
+            continue
+            
         if len(jumlah_candidate) == 4 and jumlah_candidate.isdigit():
             year_val = int(jumlah_candidate)
             if 1900 <= year_val <= 2100:
@@ -1655,10 +1660,10 @@ def ekstrak_entitas(
         if satuan_fuzzy:
             jumlah_satuan_match = (jumlah_candidate, satuan_fuzzy)
             break
-        # Jika tidak ada satuan yang valid, jangan gunakan angka tahun/tanggal sebagai jumlah.
+        # Jika tidak ada satuan yang valid, simpan sebagai fallback tetapi jangan break dulu
         if int(jumlah_candidate) < 1000:
-            jumlah_satuan_match = (jumlah_candidate, None)
-            break
+            if not jumlah_satuan_match:
+                jumlah_satuan_match = (jumlah_candidate, None)
 
     if jumlah_satuan_match:
         jumlah, satuan_candidate = jumlah_satuan_match

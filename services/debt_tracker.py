@@ -182,8 +182,7 @@ def proses_bayar_tambahan(
             }
             db_client.insert_histori_pelunasan_db(histori_data)
         except Exception as e:
-            print(f"Warning: Could not save payment history: {e}")
-            pass
+            logger.warning(f"Could not save payment history: {e}")
 
         return {
             "sukses": True,
@@ -194,5 +193,5 @@ def proses_bayar_tambahan(
         }
 
     except Exception as e:
-        print(f"Error proses_bayar_tambahan DB: {e}")
+        logger.error(f"Error proses_bayar_tambahan DB: {e}")
         return {"sukses": False, "error": str(e)}

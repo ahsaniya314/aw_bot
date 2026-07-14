@@ -7,7 +7,7 @@ import re
 
 from rapidfuzz import fuzz
 
-from core.master_data import format_rupiah
+from core.master_data import format_rupiah, parse_rupiah
 
 logger = logging.getLogger("bot_logger")
 
@@ -82,3 +82,24 @@ def hitung_ulang_total_dinamis(entitas):
             entitas["TOTAL"] = format_rupiah(total_calc)
     except Exception as e:
         logger.debug(f"Gagal hitung total dinamis: {e}")
+
+
+def calculate_total(quantity_str: str, price_str: str) -> tuple[str, float]:
+    """
+    Hitung total dari quantity dan price string.
+    
+    Args:
+        quantity_str: String jumlah (misal: "5", "10 pcs")
+        price_str: String harga (misal: "Rp 50.000", "50000")
+        
+    Returns:
+        Tuple (formatted_total_string, total_numeric)
+    """
+    try:
+        qty = int(re.search(r"\d+", str(quantity_str)).group())
+        price = parse_rupiah(price_str)
+        total = qty * price
+        return format_rupiah(total), total
+    except Exception as e:
+        logger.debug(f"Failed to calculate total: {e}")
+        return "0", 0.0

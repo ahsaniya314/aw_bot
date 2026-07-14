@@ -73,8 +73,8 @@ class UserSessions:
                 with self.lock:
                     self.local_cache[chat_id_int] = session_data
                 return session_data
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"Error in get_session for {chat_id}: {e}")
         return None
 
     def __setitem__(self, chat_id, value):
@@ -109,14 +109,16 @@ class UserSessions:
                 if k in session:
                     return True
             return False
-        except Exception:
+        except Exception as e:
+            logger.debug(f"Error checking session contains for {chat_id}: {e}")
             return False
 
     def get(self, chat_id, default=None):
         try:
             chat_id_int = int(chat_id)
             return self._get_session(chat_id_int)
-        except Exception:
+        except Exception as e:
+            logger.debug(f"Error in get for {chat_id}: {e}")
             return default
 
     def setdefault(self, chat_id, default=None):
@@ -130,7 +132,8 @@ class UserSessions:
             session.setdefault("state", "standby")
             session.setdefault("ui_keyboard_shown", False)
             return session
-        except Exception:
+        except Exception as e:
+            logger.debug(f"Error in setdefault for {chat_id}: {e}")
             return default or {"state": "standby", "ui_keyboard_shown": False}
 
     def ensure(self, chat_id):
@@ -143,5 +146,6 @@ class UserSessions:
             # Kosongkan di database
             db_client.save_session_db(chat_id_int, {})
             return val
-        except Exception:
+        except Exception as e:
+            logger.debug(f"Error in pop for {chat_id}: {e}")
             return default

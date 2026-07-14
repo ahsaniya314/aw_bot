@@ -7,6 +7,7 @@ from datetime import datetime
 
 from core.master_data import format_rupiah, get_current_date_wib, normalisasi_tanggal_gs, parse_rupiah
 from database import db_client
+from utils.date_parser import format_date_display, parse_date_flexible
 
 
 def get_dashboard_data_core(db_transaksi, target_date):
@@ -84,11 +85,10 @@ def get_dashboard_data_core(db_transaksi, target_date):
             }
         )
 
-    # Parse tanggal untuk display
     try:
-        date_obj = datetime.strptime(target_date, "%d-%m-%Y")
-        tanggal_display = date_obj.strftime("%d %B %Y")
-    except:
+        date_obj = parse_date_flexible(target_date)
+        tanggal_display = format_date_display(date_obj) if date_obj else target_date
+    except Exception:
         tanggal_display = target_date
 
     return {

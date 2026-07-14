@@ -19,6 +19,7 @@ from core.master_data import (
     tambah_barang,
     update_barang,
 )
+from utils.helpers import calculate_total
 from handlers.command_handler import (
     build_reply_keyboard,
     cmd_cari,
@@ -43,6 +44,8 @@ from utils.security import (
     authorized_only,
     log_exception,
     notify_admins,
+    safe_clear_session,
+    safe_delete_message,
     safe_edit_message,
     sanitize_input,
 )
@@ -68,8 +71,10 @@ def _extract_batch_context_from_text(user_text, mapping_metode=None):
             if yy < 100:
                 yy += 2000
             context["TANGGAL"] = f"{dd:02d}-{mm:02d}-{yy:04d}"
-        except Exception:
-            pass
+        except ValueError as e:
+            logger.debug(f"Invalid date format in batch context: {e}")
+        except Exception as e:
+            logger.debug(f"Error parsing batch date: {e}")
 
     # Nama eksplisit "nama: budi santoso"
     m_named = re.search(r"\bnama\s*[:=]\s*([a-zA-Z][a-zA-Z\s\.'-]{1,80})", text, re.IGNORECASE)
@@ -151,12 +156,13 @@ def _extract_fast_date(text):
         return None
     if "hari ini" in raw:
         return get_current_date_wib()
-    if "kemarin" in raw or "kemaren" in raw:
+    if "kemarin" in raw or "kemeren" in raw:
         try:
             from datetime import timedelta
 
             return (get_current_datetime_wib() - timedelta(days=1)).strftime("%d-%m-%Y")
-        except Exception:
+        except Exception as e:
+            logger.debug(f"Error calculating yesterday's date: {e}")
             return None
     m = _BATCH_DATE_RE.search(raw)
     if m:
@@ -167,7 +173,11 @@ def _extract_fast_date(text):
             if yy < 100:
                 yy += 2000
             return f"{dd:02d}-{mm:02d}-{yy:04d}"
-        except Exception:
+        except ValueError as e:
+            logger.debug(f"Invalid date format in fast date extraction: {e}")
+            return None
+        except Exception as e:
+            logger.debug(f"Error extracting fast date: {e}")
             return None
     return None
 
@@ -258,10 +268,7 @@ def _terima_multi_nama_pemesan(message):
     if not sess or sess.get("state") != "awaiting_multi_nama":
         return
 
-    try:
-        bot.delete_message(chat_id, message.message_id)
-    except Exception:
-        pass
+    safe_delete_message(bot, chat_id, message.message_id)
 
     if text.lower() in {"batal", "cancel", "stop", "exit"}:
         try:
@@ -273,15 +280,9 @@ def _terima_multi_nama_pemesan(message):
                 parse_mode="HTML",
                 reply_markup=None,
             )
-        except Exception:
-            pass
-        try:
-            # Reset seluruh sesi!
-            del user_sessions[chat_id]
-        except Exception:
-            # Jika gagal hapus, bersihkan semua dan set state ke standby
-            sess.clear()
-            sess["state"] = "standby"
+        except Exception as e:
+            logger.error(f"Failed to send cancel message: {e}")
+        safe_clear_session(chat_id)
         return
 
     nama = sanitize_input(text).strip()
@@ -393,11 +394,7 @@ def handle_text_message(message):
         and sess.get("state")
         and sess.get("state") != "standby"
     ):
-        try:
-            del user_sessions[chat_id]
-        except Exception:
-            sess.clear()
-            sess["state"] = "standby"
+        safe_clear_session(chat_id)
         if teks_clean.lower() in {"batal", "cancel", "stop", "exit"}:
             bot.reply_to(
                 message, "❌ <b>Dibatalkan.</b> Silakan ketik perintah baru.", parse_mode="HTML"
@@ -664,7 +661,11 @@ def handle_text_message(message):
             y_int = int(y)
             if 2000 <= y_int <= 2100:
                 return y_int
-        except Exception:
+        except ValueError as e:
+            logger.debug(f"Invalid year format: {e}")
+            return None
+        except Exception as e:
+            logger.debug(f"Error extracting year: {e}")
             return None
         return None
 
@@ -751,15 +752,9 @@ def handle_text_message(message):
                 entitas["SATUAN"] = info_h.get("satuan") or entitas.get("SATUAN")
 
         if entitas.get("HARGA") and entitas.get("JUMLAH") and not entitas.get("TOTAL"):
-            try:
-                _m = re.search(r"\d+", str(entitas["JUMLAH"]))
-                if not _m:
-                    raise ValueError("Jumlah tidak valid")
-                jml_num = int(_m.group())
-                hrg_num = parse_rupiah(entitas["HARGA"])
-                entitas["TOTAL"] = format_rupiah(jml_num * hrg_num)
-            except Exception:
-                pass
+            total_str, _ = calculate_total(entitas["JUMLAH"], entitas["HARGA"])
+            if total_str and total_str != "0":
+                entitas["TOTAL"] = total_str
 
         # Jika masih ada field inti yang kosong, arahkan ke mode lengkapi data
         wajib = ["TANGGAL", "NAMA", "BARANG", "JUMLAH", "STATUS", "METODE_PEMBAYARAN"]
@@ -803,13 +798,9 @@ def handle_text_message(message):
                     parse_mode="HTML",
                     reply_markup=None,
                 )
-            except Exception:
-                pass
-            try:
-                del user_sessions[chat_id]
-            except Exception:
-                sess.clear()
-                sess["state"] = "standby"
+            except Exception as e:
+                logger.error(f"Failed to send cancel message in OCR flow: {e}")
+            safe_clear_session(chat_id)
             return
 
         # Tahun
@@ -830,10 +821,7 @@ def handle_text_message(message):
                 prompt_msg_id,
                 parse_mode="HTML",
             )
-            try:
-                bot.delete_message(chat_id, message.message_id)
-            except Exception:
-                pass
+            safe_delete_message(bot, chat_id, message.message_id)
             return
 
         # Produk
@@ -876,10 +864,7 @@ def handle_text_message(message):
             _finalize_ocr_session(
                 sess, nama=nama, tahun=tahun, produk=produk, prompt_msg_id=prompt_msg_id
             )
-            try:
-                bot.delete_message(chat_id, message.message_id)
-            except Exception:
-                pass
+            safe_delete_message(bot, chat_id, message.message_id)
             return
 
     # Wizard / edit flows — fallback jika step handler hilang (restart bot, sesi persisten)
@@ -896,11 +881,7 @@ def handle_text_message(message):
             and wizard_state
             and wizard_state != "standby"
         ):
-            try:
-                del user_sessions[chat_id]
-            except Exception:
-                sess_wizard.clear()
-                sess_wizard["state"] = "standby"
+            safe_clear_session(chat_id)
             bot.reply_to(
                 message, "❌ <b>Dibatalkan.</b> Silakan ketik perintah baru.", parse_mode="HTML"
             )
@@ -1205,11 +1186,7 @@ def handle_text_message(message):
                         "━━━━━━━━━━━━━━━━━━━━━━\n" + "\n".join(hasil_lines)
                     )
                     safe_edit_message(bot, teks, chat_id, msg_proses.message_id, parse_mode="HTML")
-                    try:
-                        user_sessions[chat_id]["state"] = "standby"
-                        user_sessions[chat_id]["entitas"] = {}
-                    except Exception:
-                        pass
+                    safe_clear_session(chat_id)
                     return
 
                 # ✨ CONTEXT INHERITANCE: Salin konteks lama (misal Nama/Tgl/Metode) ke setiap item
@@ -1456,8 +1433,10 @@ def handle_text_message(message):
                     jml_num = int(_m.group())
                     hrg_num = parse_rupiah(entitas["HARGA"])
                     entitas["TOTAL"] = format_rupiah(jml_num * hrg_num)
-                except Exception:
-                    pass
+                except ValueError as e:
+                    logger.debug(f"Invalid quantity or price for total calculation: {e}")
+                except Exception as e:
+                    logger.debug(f"Error calculating total: {e}")
 
         # ✨ VALIDASI INTEGRITAS DATA (Cegah harga/jumlah 0)
         if entitas.get("AKSI") == "Tambah Penjualan":
@@ -1508,8 +1487,10 @@ def handle_text_message(message):
                     setengah_val = total_val // 2
                     entitas["NOMINAL_BAYAR"] = format_rupiah(setengah_val)
                     entitas["STATUS"] = "Dicicil"
-            except:
-                pass
+            except ValueError as e:
+                logger.debug(f"Invalid total value for half payment: {e}")
+            except Exception as e:
+                logger.debug(f"Error calculating half payment: {e}")
 
         intent = hasil_nlp.get("intent")
         aksi = entitas.get("AKSI")
@@ -1591,10 +1572,7 @@ def handle_text_message(message):
             tangani_hapus_barang_chat(chat_id, msg_proses.message_id)
         elif aksi == "Master Data Menu":
             cmd_master_barang(message)
-            try:
-                bot.delete_message(chat_id, msg_proses.message_id)
-            except:
-                pass
+            safe_delete_message(bot, chat_id, msg_proses.message_id)
         elif aksi == "Catat Pelunasan":
             tangani_catat_pelunasan(chat_id, msg_proses.message_id)
         elif aksi == "Update Status":

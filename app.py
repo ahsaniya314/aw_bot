@@ -15,6 +15,7 @@ from database.db_client import ping_supabase_keep_alive
 
 # Import scheduler task
 from services import auto_reminder
+from utils.date_parser import parse_date_flexible
 from utils.security import safe_debug_event
 
 load_dotenv()
@@ -56,17 +57,8 @@ def _to_float(v):
             return 0.0
 
 
-def _parse_tanggal_ddmmyyyy(s):
-    if not s:
-        return None
-    teks = str(s).strip()
-    try:
-        return datetime.strptime(teks, "%d-%m-%Y").date()
-    except Exception:
-        pass
-    try:
-        return datetime.strptime(teks[:10], "%Y-%m-%d").date()
-    except Exception:
+def """Parseaeanggal_mtnggsakancetralizd da  rpanNe."""
+    eparse__flxblformats=(n:
         return None
 
 

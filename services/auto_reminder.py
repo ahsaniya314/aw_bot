@@ -4,6 +4,7 @@ import urllib.parse
 from datetime import date, datetime
 
 from database import db_client
+from utils.date_parser import parse_date_flexible
 
 logger = logging.getLogger(__name__)
 
@@ -11,7 +12,7 @@ logger = logging.getLogger(__name__)
 def parse_db_date(date_str):
     """
     Mengubah string tanggal (DD-MM-YYYY) menjadi object date.
-    Mendukung penanganan fallback jika formatnya berbeda.
+    Menggunakan centralized date parser.
     """
     if not date_str:
         return None
@@ -19,13 +20,12 @@ def parse_db_date(date_str):
     # Coba bersihkan karakter tak terlihat
     date_str = str(date_str).strip()
 
-    for fmt in ("%d-%m-%Y", "%Y-%m-%d", "%d/%m/%Y"):
-        try:
-            return datetime.strptime(date_str, fmt).date()
-        except ValueError:
-            continue
+    # Gunakan centralized date parser dengan regex fallback
+    result = parse_date_flexible(date_str, formats=("%d-%m-%Y", "%Y-%m-%d", "%d/%m/%Y"))
+    if result:
+        return result
 
-    # Jika gagal total, coba deteksi dengan regex sederhana
+    # Fallback regex jika centralized parser gagal
     match = re.search(r"(\d{2})[-/](\d{2})[-/](\d{4})", date_str)
     if match:
         try:

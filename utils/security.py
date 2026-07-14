@@ -249,3 +249,21 @@ def safe_answer_callback_query(bot, call, text=None, show_alert=False):
     except Exception as e:
         logger.debug(f"Tidak bisa menjawab callback query {call.id}: {e}")
         pass
+
+
+def safe_clear_session(chat_id, fallback_state="standby"):
+    """Clear session dengan fallback yang aman."""
+    try:
+        if chat_id in ctx.user_sessions:
+            del ctx.user_sessions[chat_id]
+        return True
+    except Exception as e:
+        logger.warning(f"Failed to delete session {chat_id}: {e}")
+        try:
+            sess = ctx.user_sessions.get(chat_id, {})
+            sess.clear()
+            sess["state"] = fallback_state
+            ctx.user_sessions[chat_id] = sess
+        except Exception as e2:
+            logger.error(f"Failed to clear session {chat_id}: {e2}")
+        return False

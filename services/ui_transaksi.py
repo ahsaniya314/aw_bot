@@ -10,6 +10,8 @@ from core.master_data import cari_harga_default, format_rupiah, parse_rupiah
 from services.cache_manager import get_cached_barang
 from services.debt_tracker import hitung_sisa_tagihan
 from services.ui_common import _friendly_field_name, _missing_keys_multi, _missing_keys_single
+from utils.helpers import calculate_total
+from utils.message_formatter import format_correction_line, format_money_field, format_status_line
 from utils.security import safe_edit_message
 
 logger = logging.getLogger("bot_logger")
@@ -62,12 +64,10 @@ def apply_batch_financials(results, batch_payment_total=None):
         ent = res.get("entitas", {}) or {}
         total_num = parse_rupiah(ent.get("TOTAL") or 0)
         if total_num <= 0 and ent.get("HARGA") and ent.get("JUMLAH"):
-            try:
-                qty = int(re.search(r"\d+", str(ent["JUMLAH"])).group())
-                total_num = parse_rupiah(ent["HARGA"]) * qty
-                ent["TOTAL"] = format_rupiah(total_num)
-            except Exception:
-                total_num = 0
+            total_str, total_calc = calculate_total(ent["JUMLAH"], ent["HARGA"])
+            total_num = total_calc
+            if total_str and total_str != "0":
+                ent["TOTAL"] = total_str
         line_items.append((res, ent, total_num))
         grand_total += total_num
 
@@ -288,13 +288,13 @@ def susun_balasan_update(chat_id, message_id_target):
     if baru > 0:
         info_akumulasi = (
             f"━━━━━━━━━━━━━━━━━━\n"
-            f"2️⃣ <b>KOREKSI</b> ➡️ Jadi <code>{format_rupiah(total_jika_koreksi)}</code> (Menimpa)\n"
+            + format_correction_line(_total_num, total_jika_koreksi)
         )
 
     # Untuk preview sisa tagihan, kita gunakan skenario "Tambah" sebagai default preview
     _tagihan, _, _ = hitung_sisa_tagihan(_total_num, total_jika_tambah, _status_val)
     baris_tagihan = (
-        f"⚠️ <b>Sisa Tagihan (Jika Tambah):</b> <code>{format_rupiah(_tagihan)}</code>"
+        format_money_field("⚠️ Sisa Tagihan (Jika Tambah):", _tagihan, is_bold=False)
         if _tagihan > 0
         else "✅ <b>Status:</b> LUNAS"
     )
@@ -375,12 +375,8 @@ def susun_balasan_resume(chat_id, message_id_target, is_expert=False, confirm_fo
     _status_val = entitas.get("STATUS") or ""
     _tagihan, _uang_masuk, _ = hitung_sisa_tagihan(_total_num, _nominal_num, _status_val)
 
-    baris_uang_masuk = (
-        f"💸 <b>Uang Masuk:</b> <b>{format_rupiah(_uang_masuk)}</b>\n" if _uang_masuk > 0 else ""
-    )
-    baris_tagihan = (
-        f"⚠️ <b>Jumlah Tagihan:</b> <b>{format_rupiah(_tagihan)}</b>\n" if _tagihan > 0 else ""
-    )
+    baris_uang_masuk = format_money_field("💸 Uang Masuk:", _uang_masuk) + "\n" if _uang_masuk > 0 else ""
+    baris_tagihan = format_money_field("⚠️ Jumlah Tagihan:", _tagihan) + "\n" if _tagihan > 0 else ""
 
     # Label Harga Bawaan & Validasi Satuan
     lbl_harga = "💰 <b>Harga Satuan:</b>"
@@ -506,8 +502,8 @@ def susun_balasan_resume(chat_id, message_id_target, is_expert=False, confirm_fo
             f"💵 <b>Total Harga:</b> <b>{entitas.get('TOTAL') or '-'}</b>\n"
             f"💳 <b>Status Pembayaran:</b> <b>{entitas.get('STATUS') or '-'}</b>\n"
             f"🏦 <b>Metode Pembayaran:</b> <b>{entitas.get('METODE_PEMBAYARAN') or '-'}</b>\n"
-            f"⚠️ <b>Jumlah Tagihan:</b> <b>{format_rupiah(_tagihan)}</b>\n"
-            f"💸 <b>Jumlah Uang Masuk:</b> <b>{format_rupiah(_uang_masuk)}</b>\n"
+            + format_money_field("⚠️ Jumlah Tagihan:", _tagihan) + "\n"
+            + format_money_field("💸 Jumlah Uang Masuk:", _uang_masuk) + "\n"
             f"{info_extra}"
             "━━━━━━━━━━━━━━━━━━\n"
             "<i>Apakah data ini sudah benar dan siap dikirim ke database?</i>"
@@ -600,7 +596,7 @@ def tampilkan_menu_kriteria_edit(chat_id, message_id_target, mode="all"):
 
     missing_label = ""
     if missing:
-        friendly = [_friendly_field_name(m) for m in missing]
+        friendly = list(filter(None, [_friendly_field_name(m) for m in missing]))
         missing_label = f"⚠️ <b>Data belum lengkap:</b> {', '.join(friendly)}\n━━━━━━━━━━━━━━━━━━\n"
 
     judul = "🧩 <b>LENGKAPI DATA</b>" if mode == "missing_only" else "🛠️ <b>UBAH DATA</b>"
@@ -700,7 +696,8 @@ def tampilkan_menu_kriteria_edit_multi(chat_id, message_id_target, item_index, m
 
     missing_label = ""
     if missing:
-        missing_label = f"⚠️ <b>Data belum lengkap:</b> {', '.join([_friendly_field_name(m) for m in missing])}\n━━━━━━━━━━━━━━━━━━\n"
+        friendly = list(filter(None, [_friendly_field_name(m) for m in missing]))
+        missing_label = f"⚠️ <b>Data belum lengkap:</b> {', '.join(friendly)}\n━━━━━━━━━━━━━━━━━━\n"
 
     judul = (
         "🧩 <b>LENGKAPI DATA (BATCH)</b>"
@@ -827,19 +824,14 @@ def susun_balasan_multi_resume(chat_id, message_id_target):
             if matches:
                 ent["HARGA"] = format_rupiah(matches[0]["harga"])
                 if ent.get("JUMLAH"):
-                    try:
-                        jml_num = int(re.search(r"\d+", str(ent["JUMLAH"])).group())
-                        ent["TOTAL"] = format_rupiah(jml_num * matches[0]["harga"])
-                    except:
-                        pass
+                    total_str, _ = calculate_total(ent["JUMLAH"], ent["HARGA"])
+                    if total_str and total_str != "0":
+                        ent["TOTAL"] = total_str
         else:
             if ent.get("HARGA") and ent.get("JUMLAH") and not ent.get("TOTAL"):
-                try:
-                    jml_num = int(re.search(r"\d+", str(ent["JUMLAH"])).group())
-                    hrg_num = parse_rupiah(ent["HARGA"])
-                    ent["TOTAL"] = format_rupiah(jml_num * hrg_num)
-                except:
-                    pass
+                total_str, _ = calculate_total(ent["JUMLAH"], ent["HARGA"])
+                if total_str and total_str != "0":
+                    ent["TOTAL"] = total_str
 
         if not ent.get("STATUS"):
             ent["STATUS"] = "Hutang"
@@ -874,16 +866,15 @@ def susun_balasan_multi_resume(chat_id, message_id_target):
         summary_text += f"🏦 Metode: <b>{ent.get('METODE_PEMBAYARAN') or '-'}</b>"
 
         if status == "DICICIL":
-            summary_text += f"\n💸 Uang Masuk: <code>{format_rupiah(nominal)}</code>\n"
-            summary_text += f"⚠️ Sisa Tagihan: <code>{format_rupiah(tagihan)}</code>"
+            summary_text += "\n" + format_status_line("DICICIL", nominal, tagihan)
         elif status == "HUTANG":
-            summary_text += f"\n💸 Uang Masuk: <code>{format_rupiah(0)}</code>\n"
-            summary_text += f"⚠️ Sisa Tagihan: <code>{format_rupiah(total_num)}</code>"
+            summary_text += "\n" + format_status_line("HUTANG", 0, total_num)
         else:
-            summary_text += f"\n💸 Uang Masuk: <code>{format_rupiah(nominal)}</code>"
+            summary_text += "\n" + format_status_line("LUNAS", nominal, 0)
 
         if missing_keys:
-            summary_text += f"\n⚠️ Data kurang: <i>{', '.join([_friendly_field_name(m) for m in missing_keys])}</i>"
+            friendly_names = list(filter(None, [_friendly_field_name(m) for m in missing_keys]))
+            summary_text += f"\n⚠️ Data kurang: <i>{', '.join(friendly_names)}</i>"
 
         summary_text += "\n━━━━━━━━━━━━━━━━━━━━━━\n"
 
