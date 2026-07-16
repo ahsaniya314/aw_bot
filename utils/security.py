@@ -53,11 +53,12 @@ class RateLimiter:
 # SECURITY: Role-Based Access Control (RBAC)
 # ==========================================
 def authorized_only(func):
-    """Decorator untuk membatasi akses bot hanya untuk admin terdaftar."""
+    """Decorator untuk membatasi akses bot ke Owner atau Admin yang terdaftar."""
 
     @wraps(func)
     def wrapper(obj, *args, **kwargs):
         try:
+            import telebot
             # Handle both message and callback_query objects
             user_id = obj.from_user.id
             func_name = func.__name__
@@ -67,21 +68,54 @@ def authorized_only(func):
                 f"[AUTH] Checking access for user {user_id} → {func_name} (type: {obj_type})"
             )
 
-            # Jika AUTHORIZED_ADMINS kosong, izinkan semua (mode pengembangan/transisi)
-            # Jika sudah diisi, blokir user asing.
+            # Bypass check jika ini adalah callback request atau approval
+            is_callback = hasattr(obj, "data")
+            if is_callback:
+                cmd = obj.data
+                if cmd.startswith(("request_access_", "approve_", "reject_")):
+                    logger.debug(f"[AUTH] BYPASS: Callback {cmd} diizinkan tanpa pengecekan.")
+                    return func(obj, *args, **kwargs)
+
+            # 1. Selalu Izinkan Owner Utama dari environment
+            OWNER_ID_STR = os.getenv("TELEGRAM_BOT_OWNER_ID", "")
+            if OWNER_ID_STR.strip().isdigit() and user_id == int(OWNER_ID_STR.strip()):
+                logger.debug(f"[AUTH] ALLOWED: Owner {user_id} → {func_name}")
+                return func(obj, *args, **kwargs)
+
+            # 2. Cek apakah ada di whitelist
             if ctx.AUTHORIZED_ADMINS and user_id not in ctx.AUTHORIZED_ADMINS:
                 logger.warning(
                     f"[AUTH] BLOCKED: Akses tidak sah dari User ID {user_id} → {func_name}"
                 )
-                try:
-                    ctx.bot.reply_to(
-                        obj,
-                        f"🚫 <b>Akses Ditolak.</b>\nID Telegram Anda (<code>{user_id}</code>) belum terdaftar sebagai pengelola sistem kasir ini.\n\n"
-                        f"💡 <i>Silakan salin ID di atas dan masukkan ke variabel <code>TELEGRAM_BOT_ADMIN_IDS</code> di dalam file <code>.env</code> Anda!</i>",
-                        parse_mode="HTML",
+                if not is_callback:
+                    # Tampilkan tombol Minta Akses jika user mengirim pesan biasa
+                    markup = telebot.types.InlineKeyboardMarkup()
+                    btn_req = telebot.types.InlineKeyboardButton(
+                        text="🔑 Minta Izin Akses",
+                        callback_data=f"request_access_{user_id}"
                     )
-                except Exception:
-                    pass  # For callback queries, reply_to doesn't work anyway
+                    markup.add(btn_req)
+                    
+                    try:
+                        ctx.bot.reply_to(
+                            obj,
+                            f"🚫 <b>Akses Ditolak.</b>\nID Telegram Anda (<code>{user_id}</code>) belum disetujui untuk menggunakan bot ini.\n\n"
+                            f"💡 <i>Silakan klik tombol di bawah ini untuk mengajukan permintaan izin akses ke owner utama!</i>",
+                            parse_mode="HTML",
+                            reply_markup=markup
+                        )
+                    except Exception as reply_err:
+                        logger.error(f"[AUTH] Error sending reject message: {reply_err}")
+                else:
+                    # Kirim alert jika ini berupa callback query yang tidak dikenal
+                    try:
+                        ctx.bot.answer_callback_query(
+                            obj.id, 
+                            text="Akses ditolak. Anda belum disetujui oleh Owner.", 
+                            show_alert=True
+                        )
+                    except Exception as cb_err:
+                        logger.error(f"[AUTH] Error answering unauthorized callback: {cb_err}")
                 return
 
             logger.debug(f"[AUTH] ALLOWED: User {user_id} → {func_name}")

@@ -427,3 +427,78 @@ def ping_supabase_keep_alive():
     except Exception as e:
         logger.error(f"[KEEP-ALIVE] Gagal ping Supabase: {e}")
         return False
+
+
+# =====================================================
+# OPERASI AUTHORIZED ADMINS (SISTEM PERSETUJUAN DINAMIS)
+# =====================================================
+def get_authorized_admins_db():
+    """Mengambil daftar admin yang disetujui dari tabel authorized_admins.
+    Fallback ke file JSON lokal jika tabel belum dibuat di Supabase."""
+    import json
+    try:
+        supabase = get_supabase()
+        res = supabase.table("authorized_admins").select("telegram_id").execute()
+        return [int(row["telegram_id"]) for row in res.data if str(row.get("telegram_id")).isdigit()]
+    except Exception as e:
+        logger.warning(f"[DB] Supabase authorized_admins query error: {e}. Menggunakan fallback JSON.")
+        
+        # Fallback JSON local file
+        filepath = "database/authorized_admins.json"
+        if not os.path.exists(filepath):
+            return []
+        try:
+            with open(filepath, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                return [int(row["telegram_id"]) for row in data if str(row.get("telegram_id")).isdigit()]
+        except Exception as json_err:
+            logger.error(f"Gagal membaca fallback JSON admin: {json_err}")
+            return []
+
+
+def add_authorized_admin_db(telegram_id, username, full_name):
+    """Menyimpan admin baru yang disetujui ke database.
+    Fallback ke file JSON lokal jika tabel belum dibuat di Supabase."""
+    import json
+    try:
+        supabase = get_supabase()
+        payload = {
+            "telegram_id": int(telegram_id),
+            "username": username,
+            "full_name": full_name
+        }
+        res = supabase.table("authorized_admins").upsert(payload, on_conflict="telegram_id").execute()
+        return res.data
+    except Exception as e:
+        logger.warning(f"[DB] Supabase authorized_admins insert error: {e}. Menggunakan fallback JSON.")
+        
+        # Fallback JSON local file
+        filepath = "database/authorized_admins.json"
+        data = []
+        if os.path.exists(filepath):
+            try:
+                with open(filepath, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+            except Exception:
+                data = []
+                
+        # Perbarui list
+        # Hapus yang lama jika ada telegram_id yang sama
+        data = [row for row in data if int(row["telegram_id"]) != int(telegram_id)]
+        data.append({
+            "telegram_id": int(telegram_id),
+            "username": username,
+            "full_name": full_name
+        })
+        
+        try:
+            # Pastikan folder database ada
+            os.makedirs(os.path.dirname(filepath), exist_ok=True)
+            with open(filepath, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+            logger.info(f"[DB] Berhasil menyimpan admin {telegram_id} ke fallback JSON.")
+            return data
+        except Exception as json_err:
+            logger.error(f"Gagal menyimpan ke fallback JSON admin: {json_err}")
+            return None
+

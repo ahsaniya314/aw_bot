@@ -1,0 +1,35 @@
+# Core Dependencies
+python-telegram-bot==20.7
+flask==3.0.0
+flask-cors==4.0.0
+supabase==2.3.0
+
+# NLP & ML
+rapidfuzz==3.6.1
+numpy<2.0.0
+matplotlib==3.8.2
+
+# OCR Dependencies (Optional - untuk laporan OCR)
+# Pilihan 1: EasyOCR (paling mudah untuk Windows)
+easyocr==1.7.0
+# Pilihan 2: Tesseract (perlu install executable terpisah)
+pytesseract==0.3.13
+# Pilihan 3: PaddleOCR (ada compatibility issue di Windows)
+# paddlepaddle==2.6.0
+# paddleocr==2.7.0
+opencv-python==4.8.1.78
+Pillow==10.0.0
+
+# Database & Storage
+psycopg2-binary==2.9.9
+
+# Utilities
+python-dotenv==1.0.0
+requests==2.31.0
+schedule==1.2.0
+
+# Logging & Monitoring
+colorlog==6.8.0
+
+# Image Processing (untuk OCR)
+shapely==2.0.0

@@ -1,0 +1,1010 @@
+{
+  "timestamp": "20260717_011827",
+  "image_path": "tahap_ocr.jpg",
+  "akuisisi_citra": {
+    "deskripsi": "Dokumen gambar dipindai dan dikonversi menjadi data biner. Software menganalisis gambar dan mengklasifikasikan bagian terang sebagai background dan bagian gelap sebagai teks.",
+    "original_size": [
+      1280,
+      960
+    ],
+    "gambar_asli": "ocr_reports/report_20260717_011827\\01_akuisisi_citra\\00_gambar_asli.png",
+    "analisis_biner": "ocr_reports/report_20260717_011827\\01_akuisisi_citra\\01_analisis_biner.png",
+    "output_images": [
+      "00_gambar_asli.png",
+      "01_analisis_biner.png"
+    ]
+  },
+  "prapemrosesan": {
+    "deskripsi": "Software OCR membersihkan gambar dari bagian-bagian yang kurang sempurna dan dapat mengganggu proses pemindaian, seperti bercak dan garis-garis yang mengenai teks. Dalam tahap ini, teks dalam gambar akan mulai dikenali oleh sistem. Input untuk tahap ini adalah hasil analisis biner dari tahap akuisisi citra.",
+    "input_dari": "analisis_biner_dari_akuisisi_citra",
+    "original_size": [
+      1280,
+      960
+    ],
+    "steps": {
+      "01_original": {
+        "image_path": "ocr_reports/report_20260717_011827\\02_prapemrosesan\\prapemrosesan_01_original.png",
+        "metadata": {
+          "note": "Original image"
+        }
+      },
+      "02_resized": {
+        "image_path": "ocr_reports/report_20260717_011827\\02_prapemrosesan\\prapemrosesan_02_resized.png",
+        "metadata": {
+          "original_size": [
+            960,
+            1280
+          ],
+          "method": "resize",
+          "new_size": [
+            960,
+            1280
+          ]
+        }
+      },
+      "03_padded": {
+        "image_path": "ocr_reports/report_20260717_011827\\02_prapemrosesan\\prapemrosesan_03_padded.png",
+        "metadata": {
+          "original_size": [
+            960,
+            1280
+          ],
+          "padding_size": 50,
+          "padding_color": [
+            255,
+            255,
+            255
+          ],
+          "new_size": [
+            1060,
+            1380
+          ],
+          "method": "padding"
+        }
+      },
+      "04_color_normalized": {
+        "image_path": "ocr_reports/report_20260717_011827\\02_prapemrosesan\\prapemrosesan_04_color_normalized.png",
+        "metadata": {
+          "method": "color_conversion_normalization",
+          "color_space_conversion": "BGR -> GRAY",
+          "enhancement": "CLAHE"
+        }
+      },
+      "05_deskewed": {
+        "image_path": "ocr_reports/report_20260717_011827\\02_prapemrosesan\\prapemrosesan_05_deskewed.png",
+        "metadata": {
+          "method": "deskewing",
+          "angle": -90.0,
+          "status": "Rotated by -90.00 degrees"
+        }
+      }
+    },
+    "output_images": [
+      "00_input_biner.png",
+      "prapemrosesan_01_original.png",
+      "prapemrosesan_02_resized.png",
+      "prapemrosesan_03_padded.png",
+      "prapemrosesan_04_color_normalized.png",
+      "prapemrosesan_05_deskewed.png",
+      "temp_binary.png"
+    ]
+  },
+  "pengenalan_teks": {
+    "deskripsi": "Setiap kata diidentifikasi untuk disegmentasikan menjadi karakter terpisah. Teks mulai terbaca sistem, kemudian data akan diproses hingga siap memasuki proses selanjutnya.",
+    "total_text_regions": 30,
+    "average_confidence": 0.35352968496062404,
+    "texts": [
+      {
+        "text": "F",
+        "confidence": 0.1907687028826155,
+        "bounding_box": [
+          [
+            103.0,
+            281.0
+          ],
+          [
+            156.0,
+            281.0
+          ],
+          [
+            156.0,
+            389.0
+          ],
+          [
+            103.0,
+            389.0
+          ]
+        ],
+        "box_center": [
+          129.5,
+          335.0
+        ]
+      },
+      {
+        "text": "5",
+        "confidence": 0.2581143428899999,
+        "bounding_box": [
+          [
+            207.0,
+            288.0
+          ],
+          [
+            243.0,
+            288.0
+          ],
+          [
+            243.0,
+            382.0
+          ],
+          [
+            207.0,
+            382.0
+          ]
+        ],
+        "box_center": [
+          225.0,
+          335.0
+        ]
+      },
+      {
+        "text": "8",
+        "confidence": 0.9798557385063447,
+        "bounding_box": [
+          [
+            292.0,
+            298.0
+          ],
+          [
+            318.0,
+            298.0
+          ],
+          [
+            318.0,
+            344.0
+          ],
+          [
+            292.0,
+            344.0
+          ]
+        ],
+        "box_center": [
+          305.0,
+          321.0
+        ]
+      },
+      {
+        "text": "J",
+        "confidence": 0.11209822746445752,
+        "bounding_box": [
+          [
+            510.0,
+            278.0
+          ],
+          [
+            542.0,
+            278.0
+          ],
+          [
+            542.0,
+            378.0
+          ],
+          [
+            510.0,
+            378.0
+          ]
+        ],
+        "box_center": [
+          526.0,
+          328.0
+        ]
+      },
+      {
+        "text": ";",
+        "confidence": 0.92170135624119,
+        "bounding_box": [
+          [
+            596.0,
+            288.0
+          ],
+          [
+            626.0,
+            288.0
+          ],
+          [
+            626.0,
+            350.0
+          ],
+          [
+            596.0,
+            350.0
+          ]
+        ],
+        "box_center": [
+          611.0,
+          319.0
+        ]
+      },
+      {
+        "text": "#l",
+        "confidence": 0.05099389736478265,
+        "bounding_box": [
+          [
+            729.0,
+            306.0
+          ],
+          [
+            814.0,
+            306.0
+          ],
+          [
+            814.0,
+            417.0
+          ],
+          [
+            729.0,
+            417.0
+          ]
+        ],
+        "box_center": [
+          771.5,
+          361.5
+        ]
+      },
+      {
+        "text": "El 6",
+        "confidence": 0.2405620962381363,
+        "bounding_box": [
+          [
+            858.0,
+            239.0
+          ],
+          [
+            1016.0,
+            239.0
+          ],
+          [
+            1016.0,
+            380.0
+          ],
+          [
+            858.0,
+            380.0
+          ]
+        ],
+        "box_center": [
+          937.0,
+          309.5
+        ]
+      },
+      {
+        "text": ";",
+        "confidence": 0.07154122238388538,
+        "bounding_box": [
+          [
+            292.0,
+            356.0
+          ],
+          [
+            318.0,
+            356.0
+          ],
+          [
+            318.0,
+            430.0
+          ],
+          [
+            292.0,
+            430.0
+          ]
+        ],
+        "box_center": [
+          305.0,
+          393.0
+        ]
+      },
+      {
+        "text": "7",
+        "confidence": 0.9745770635177564,
+        "bounding_box": [
+          [
+            600.0,
+            358.0
+          ],
+          [
+            626.0,
+            358.0
+          ],
+          [
+            626.0,
+            404.0
+          ],
+          [
+            600.0,
+            404.0
+          ]
+        ],
+        "box_center": [
+          613.0,
+          381.0
+        ]
+      },
+      {
+        "text": "f",
+        "confidence": 0.22073617430851655,
+        "bounding_box": [
+          [
+            121.0,
+            407.0
+          ],
+          [
+            157.0,
+            407.0
+          ],
+          [
+            157.0,
+            511.0
+          ],
+          [
+            121.0,
+            511.0
+          ]
+        ],
+        "box_center": [
+          139.0,
+          459.0
+        ]
+      },
+      {
+        "text": "[",
+        "confidence": 0.42034914392136,
+        "bounding_box": [
+          [
+            205.0,
+            439.0
+          ],
+          [
+            245.0,
+            439.0
+          ],
+          [
+            245.0,
+            515.0
+          ],
+          [
+            205.0,
+            515.0
+          ]
+        ],
+        "box_center": [
+          225.0,
+          477.0
+        ]
+      },
+      {
+        "text": "k",
+        "confidence": 0.2474745836492822,
+        "bounding_box": [
+          [
+            287.0,
+            435.0
+          ],
+          [
+            326.0,
+            435.0
+          ],
+          [
+            326.0,
+            514.0
+          ],
+          [
+            287.0,
+            514.0
+          ]
+        ],
+        "box_center": [
+          306.5,
+          474.5
+        ]
+      },
+      {
+        "text": "6",
+        "confidence": 0.3855235889255404,
+        "bounding_box": [
+          [
+            418.0,
+            401.0
+          ],
+          [
+            459.0,
+            401.0
+          ],
+          [
+            459.0,
+            507.0
+          ],
+          [
+            418.0,
+            507.0
+          ]
+        ],
+        "box_center": [
+          438.5,
+          454.0
+        ]
+      },
+      {
+        "text": "E",
+        "confidence": 0.9875880599138895,
+        "bounding_box": [
+          [
+            507.0,
+            449.0
+          ],
+          [
+            547.0,
+            449.0
+          ],
+          [
+            547.0,
+            537.0
+          ],
+          [
+            507.0,
+            537.0
+          ]
+        ],
+        "box_center": [
+          527.0,
+          493.0
+        ]
+      },
+      {
+        "text": ";",
+        "confidence": 0.0649522138545855,
+        "bounding_box": [
+          [
+            600.0,
+            422.0
+          ],
+          [
+            628.0,
+            422.0
+          ],
+          [
+            628.0,
+            498.0
+          ],
+          [
+            600.0,
+            498.0
+          ]
+        ],
+        "box_center": [
+          614.0,
+          460.0
+        ]
+      },
+      {
+        "text": "2",
+        "confidence": 0.9913732704953624,
+        "bounding_box": [
+          [
+            734.0,
+            450.0
+          ],
+          [
+            764.0,
+            450.0
+          ],
+          [
+            764.0,
+            492.0
+          ],
+          [
+            734.0,
+            492.0
+          ]
+        ],
+        "box_center": [
+          749.0,
+          471.0
+        ]
+      },
+      {
+        "text": "8 /8",
+        "confidence": 0.2683356702327728,
+        "bounding_box": [
+          [
+            777.0,
+            431.0
+          ],
+          [
+            857.0,
+            431.0
+          ],
+          [
+            857.0,
+            497.0
+          ],
+          [
+            777.0,
+            497.0
+          ]
+        ],
+        "box_center": [
+          817.0,
+          464.0
+        ]
+      },
+      {
+        "text": "0",
+        "confidence": 0.04734114310203097,
+        "bounding_box": [
+          [
+            961.0,
+            397.0
+          ],
+          [
+            997.0,
+            397.0
+          ],
+          [
+            997.0,
+            485.0
+          ],
+          [
+            961.0,
+            485.0
+          ]
+        ],
+        "box_center": [
+          979.0,
+          441.0
+        ]
+      },
+      {
+        "text": "Is Ig /:",
+        "confidence": 0.04898302112120629,
+        "bounding_box": [
+          [
+            729.0,
+            501.0
+          ],
+          [
+            861.0,
+            501.0
+          ],
+          [
+            861.0,
+            567.0
+          ],
+          [
+            729.0,
+            567.0
+          ]
+        ],
+        "box_center": [
+          795.0,
+          534.0
+        ]
+      },
+      {
+        "text": "1?",
+        "confidence": 0.10393804223931843,
+        "bounding_box": [
+          [
+            125.0,
+            563.0
+          ],
+          [
+            165.0,
+            563.0
+          ],
+          [
+            165.0,
+            611.0
+          ],
+          [
+            125.0,
+            611.0
+          ]
+        ],
+        "box_center": [
+          145.0,
+          587.0
+        ]
+      },
+      {
+        "text": "I",
+        "confidence": 0.06121984828456917,
+        "bounding_box": [
+          [
+            211.0,
+            535.0
+          ],
+          [
+            249.0,
+            535.0
+          ],
+          [
+            249.0,
+            657.0
+          ],
+          [
+            211.0,
+            657.0
+          ]
+        ],
+        "box_center": [
+          230.0,
+          596.0
+        ]
+      },
+      {
+        "text": "K",
+        "confidence": 0.11391468302122121,
+        "bounding_box": [
+          [
+            506.0,
+            557.0
+          ],
+          [
+            550.0,
+            557.0
+          ],
+          [
+            550.0,
+            674.0
+          ],
+          [
+            506.0,
+            674.0
+          ]
+        ],
+        "box_center": [
+          528.0,
+          615.5
+        ]
+      },
+      {
+        "text": "6",
+        "confidence": 0.09852972615798095,
+        "bounding_box": [
+          [
+            952.0,
+            548.0
+          ],
+          [
+            1002.0,
+            548.0
+          ],
+          [
+            1002.0,
+            642.0
+          ],
+          [
+            952.0,
+            642.0
+          ]
+        ],
+        "box_center": [
+          977.0,
+          595.0
+        ]
+      },
+      {
+        "text": "1",
+        "confidence": 0.8714047636995161,
+        "bounding_box": [
+          [
+            126.0,
+            611.0
+          ],
+          [
+            167.0,
+            611.0
+          ],
+          [
+            167.0,
+            782.0
+          ],
+          [
+            126.0,
+            782.0
+          ]
+        ],
+        "box_center": [
+          146.5,
+          696.5
+        ]
+      },
+      {
+        "text": "6",
+        "confidence": 0.1109888625151143,
+        "bounding_box": [
+          [
+            425.0,
+            638.0
+          ],
+          [
+            466.0,
+            638.0
+          ],
+          [
+            466.0,
+            755.0
+          ],
+          [
+            425.0,
+            755.0
+          ]
+        ],
+        "box_center": [
+          445.5,
+          696.5
+        ]
+      },
+      {
+        "text": "6",
+        "confidence": 0.05586610528316016,
+        "bounding_box": [
+          [
+            955.0,
+            659.0
+          ],
+          [
+            993.0,
+            659.0
+          ],
+          [
+            993.0,
+            793.0
+          ],
+          [
+            955.0,
+            793.0
+          ]
+        ],
+        "box_center": [
+          974.0,
+          726.0
+        ]
+      },
+      {
+        "text": "8",
+        "confidence": 0.9971160254310831,
+        "bounding_box": [
+          [
+            432.0,
+            768.0
+          ],
+          [
+            458.0,
+            768.0
+          ],
+          [
+            458.0,
+            820.0
+          ],
+          [
+            432.0,
+            820.0
+          ]
+        ],
+        "box_center": [
+          445.0,
+          794.0
+        ]
+      },
+      {
+        "text": "1",
+        "confidence": 0.23113368137295343,
+        "bounding_box": [
+          [
+            418.62430962161733,
+            277.0176819891437
+          ],
+          [
+            452.59354922786554,
+            281.3311308474723
+          ],
+          [
+            441.37569037838267,
+            390.9823180108563
+          ],
+          [
+            406.40645077213446,
+            387.6688691525277
+          ]
+        ],
+        "box_center": [
+          429.75,
+          334.25
+        ]
+      },
+      {
+        "text": "J",
+        "confidence": 0.19025272852303843,
+        "bounding_box": [
+          [
+            824.480222301811,
+            294.0225564708259
+          ],
+          [
+            871.2212529531589,
+            302.93803107360736
+          ],
+          [
+            848.519777698189,
+            420.9774435291741
+          ],
+          [
+            801.7787470468411,
+            412.06196892639264
+          ]
+        ],
+        "box_center": [
+          836.5,
+          357.5
+        ]
+      },
+      {
+        "text": "0",
+        "confidence": 0.2886565652770514,
+        "bounding_box": [
+          [
+            876.6908499698939,
+            360.0119646116308
+          ],
+          [
+            912.7389962633247,
+            367.39779345454167
+          ],
+          [
+            890.3091500301061,
+            496.9880353883692
+          ],
+          [
+            853.2610037366753,
+            490.60220654545833
+          ]
+        ],
+        "box_center": [
+          883.25,
+          428.75
+        ]
+      }
+    ],
+    "visualization": "ocr_reports/report_20260717_011827\\03_pengenalan_teks\\ocr_visualization.png",
+    "raw_text": "F\n5\n8\nJ\n;\n#l\nEl 6\n;\n7\nf\n[\nk\n6\nE\n;\n2\n8 /8\n0\nIs Ig /:\n1?\nI\nK\n6\n1\n6\n6\n8\n1\nJ\n0",
+    "engine_type": "easyocr"
+  },
+  "pencocokan_pola": {
+    "deskripsi": "Software mengisolasi citra karakter (glyph) dan membandingkannya dengan glyph yang tersimpan dalam sistem. Font dan skala dalam gambar akan dicocokkan. Proses ini akan berjalan dengan baik bila font yang digunakan dalam gambar merupakan font yang umum digunakan.",
+    "matched_patterns": {
+      "tanggal": [],
+      "harga": [
+        {
+          "text": "5",
+          "match": "5",
+          "confidence": 0.2581143428899999
+        },
+        {
+          "text": "8",
+          "match": "8",
+          "confidence": 0.9798557385063447
+        },
+        {
+          "text": "El 6",
+          "match": "6",
+          "confidence": 0.2405620962381363
+        },
+        {
+          "text": "7",
+          "match": "7",
+          "confidence": 0.9745770635177564
+        },
+        {
+          "text": "6",
+          "match": "6",
+          "confidence": 0.3855235889255404
+        },
+        {
+          "text": "2",
+          "match": "2",
+          "confidence": 0.9913732704953624
+        },
+        {
+          "text": "8 /8",
+          "match": "8",
+          "confidence": 0.2683356702327728
+        },
+        {
+          "text": "8 /8",
+          "match": "8",
+          "confidence": 0.2683356702327728
+        },
+        {
+          "text": "0",
+          "match": "0",
+          "confidence": 0.04734114310203097
+        },
+        {
+          "text": "1?",
+          "match": "1",
+          "confidence": 0.10393804223931843
+        },
+        {
+          "text": "6",
+          "match": "6",
+          "confidence": 0.09852972615798095
+        },
+        {
+          "text": "1",
+          "match": "1",
+          "confidence": 0.8714047636995161
+        },
+        {
+          "text": "6",
+          "match": "6",
+          "confidence": 0.1109888625151143
+        },
+        {
+          "text": "6",
+          "match": "6",
+          "confidence": 0.05586610528316016
+        },
+        {
+          "text": "8",
+          "match": "8",
+          "confidence": 0.9971160254310831
+        },
+        {
+          "text": "1",
+          "match": "1",
+          "confidence": 0.23113368137295343
+        },
+        {
+          "text": "0",
+          "match": "0",
+          "confidence": 0.2886565652770514
+        }
+      ],
+      "jumlah": []
+    }
+  },
+  "ekstraksi_fitur": {
+    "deskripsi": "Glyph akan diurai menjadi fitur tertentu, seperti garis, lengkungan, hingga perpotongan garis. Setelah diekstraksi, fitur-fitur tersebut akan dicocokkan dengan beragam glyph yang telah tersimpan sebelumnya.",
+    "spatial_distribution": {
+      "x_range": [
+        129.5,
+        979.0
+      ],
+      "y_range": [
+        309.5,
+        794.0
+      ],
+      "x_center": 535.1166666666667,
+      "y_center": 474.5833333333333
+    },
+    "text_density": {
+      "total_text_regions": 30,
+      "regions_per_line": 6
+    },
+    "confidence_distribution": {
+      "min_confidence": 0.04734114310203097,
+      "max_confidence": 0.9971160254310831,
+      "avg_confidence": 0.35352968496062404
+    }
+  },
+  "pascapemrosesan": {
+    "deskripsi": "Data teks telah siap dikonversi menjadi file dokumen yang terkomputerisasi. Ada pula sistem OCR yang bisa menyertakan dokumen versi sebelum dan setelah dipindai.",
+    "confidence_threshold": 0.5,
+    "original_count": 30,
+    "filtered_count": 7,
+    "removed_count": 23,
+    "final_text": "8\n\n7\nE\n2\n1\n8",
+    "output_file": "ocr_reports/report_20260717_011827\\06_pascapemrosesan\\final_text.txt"
+  },
+  "hasil_akhir": "8\n\n7\nE\n2\n1\n8"
+}

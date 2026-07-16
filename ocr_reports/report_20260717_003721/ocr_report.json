@@ -1,0 +1,147 @@
+{
+  "timestamp": "20260717_003721",
+  "image_path": "tahap_ocr.jpg",
+  "preprocessing": {
+    "original_size": [
+      1280,
+      960
+    ],
+    "steps": {
+      "01_original": {
+        "image_path": "ocr_reports/report_20260717_003721\\01_preprocessing\\preprocessing_01_original.png",
+        "metadata": {
+          "note": "Original image"
+        }
+      },
+      "02_resized": {
+        "image_path": "ocr_reports/report_20260717_003721\\01_preprocessing\\preprocessing_02_resized.png",
+        "metadata": {
+          "original_size": [
+            960,
+            1280
+          ],
+          "method": "resize",
+          "new_size": [
+            960,
+            1280
+          ]
+        }
+      },
+      "03_padded": {
+        "image_path": "ocr_reports/report_20260717_003721\\01_preprocessing\\preprocessing_03_padded.png",
+        "metadata": {
+          "original_size": [
+            960,
+            1280
+          ],
+          "padding_size": 50,
+          "padding_color": [
+            255,
+            255,
+            255
+          ],
+          "new_size": [
+            1060,
+            1380
+          ],
+          "method": "padding"
+        }
+      },
+      "04_color_normalized": {
+        "image_path": "ocr_reports/report_20260717_003721\\01_preprocessing\\preprocessing_04_color_normalized.png",
+        "metadata": {
+          "method": "color_conversion_normalization",
+          "color_space_conversion": "BGR -> GRAY",
+          "enhancement": "CLAHE"
+        }
+      },
+      "05_deskewed": {
+        "image_path": "ocr_reports/report_20260717_003721\\01_preprocessing\\preprocessing_05_deskewed.png",
+        "metadata": {
+          "method": "deskewing",
+          "angle": -90.0,
+          "status": "Rotated by -90.00 degrees"
+        }
+      }
+    },
+    "output_images": [
+      "00_original.png",
+      "preprocessing_01_original.png",
+      "preprocessing_02_resized.png",
+      "preprocessing_03_padded.png",
+      "preprocessing_04_color_normalized.png",
+      "preprocessing_05_deskewed.png"
+    ]
+  },
+  "text_recognition": {
+    "total_text_regions": 1,
+    "average_confidence": 0.0,
+    "texts": [
+      {
+        "text": "OCR processing error: tesseract is not installed or it's not in your PATH. See README file for more information.",
+        "confidence": 0.0,
+        "bounding_box": [
+          [
+            0,
+            0
+          ],
+          [
+            100,
+            0
+          ],
+          [
+            100,
+            20
+          ],
+          [
+            0,
+            20
+          ]
+        ],
+        "box_center": [
+          50,
+          10
+        ]
+      }
+    ],
+    "visualization": "ocr_reports/report_20260717_003721\\02_text_recognition\\temp_image.png",
+    "error": "tesseract is not installed or it's not in your PATH. See README file for more information."
+  },
+  "pattern_matching": {
+    "tanggal": [],
+    "harga": [],
+    "jumlah": []
+  },
+  "feature_extraction": {
+    "spatial_distribution": {
+      "x_range": [
+        50,
+        50
+      ],
+      "y_range": [
+        10,
+        10
+      ],
+      "x_center": 50.0,
+      "y_center": 10.0
+    },
+    "text_density": {
+      "total_text_regions": 1,
+      "regions_per_line": 1
+    },
+    "confidence_distribution": {
+      "min_confidence": 0.0,
+      "max_confidence": 0.0,
+      "avg_confidence": 0.0
+    }
+  },
+  "postprocessing": {
+    "confidence_threshold": 0.5,
+    "original_count": 1,
+    "filtered_count": 0,
+    "removed_count": 1,
+    "final_text": "",
+    "output_file": "ocr_reports/report_20260717_003721\\03_postprocessing\\final_text.txt"
+  },
+  "final_result": ""
+}

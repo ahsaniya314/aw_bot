@@ -167,6 +167,23 @@ from utils.security import RateLimiter
 ADMIN_IDS_STR = os.getenv("TELEGRAM_BOT_ADMIN_IDS", "")
 AUTHORIZED_ADMINS = [int(x.strip()) for x in ADMIN_IDS_STR.split(",") if x.strip().isdigit()]
 
+# Ambil Owner ID
+OWNER_ID_STR = os.getenv("TELEGRAM_BOT_OWNER_ID", "")
+if OWNER_ID_STR.strip().isdigit():
+    OWNER_ID = int(OWNER_ID_STR.strip())
+    if OWNER_ID not in AUTHORIZED_ADMINS:
+        AUTHORIZED_ADMINS.append(OWNER_ID)
+
+# Muat admin tambahan dari database/JSON fallback
+try:
+    from database.db_client import get_authorized_admins_db
+    db_admins = get_authorized_admins_db()
+    for uid in db_admins:
+        if uid not in AUTHORIZED_ADMINS:
+            AUTHORIZED_ADMINS.append(uid)
+except Exception as e:
+    logger.error(f"[CORE] Gagal memuat whitelist admin dari database: {e}")
+
 # Inisialisasi Service Terpadu
 ctx.bot = bot
 ctx.user_sessions = UserSessions()
