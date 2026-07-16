@@ -502,3 +502,30 @@ def add_authorized_admin_db(telegram_id, username, full_name):
             logger.error(f"Gagal menyimpan ke fallback JSON admin: {json_err}")
             return None
 
+
+def delete_authorized_admin_db(telegram_id):
+    """Menghapus admin dari whitelist database/JSON fallback."""
+    import json
+    try:
+        supabase = get_supabase()
+        res = supabase.table("authorized_admins").delete().eq("telegram_id", int(telegram_id)).execute()
+        return res.data
+    except Exception as e:
+        logger.warning(f"[DB] Supabase delete error: {e}. Menggunakan fallback JSON.")
+        
+        # Fallback JSON local file
+        filepath = "database/authorized_admins.json"
+        if os.path.exists(filepath):
+            try:
+                with open(filepath, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                data = [row for row in data if int(row["telegram_id"]) != int(telegram_id)]
+                with open(filepath, "w", encoding="utf-8") as f:
+                    json.dump(data, f, ensure_ascii=False, indent=2)
+                return data
+            except Exception as json_err:
+                logger.error(f"Gagal hapus dari fallback JSON: {json_err}")
+                return None
+        return []
+
+

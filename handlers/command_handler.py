@@ -624,6 +624,61 @@ def cmd_hutang(message):
     tangani_read_data(chat_id, msg_proses.message_id)
 
 
+def cmd_hapus_admin(message):
+    """Command /hapus_admin <ID_Telegram> — khusus Owner untuk mencabut akses admin."""
+    bot = ctx.bot
+    user_id = message.from_user.id
+    
+    # Validasi apakah pengirim adalah Owner Utama
+    OWNER_ID_STR = os.getenv("TELEGRAM_BOT_OWNER_ID", "")
+    if not OWNER_ID_STR.strip().isdigit() or user_id != int(OWNER_ID_STR.strip()):
+        bot.reply_to(message, "❌ <b>Akses Ditolak.</b> Hanya Owner Utama yang dapat mencabut akses.", parse_mode="HTML")
+        return
+        
+    text_parts = message.text.split()
+    if len(text_parts) < 2:
+        bot.reply_to(message, "💡 <b>Penggunaan:</b> <code>/hapus_admin <ID_Telegram></code>", parse_mode="HTML")
+        return
+        
+    target_id_str = text_parts[1].strip()
+    if not target_id_str.isdigit():
+        bot.reply_to(message, "⚠️ ID Telegram target harus berupa angka.")
+        return
+        
+    target_id = int(target_id_str)
+    
+    if target_id == user_id:
+        bot.reply_to(message, "❌ Anda tidak bisa menghapus akses Anda sendiri (Owner).")
+        return
+        
+    try:
+        from database.db_client import delete_authorized_admin_db
+        delete_authorized_admin_db(target_id)
+        
+        # Hapus dari cache memory
+        if target_id in ctx.AUTHORIZED_ADMINS:
+            ctx.AUTHORIZED_ADMINS.remove(target_id)
+            
+        bot.reply_to(
+            message, 
+            f"✅ Akses untuk ID Telegram <code>{target_id}</code> berhasil <b>DICABUT</b>.", 
+            parse_mode="HTML"
+        )
+        
+        # Beri tahu user yang bersangkutan jika memungkinkan
+        try:
+            bot.send_message(
+                target_id, 
+                "⚠️ Akses Anda ke bot ini telah dicabut oleh Owner.", 
+                parse_mode="HTML"
+            )
+        except Exception:
+            pass  # Abaikan jika gagal mengirim pesan ke user target
+    except Exception as e:
+        logger.error(f"[CMD] Gagal menghapus admin {target_id}: {e}")
+        bot.reply_to(message, f"❌ Gagal menghapus admin: {e}")
+
+
 def register_handlers(bot):
     """Register semua command handlers ke bot instance."""
     try:
@@ -648,3 +703,4 @@ def register_handlers(bot):
     bot.message_handler(commands=["master_satuan"])(cmd_master_satuan)
     bot.message_handler(commands=["master_metode"])(cmd_master_metode)
     bot.message_handler(commands=["dedup_transaksi"])(authorized_only(cmd_dedup_transaksi))
+    bot.message_handler(commands=["hapus_admin"])(cmd_hapus_admin)
