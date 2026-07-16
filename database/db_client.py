@@ -456,6 +456,30 @@ def get_authorized_admins_db():
             return []
 
 
+def get_authorized_admins_detail_db():
+    """Mengambil detail lengkap (telegram_id, username, full_name) semua admin.
+    Fallback ke file JSON lokal jika tabel belum dibuat di Supabase."""
+    import json
+    try:
+        supabase = get_supabase()
+        res = supabase.table("authorized_admins").select("telegram_id, username, full_name").execute()
+        return res.data or []
+    except Exception as e:
+        logger.warning(f"[DB] Supabase authorized_admins detail query error: {e}. Menggunakan fallback JSON.")
+        
+        # Fallback JSON local file
+        filepath = "database/authorized_admins.json"
+        if not os.path.exists(filepath):
+            return []
+        try:
+            with open(filepath, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as json_err:
+            logger.error(f"Gagal membaca fallback JSON admin detail: {json_err}")
+            return []
+
+
+
 def add_authorized_admin_db(telegram_id, username, full_name):
     """Menyimpan admin baru yang disetujui ke database.
     Fallback ke file JSON lokal jika tabel belum dibuat di Supabase."""

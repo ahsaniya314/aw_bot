@@ -679,6 +679,49 @@ def cmd_hapus_admin(message):
         bot.reply_to(message, f"❌ Gagal menghapus admin: {e}")
 
 
+def cmd_daftar_admin(message):
+    """Command /daftar_admin — khusus Owner untuk melihat daftar admin aktif."""
+    bot = ctx.bot
+    user_id = message.from_user.id
+
+    # Validasi apakah pengirim adalah Owner Utama
+    OWNER_ID_STR = os.getenv("TELEGRAM_BOT_OWNER_ID", "")
+    if not OWNER_ID_STR.strip().isdigit() or user_id != int(OWNER_ID_STR.strip()):
+        bot.reply_to(message, "❌ <b>Akses Ditolak.</b> Hanya Owner Utama yang dapat melihat daftar admin.", parse_mode="HTML")
+        return
+
+    try:
+        from database.db_client import get_authorized_admins_detail_db
+        admins = get_authorized_admins_detail_db()
+
+        if not admins:
+            bot.reply_to(
+                message,
+                "ℹ️ <b>Daftar Admin Kosong.</b>\nBelum ada admin tambahan yang disetujui.\n\n"
+                "<i>Tambahkan admin melalui tombol 🔑 Minta Izin Akses yang muncul ketika seseorang mencoba menggunakan bot.</i>",
+                parse_mode="HTML"
+            )
+            return
+
+        lines = ["👥 <b>Daftar Admin Terdaftar:</b>\n"]
+        for i, row in enumerate(admins, start=1):
+            tid = row.get("telegram_id", "?")
+            name = row.get("full_name") or "Tanpa Nama"
+            username = row.get("username") or "tanpa_username"
+            lines.append(
+                f"{i}. <b>{name}</b> (@{username})\n"
+                f"   🆔 ID: <code>{tid}</code>"
+            )
+
+        lines.append(f"\n<i>Total: {len(admins)} admin aktif</i>")
+        lines.append(f"\n💡 <i>Untuk mencabut akses, gunakan:\n<code>/hapus_admin &lt;ID_Telegram&gt;</code></i>")
+
+        bot.reply_to(message, "\n".join(lines), parse_mode="HTML")
+    except Exception as e:
+        logger.error(f"[CMD] Gagal memuat daftar admin: {e}")
+        bot.reply_to(message, f"❌ Gagal memuat daftar admin: {e}")
+
+
 def register_handlers(bot):
     """Register semua command handlers ke bot instance."""
     try:
@@ -704,3 +747,5 @@ def register_handlers(bot):
     bot.message_handler(commands=["master_metode"])(cmd_master_metode)
     bot.message_handler(commands=["dedup_transaksi"])(authorized_only(cmd_dedup_transaksi))
     bot.message_handler(commands=["hapus_admin"])(cmd_hapus_admin)
+    bot.message_handler(commands=["daftar_admin"])(cmd_daftar_admin)
+
